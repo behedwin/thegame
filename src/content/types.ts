@@ -167,3 +167,5 @@ export interface TicketDef {
   /** 2-3 choices. */
   choices: readonly TicketChoice[];
 }
+
+export interface HelpSectionDef { id: string; order: number; title: string; body: readonly string[] }

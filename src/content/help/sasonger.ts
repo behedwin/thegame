@@ -1,0 +1,1 @@
+export default { id: 'sasonger', order: 6, title: 'Säsonger', body: ['Skolåret har sina säsonger, och de ger bonusar medan de pågår. De kommer tillbaka varje år, så du missar aldrig något för gott.'] } satisfies import('../types').HelpSectionDef;

@@ -1,6 +1,6 @@
 // Content registry. Every definition lives in its own file and is discovered with
 // import.meta.glob. Never maintain a central list by hand: add a file instead.
-import type { AchievementDef, AutomationDef, CustomerDef, EventDef, MeritDef, SeasonDef, SystemDef, TicketDef, UpgradeDef } from './types';
+import type { AchievementDef, HelpSectionDef, AutomationDef, CustomerDef, EventDef, MeritDef, SeasonDef, SystemDef, TicketDef, UpgradeDef } from './types';
 
 type Modules<T> = Record<string, { default: T }>;
 
@@ -42,6 +42,7 @@ export const ACHIEVEMENTS = collect(
 
 export const SEASONS = collect(import.meta.glob<{ default: SeasonDef }>('./seasons/*.ts', { eager: true }), byOrder);
 
+export const HELP = collect(import.meta.glob<{ default: HelpSectionDef }>('./help/*.ts', { eager: true }), byOrder);
 export const TICKETS = collect(import.meta.glob<{ default: TicketDef }>('./tickets/*.ts', { eager: true }), none);
 
 /** O(1) lookup by id over a content list. Unknown ids give undefined. */

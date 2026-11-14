@@ -1,0 +1,1 @@
+export default { id: 'trofeer', order: 9, title: 'Troféer', body: ['Troféer låses upp när du når olika mål. Varje trofé ger +1 % produktion för alltid, även efter nytt läsår.'] } satisfies import('../types').HelpSectionDef;

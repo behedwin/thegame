@@ -1,0 +1,1 @@
+export default { id: 'kunder', order: 4, title: 'Kunder och kontrakt', body: ['Ju mer KP du tjänar under läsåret, desto fler kunder skriver på. Varje kund ger en bonus. Kommuner ger stabil produktion, friskolor bättre klick och koncerner multiplikatorer.'] } satisfies import('../types').HelpSectionDef;

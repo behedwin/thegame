@@ -50,6 +50,7 @@ import { confetti, effectsFor, flashClass, stamp, yearTransition } from './celeb
 import { fmt, fmtDuration } from './format';
 import { AchievementList } from './achievements';
 import { showCustomers } from './customers';
+import { showHelp } from './help';
 import { showStats } from './stats';
 import { NetworkView } from './network';
 import { cancelNotifications, notificationsSupported, requestNotifyPermission, scheduleNotifications } from './notifications';
@@ -340,6 +341,8 @@ export async function startApp(root: HTMLElement): Promise<void> {
     const volume = h('label', { class: 'muted', text: T.settings.volume }, slider);
     const stats = h('button', { class: 'btn wide', text: T.stats.open, testId: 'open-stats' });
     stats.addEventListener('click', () => showStats(state));
+    const help = h('button', { class: 'btn wide', text: T.help.open, testId: 'open-help' });
+    help.addEventListener('click', showHelp);
     const wipe = h('button', { class: 'btn danger wide', text: T.settings.wipe });
     wipe.addEventListener('click', () => {
       if (!armed) {
@@ -352,7 +355,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
     });
     showDialog(
       T.settings.title,
-      [toggle(T.settings.sound, 'sound'), volume, toggle(T.settings.vibration, 'vibration'), toggle(T.settings.tips, 'tips'), ...notify, stats, wipe, h('p', { class: 'muted', text: T.settings.about })],
+      [toggle(T.settings.sound, 'sound'), volume, toggle(T.settings.vibration, 'vibration'), toggle(T.settings.tips, 'tips'), ...notify, help, stats, wipe, h('p', { class: 'muted', text: T.settings.about })],
       [{ label: T.settings.close, primary: true }],
       'settings-dialog',
     );

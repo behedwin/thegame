@@ -105,6 +105,7 @@ export const T = {
     done: (n: string) => `Nytt läsår! +${n} Meriter`,
     locked: 'Låses upp senare under läsåret.',
   },
+  help: { open: 'Hjälp', title: 'Så spelar du', close: 'Stäng' },
   settings: {
     title: 'Inställningar',
     sound: 'Ljud',

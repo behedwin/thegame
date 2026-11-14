@@ -1,0 +1,1 @@
+import { BALANCE } from '../balance'; export default { id: 'offline', order: 8, title: 'När du är borta', body: [`Integrationerna fortsätter jobba när spelet är stängt, i upp till ${BALANCE.offline.baseCapHours} timmar (Meriter kan förlänga det). Sedan tar de kaffepaus tills du tittar in igen.`] } satisfies import('../types').HelpSectionDef;
