@@ -11,6 +11,7 @@ import {
   offlineCapMs,
   offlineEfficiency,
   pendingMerits,
+  runKpForMerits,
   withMeritLevel,
 } from './rules';
 import { createInitialState, Decimal, earn, level, type GameState } from './state';
@@ -49,6 +50,11 @@ export function buyMerit(state: GameState, id: string): GameState {
 
 export function canPrestige(state: GameState): boolean {
   return pendingMerits(state).gte(1);
+}
+
+/** The prestige tab shows after the first prestige, or once a quarter of the first merit's KP is earned. */
+export function prestigeUnlocked(state: GameState): boolean {
+  return state.prestiges > 0 || state.runEarned.gte(runKpForMerits(1).mul(0.25));
 }
 
 /** "Nytt läsår": reset the run, keep merits, merit upgrades, totals and settings. */

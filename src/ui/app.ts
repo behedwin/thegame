@@ -10,7 +10,6 @@ import {
   answerTicket,
   activeSeason,
   applyOffline,
-  automationKps,
   buy,
   type CalendarDay,
   buyMerit,
@@ -27,15 +26,18 @@ import {
   milestoneName,
   milestonesReached,
   newAchievements,
+  networkFlow,
   nextYearSpeedupPct,
   pendingMerits,
   prestige,
+  prestigeUnlocked,
   receiveTicket,
   refillInboxOffline,
   rollEvent,
   runKpForMerits,
   setCalendar,
   setSettings,
+  type Settings,
   spawnEvent,
   tick,
   touch,
@@ -48,12 +50,13 @@ import { configureFeedback, floatText, haptic, setBackground, sfx, toast } from 
 import { burst, countUp, motionOk, reducedMotion, ripple, shownValue } from './fx';
 import { confetti, effectsFor, flashClass, stamp, yearTransition } from './celebrate';
 import { fmt, fmtDuration } from './format';
+import { isActivateKey } from './a11y';
 import { AchievementList } from './achievements';
 import { showCustomers } from './customers';
-import { showHelp } from './help';
-import { showStats } from './stats';
+import { bindHold } from './hold';
 import { NetworkView } from './network';
-import { cancelNotifications, notificationsSupported, requestNotifyPermission, scheduleNotifications } from './notifications';
+import { cancelNotifications, scheduleNotifications } from './notifications';
+import { openSettings } from './settings';
 import { ShopList } from './shop';
 import { renderInboxButton, showTicket } from './inbox';
 import { markTipSeen, nextTip, settleTips, TipBar } from './onboarding';
@@ -69,9 +72,10 @@ function today(): CalendarDay {
   return { month: d.getMonth() + 1, day: d.getDate() };
 }
 
-type Tab = 'automations' | 'upgrades' | 'prestige' | 'achievements';
+const TABS = ['automations', 'upgrades', 'prestige', 'achievements'] as const;
+type Tab = (typeof TABS)[number];
 const AUTOSAVE_MS = 10_000;
-/** Hold-to-sync repeat interval: about 8 clicks per second. */
+/** Hold-to-sync repeat interval: about 8 clicks per second (see hold.ts). */
 const HOLD_REPEAT_MS = 125;
 
 export async function startApp(root: HTMLElement): Promise<void> {
@@ -112,11 +116,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
       persist();
       render();
     },
-    () => {
-      state = setSettings(state, { tips: false });
-      persist();
-      render();
-    },
+    () => applySettings({ tips: false }, true),
   );
   const customersEl = h('div', {
     class: 'customers',
@@ -124,13 +124,8 @@ export async function startApp(root: HTMLElement): Promise<void> {
     attrs: { role: 'button', tabindex: '0', 'aria-label': T.customerList.open },
   });
 
-  const tabButton = (t: Tab) => h('button', { class: 'tab', attrs: { role: 'tab' }, text: T.tabs[t], testId: `tab-${t}` });
-  const tabButtons: Record<Tab, HTMLElement> = {
-    automations: tabButton('automations'),
-    upgrades: tabButton('upgrades'),
-    prestige: tabButton('prestige'),
-    achievements: tabButton('achievements'),
-  };
+  const tabButtons = {} as Record<Tab, HTMLElement>;
+  for (const t of TABS) tabButtons[t] = h('button', { class: 'tab', attrs: { role: 'tab' }, text: T.tabs[t], testId: `tab-${t}` });
   const achievementList = new AchievementList();
   const panel = h('section', { class: 'panel' });
   const lists = {
@@ -289,76 +284,10 @@ export async function startApp(root: HTMLElement): Promise<void> {
     if (!shown) toast(T.inbox.empty);
   }
 
-  function openSettings(): void {
-    let armed = false;
-    const toggle = (label: string, key: 'sound' | 'vibration' | 'tips') => {
-      const b = h('button', { class: 'toggle', text: label, testId: `toggle-${key}`, attrs: { 'aria-pressed': String(state.settings[key]) } });
-      b.addEventListener('click', () => {
-        state = setSettings(state, { [key]: !state.settings[key] });
-        b.setAttribute('aria-pressed', String(state.settings[key]));
-        syncFeedbackSettings();
-        persist();
-        render();
-      });
-      return b;
-    };
-    // Notifications: off by default, only in the app. Turning one on asks the OS for permission first.
-    const notifyToggle = (label: string, key: 'notifyOfflineCap' | 'notifySeason') => {
-      const b = h('button', { class: 'toggle', text: label, testId: key, attrs: { 'aria-pressed': String(state.settings[key]) } });
-      b.addEventListener('click', () => {
-        const on = !state.settings[key];
-        void (on ? requestNotifyPermission() : Promise.resolve(true)).then((allowed) => {
-          if (on && !allowed) {
-            toast(T.settings.notifyDenied);
-            return;
-          }
-          state = setSettings(state, { [key]: on });
-          b.setAttribute('aria-pressed', String(on));
-          persist();
-        });
-      });
-      return b;
-    };
-    const notify = notificationsSupported()
-      ? [
-          notifyToggle(T.settings.notifyOfflineCap, 'notifyOfflineCap'),
-          notifyToggle(T.settings.notifySeason, 'notifySeason'),
-          h('p', { class: 'muted', text: T.settings.notifyNote }),
-        ]
-      : [];
-    const slider = h('input', {
-      testId: 'volume',
-      attrs: { type: 'range', min: '0', max: '100', step: '5', value: String(Math.round(state.settings.volume * 100)), 'aria-label': T.settings.volume, style: 'width:100%' },
-    });
-    slider.addEventListener('input', () => {
-      state = setSettings(state, { volume: Number(slider.value) / 100 });
-      syncFeedbackSettings();
-    });
-    slider.addEventListener('change', () => {
-      sfx.buy();
-      persist();
-    });
-    const volume = h('label', { class: 'muted', text: T.settings.volume }, slider);
-    const stats = h('button', { class: 'btn wide', text: T.stats.open, testId: 'open-stats' });
-    stats.addEventListener('click', () => showStats(state));
-    const help = h('button', { class: 'btn wide', text: T.help.open, testId: 'open-help' });
-    help.addEventListener('click', showHelp);
-    const wipe = h('button', { class: 'btn danger wide', text: T.settings.wipe });
-    wipe.addEventListener('click', () => {
-      if (!armed) {
-        armed = true;
-        wipe.textContent = T.settings.wipeConfirm;
-        return;
-      }
-      wiping = true;
-      void wipeGame().then(() => location.reload());
-    });
-    showDialog(
-      T.settings.title,
-      [toggle(T.settings.sound, 'sound'), volume, toggle(T.settings.vibration, 'vibration'), toggle(T.settings.tips, 'tips'), ...notify, help, stats, wipe, h('p', { class: 'muted', text: T.settings.about })],
-      [{ label: T.settings.close, primary: true }],
-      'settings-dialog',
-    );
+  function applySettings(patch: Partial<Settings>, save: boolean): void {
+    state = setSettings(state, patch);
+    syncFeedbackSettings();
+    if (save) (persist(), render());
   }
 
   function showWelcome(earned: GameState['kp'], awayMs: number, creditedMs: number): void {
@@ -439,10 +368,6 @@ export async function startApp(root: HTMLElement): Promise<void> {
     persist();
   }
 
-  function prestigeUnlocked(): boolean {
-    return state.prestiges > 0 || state.runEarned.gte(runKpForMerits(1).mul(0.25));
-  }
-
   function renderSeason(): void {
     state = setCalendar(state, today());
     const season = activeSeason(state);
@@ -475,19 +400,12 @@ export async function startApp(root: HTMLElement): Promise<void> {
     }
     lastCustomers = signed;
 
-    const counts: Record<string, number> = {};
-    const shares: Record<string, number> = {};
-    const total = kpPerSecond(state);
-    for (const a of AUTOMATIONS) {
-      counts[a.id] = level(state.automations, a.id);
-      shares[a.id] = total.gt(0) ? automationKps(state, a).div(total).toNumber() : 0;
-    }
-    const tierUp = net.update(counts, shares, total.toNumber());
+    const tierUp = net.update(networkFlow(state));
     if (tierUp !== null) toast(T.hubTierUp(T.hubTiers[tierUp]!), 'good');
     renderEvent();
     renderTips();
 
-    const showPrestige = prestigeUnlocked();
+    const showPrestige = prestigeUnlocked(state);
     tabButtons.prestige.hidden = !showPrestige;
     if (!showPrestige && tab === 'prestige') tab = 'automations';
     tabButtons.achievements.hidden = state.achievements.length === 0;
@@ -531,60 +449,19 @@ export async function startApp(root: HTMLElement): Promise<void> {
   }
 
   // ---------- Events ----------
-  // Hold to sync: the first click is immediate, then it repeats at about 8/s while held, so
-  // nobody has to tap fast (accessibility). Keyboard auto-repeat is ignored for the same cap.
-  let holdTimer: ReturnType<typeof setInterval> | null = null;
-  let holdX = 0;
-  let holdY = 0;
-  function startHold(x: number, y: number): void {
-    stopHold();
-    holdX = x;
-    holdY = y;
-    doClick(x, y);
-    holdTimer = setInterval(() => doClick(holdX, holdY), HOLD_REPEAT_MS);
-  }
-  function stopHold(): void {
-    if (holdTimer !== null) clearInterval(holdTimer);
-    holdTimer = null;
-  }
-  hub.addEventListener('pointerdown', (e) => {
-    e.preventDefault();
-    if (!e.isPrimary) return;
-    startHold(e.clientX, e.clientY);
-  });
-  hub.addEventListener('pointermove', (e) => {
-    holdX = e.clientX;
-    holdY = e.clientY;
-  });
-  for (const type of ['pointerup', 'pointercancel', 'pointerleave', 'blur'] as const) hub.addEventListener(type, stopHold);
-  hub.addEventListener('contextmenu', (e) => e.preventDefault());
-  hub.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      if (e.repeat) return;
-      const r = hub.getBoundingClientRect();
-      startHold(r.left + r.width / 2, r.top);
-    }
-  });
-  hub.addEventListener('keyup', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') stopHold();
-  });
+  const stopHold = bindHold(hub, doClick, HOLD_REPEAT_MS);
   hub.addEventListener('animationend', () => hub.classList.remove('pop'));
-  settingsBtn.addEventListener('click', openSettings);
+  settingsBtn.addEventListener('click', () =>
+    openSettings({ state: () => state, apply: applySettings, wipe: () => ((wiping = true), void wipeGame().then(() => location.reload())) }),
+  );
   inboxBtn.addEventListener('click', openInbox);
-  for (const [k, b] of Object.entries(tabButtons)) {
-    b.addEventListener('click', () => {
-      tab = k as Tab;
-      render();
-    });
-  }
+  for (const t of TABS) tabButtons[t].addEventListener('click', () => ((tab = t), render()));
   prestigeBtn.addEventListener('click', doPrestige);
   customersEl.addEventListener('click', () => showCustomers(state));
   customersEl.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      showCustomers(state);
-    }
+    if (!isActivateKey(e)) return;
+    e.preventDefault();
+    showCustomers(state);
   });
 
   // Back: close the top dialog, otherwise save and minimize (never quit, so nothing is lost).
@@ -592,17 +469,13 @@ export async function startApp(root: HTMLElement): Promise<void> {
     if (closeTopDialog()) return;
     if (!Capacitor.isNativePlatform()) return;
     persist();
-    void App.minimizeApp().catch(() => {
-      /* not supported: ignore */
-    });
+    void App.minimizeApp().catch(() => undefined); // not supported: ignore
   }
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') handleBack();
   });
   if (Capacitor.isNativePlatform()) {
-    void App.addListener('backButton', handleBack).catch(() => {
-      /* plugin missing: keep default behaviour */
-    });
+    void App.addListener('backButton', handleBack).catch(() => undefined); // plugin missing: keep default
   }
 
   /** The player leaves (app hidden or page closed): save and plan opt-in notifications. */
