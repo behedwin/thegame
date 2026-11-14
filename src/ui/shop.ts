@@ -48,6 +48,8 @@ export class ShopList {
   private signature = '';
   /** Bulk mode for automations and upgrades (×1 / ×10 / MAX). */
   bulk: BulkMode = 1;
+  /** Display names per id, used for the buy buttons' screen reader labels. */
+  private readonly names = new Map<string, string>();
 
   constructor(
     readonly host: HTMLElement,
@@ -64,6 +66,7 @@ export class ShopList {
 
   private build(s: GameState, ids: string[], teaser: boolean): void {
     this.host.replaceChildren();
+    const names = this.names;
     this.cards = ids.map((id) => {
       const def =
         this.kind === 'automations'
@@ -72,6 +75,7 @@ export class ShopList {
             ? UPGRADES.find((u) => u.id === id)!
             : MERITS.find((m) => m.id === id)!;
       const lvl = h('span', { class: 'card-level' });
+      names.set(id, def.name);
       const sub = h('div', { class: 'card-sub' });
       const btn = h('button', { class: 'buy', testId: `buy-${id}` });
       const bar = this.kind === 'automations' ? h('div', { class: 'bar-fill' }) : null;
@@ -149,7 +153,10 @@ export class ShopList {
   }
 
   private setButton(c: Card, label: string, enabled: boolean, maxed = false): void {
-    if (c.btn.textContent !== label) c.btn.textContent = label;
+    if (c.btn.textContent !== label) {
+      c.btn.textContent = label;
+      c.btn.setAttribute('aria-label', T.a11y.buyAria(this.names.get(c.id) ?? c.id, label));
+    }
     c.btn.disabled = !enabled;
     c.root.classList.toggle('affordable', enabled);
     c.root.classList.toggle('maxed', maxed);
