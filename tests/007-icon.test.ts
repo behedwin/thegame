@@ -17,7 +17,7 @@ function assertWellFormedXml(xml: string, file: string) {
   const body = xml.replace(/<\?xml[^>]*\?>/, '').replace(/<!--[\s\S]*?-->/g, '');
   const stack: string[] = [];
   for (const m of body.matchAll(/<(\/?)([A-Za-z][\w:.-]*)[^>]*?(\/?)>/g)) {
-    const [, closing, name, selfClosing] = m;
+    const [, closing, name = '', selfClosing] = m;
     if (selfClosing) continue;
     if (closing) expect(stack.pop(), `${file}: unexpected </${name}>`).toBe(name);
     else stack.push(name);
@@ -110,12 +110,12 @@ describe('007 Android icon and splash', () => {
     expect(xml).not.toContain('M66.94,46.02'); // template robot head
     // All absolute coordinates lie inside the 66 dp safe zone (radius 33 around 54,54).
     for (const m of xml.matchAll(/android:pathData="([^"]+)"/g)) {
-      for (const n of m[1].match(/-?\d+(\.\d+)?/g)!.map(Number)) {
+      for (const n of (m[1] ?? '').match(/-?\d+(\.\d+)?/g)!.map(Number)) {
         expect(n).toBeGreaterThanOrEqual(0);
         expect(n).toBeLessThanOrEqual(108);
       }
     }
-    const pts = [...xml.matchAll(/[ML]([\d.]+),([\d.]+)/g)].map((m) => [Number(m[1]), Number(m[2])]);
+    const pts = [...xml.matchAll(/[ML]([\d.]+),([\d.]+)/g)].map((m): [number, number] => [Number(m[1]), Number(m[2])]);
     expect(pts.length).toBeGreaterThan(0);
     for (const [x, y] of pts) expect(Math.hypot(x - 54, y - 54)).toBeLessThanOrEqual(33.5);
   });
