@@ -54,6 +54,9 @@ jobs:
 
   update-behind:
     # After main moves, bring open automerge PRs up to date so strict checks can pass.
+    # "Behind" is computed with the compare API against the pushed main commit, NOT with
+    # mergeStateStatus: right after a merge GitHub still reports UNKNOWN for the other PRs, so
+    # filtering on BEHIND skipped them and they sat green-but-behind until the next push to main.
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
@@ -61,10 +64,17 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.AUTOMERGE_TOKEN || github.token }}
           REPO: ${{ github.repository }}
+          MAIN_SHA: ${{ github.sha }}
         run: |
-          gh pr list -R "$REPO" --label automerge --state open --json number,mergeStateStatus \
-            --jq '.[] | select(.mergeStateStatus == "BEHIND") | .number' |
-          while read -r n; do
+          gh pr list -R "$REPO" --label automerge --state open --json number,headRefOid,labels \
+            --jq '.[] | select([.labels[].name] | index("conflict") or index("blocked") | not) | "\(.number) \(.headRefOid)"' |
+          while read -r n head; do
+            behind="$(gh api "repos/$REPO/compare/$MAIN_SHA...$head" --jq '.behind_by')"
+            if [ "$behind" = "0" ]; then
+              echo "PR #$n is up to date with main"
+              continue
+            fi
+            echo "PR #$n is $behind commit(s) behind main; updating"
             if ! gh pr update-branch -R "$REPO" "$n"; then
               echo "PR #$n could not be updated automatically; labelling as conflict"
               gh pr edit -R "$REPO" "$n" --add-label conflict || true
