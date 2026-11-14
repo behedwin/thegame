@@ -10,7 +10,7 @@ function played(): GameState {
   s = buy(s, 'csv');
   s = { ...s, merits: new Decimal('1.5e300').mul('1e300'), meritUpgrades: { summer: 1 } };
   s = spawnEvent(s, EVENTS[0]!);
-  return { ...s, settings: { sound: false, vibration: true, volume: 0.4 } };
+  return { ...s, settings: { sound: false, vibration: true, volume: 0.4, notifyOfflineCap: true, notifySeason: false } };
 }
 
 describe('serialize/deserialize', () => {

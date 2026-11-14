@@ -21,6 +21,10 @@ export interface Settings {
   vibration: boolean;
   /** Master volume, 0-1. */
   volume: number;
+  /** Local notification when offline earnings hit the cap. Off by default; the player opts in. */
+  notifyOfflineCap: boolean;
+  /** Local notification when a new season starts. Off by default; the player opts in. */
+  notifySeason: boolean;
 }
 
 export const DEFAULT_VOLUME = 0.7;
@@ -82,7 +86,7 @@ export function createInitialState(nowMs: number): GameState {
     buffs: [],
     eventsClaimed: 0,
     achievements: [],
-    settings: { sound: true, vibration: true, volume: DEFAULT_VOLUME },
+    settings: { sound: true, vibration: true, volume: DEFAULT_VOLUME, notifyOfflineCap: false, notifySeason: false },
   };
 }
 

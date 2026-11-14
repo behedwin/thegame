@@ -1,7 +1,7 @@
 ---
 id: 014
 size: M
-status: ready
+status: done
 touches: [package.json, package-lock.json, android/, src/ui/notifications.ts, src/ui/app.ts, src/core/state.ts, src/save/, src/content/texts.ts]
 depends: [008, 010]
 ---

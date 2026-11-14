@@ -87,8 +87,17 @@ export const T = {
     vibration: 'Vibration',
     wipe: 'Radera all spelhistorik',
     wipeConfirm: 'Tryck igen för att radera. Går inte att ångra.',
+    notifyOfflineCap: 'Notis när systemen har jobbat klart offline',
+    notifySeason: 'Notis när en ny säsong börjar',
+    notifyNote: 'Notiserna är av från början och skapas bara på din enhet.',
+    notifyDenied: 'Notiser är avstängda för appen i telefonens inställningar.',
     about: 'Gratis. Inga annonser, inga köp och ingen datainsamling. Allt sparas bara på din enhet.',
     close: 'Stäng',
+  },
+  notify: {
+    offlineTitle: 'Systemen har jobbat klart',
+    offlineBody: (cap: string) => `Integrationerna har synkat i ${cap} och tar en paus tills du tittar in.`,
+    seasonTitle: (name: string) => `${name} har börjat`,
   },
   stats: {
     title: 'Statistik',

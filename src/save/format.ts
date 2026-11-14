@@ -1,7 +1,7 @@
 // Versioned save format. Pure functions: no storage access here.
 import { createInitialState, Decimal, DEFAULT_VOLUME, type GameState } from '../core/state';
 
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 
 /** Raw JSON shape. Unknown on purpose: anything may come out of storage. */
 export type RawSave = { version: number; [key: string]: unknown };
@@ -16,6 +16,8 @@ export const MIGRATIONS: Record<number, Migration> = {
   1: (s) => ({ ...s, version: 2, achievements: [] }),
   // v3 (task 011): master volume in settings.
   2: (s) => ({ ...s, version: 3, settings: { ...obj(s.settings), volume: DEFAULT_VOLUME } }),
+  // v4 (task 014): opt-in local notifications, off for everyone who already plays.
+  3: (s) => ({ ...s, version: 4, settings: { ...obj(s.settings), notifyOfflineCap: false, notifySeason: false } }),
 };
 
 export class SaveError extends Error {}
@@ -141,6 +143,8 @@ export function deserialize(text: string, nowMs: number): GameState {
       sound: typeof settings.sound === 'boolean' ? settings.sound : d.settings.sound,
       vibration: typeof settings.vibration === 'boolean' ? settings.vibration : d.settings.vibration,
       volume: Math.min(1, Math.max(0, num(settings.volume, d.settings.volume))),
+      notifyOfflineCap: settings.notifyOfflineCap === true,
+      notifySeason: settings.notifySeason === true,
     },
   };
 }

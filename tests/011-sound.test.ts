@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createInitialState, setSettings } from '../src/core';
-import { deserialize, migrate, SAVE_VERSION, serialize } from '../src/save/format';
+import { deserialize, migrate, MIGRATIONS, SAVE_VERSION, serialize } from '../src/save/format';
 import { masterGain, BACKGROUND_DUCK, sfx } from '../src/ui/feedback';
 import { T } from '../src/content/texts';
 
@@ -17,15 +17,15 @@ describe('011 sound polish: volume setting', () => {
   });
 
   it('bumps the save version and migrates v2 saves to the default volume', () => {
-    expect(SAVE_VERSION).toBe(3);
+    expect(SAVE_VERSION).toBeGreaterThanOrEqual(3);
     const d = createInitialState(0).settings.volume;
-    expect(migrate({ version: 2, settings: { sound: false, vibration: true } })).toEqual({
+    expect(migrate({ version: 2, settings: { sound: false, vibration: true } }, MIGRATIONS, 3)).toEqual({
       version: 3,
       settings: { sound: false, vibration: true, volume: d },
     });
-    expect(migrate({ version: 2 })).toMatchObject({ version: 3, settings: { volume: d } });
+    expect(migrate({ version: 2 }, MIGRATIONS, 3)).toMatchObject({ version: 3, settings: { volume: d } });
     const old = deserialize(JSON.stringify({ version: 2, settings: { sound: false, vibration: false } }), 0);
-    expect(old.settings).toEqual({ sound: false, vibration: false, volume: d });
+    expect(old.settings).toMatchObject({ sound: false, vibration: false, volume: d });
   });
 
   it('v1 saves migrate all the way', () => {
