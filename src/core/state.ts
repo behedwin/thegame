@@ -21,6 +21,12 @@ export interface Settings {
   vibration: boolean;
 }
 
+/** Today's date (month 1-12, day 1-31), injected by the UI. Never read from a clock in core. */
+export interface CalendarDay {
+  month: number;
+  day: number;
+}
+
 export interface GameState {
   kp: Decimal;
   /** KP earned during the current school year (prestige run). */
@@ -46,6 +52,11 @@ export interface GameState {
   /** Unlocked achievement ids, in unlock order. Kept across school years. */
   achievements: string[];
   settings: Settings;
+  /**
+   * Today's calendar day, injected by the UI via setCalendar(). Drives seasons. Not saved: it is
+   * re-injected on every start. Absent/null (sim, tests) means no season is active.
+   */
+  calendar?: CalendarDay | null;
 }
 
 export function createInitialState(nowMs: number): GameState {

@@ -7,6 +7,7 @@ import { AUTOMATIONS, CUSTOMERS, systemName } from '../content/registry';
 import { T } from '../content/texts';
 import {
   activeBuffs,
+  activeSeason,
   applyOffline,
   automationKps,
   buy,
@@ -27,6 +28,7 @@ import {
   prestige,
   rollEvent,
   runKpForMerits,
+  setCalendar,
   setSettings,
   spawnEvent,
   tick,
@@ -48,12 +50,18 @@ const GEAR =
 const SYNC =
   '<svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true"><path fill="currentColor" d="M12 4V1L8 5l4 4V6a6 6 0 0 1 5.7 7.9l1.5 1.5A8 8 0 0 0 12 4zm0 14a6 6 0 0 1-5.7-7.9L4.8 8.6A8 8 0 0 0 12 20v3l4-4-4-4z"/></svg>';
 
+/** Today's local calendar day, injected into the pure core for seasons. */
+function today(): { month: number; day: number } {
+  const d = new Date();
+  return { month: d.getMonth() + 1, day: d.getDate() };
+}
+
 type Tab = 'automations' | 'upgrades' | 'prestige' | 'achievements';
 const AUTOSAVE_MS = 10_000;
 
 export async function startApp(root: HTMLElement): Promise<void> {
   const loaded = await loadGame(Date.now());
-  let state: GameState = loaded.state ?? createInitialState(Date.now());
+  let state: GameState = setCalendar(loaded.state ?? createInitialState(Date.now()), today());
   let wiping = false;
   let tab: Tab = 'automations';
   let bulk: BulkMode = 1;
@@ -63,6 +71,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
   const kpsEl = h('span', { testId: 'kps' });
   const kpcEl = h('span', {});
   const buffEl = h('div', { class: 'buff', attrs: { hidden: '' } });
+  const seasonEl = h('div', { class: 'buff season', testId: 'season', attrs: { hidden: '', role: 'status', 'aria-label': T.season.aria } });
   const settingsBtn = h('button', { class: 'icon-btn', testId: 'settings', attrs: { 'aria-label': T.settings.title } });
   settingsBtn.innerHTML = GEAR;
 
@@ -133,6 +142,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
         h('div', { class: 'kp' }, kpEl, h('span', { class: 'unit', text: ` ${T.currency}` })),
         h('div', { class: 'rates' }, kpsEl, h('span', { class: 'dot', text: '·' }), kpcEl),
         buffEl,
+        seasonEl,
       ),
       hero,
       customersEl,
@@ -332,7 +342,18 @@ export async function startApp(root: HTMLElement): Promise<void> {
     return state.prestiges > 0 || state.runEarned.gte(runKpForMerits(1).mul(0.25));
   }
 
+  function renderSeason(): void {
+    state = setCalendar(state, today());
+    const season = activeSeason(state);
+    if (season) {
+      seasonEl.textContent = T.season.banner(season);
+      seasonEl.dataset.season = season.id;
+    }
+    seasonEl.hidden = !season;
+  }
+
   function render(): void {
+    renderSeason();
     renderTop();
     const buffs = activeBuffs(state);
     if (buffs.length) {
