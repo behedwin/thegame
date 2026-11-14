@@ -1,30 +1,20 @@
 // Pure formulas: production, costs, prestige. No side effects.
 import { BALANCE } from '../content/balance';
-import { ACHIEVEMENTS, AUTOMATIONS, MERITS, UPGRADES, type AutomationDef, type UpgradeDef } from '../content/registry';
-import type { MeritDef } from '../content/types';
+import { ACHIEVEMENTS, AUTOMATIONS, byId, MERITS, UPGRADES, type AutomationDef, type MeritDef } from '../content/registry';
 import { customerClickMult, customerProdMult, signedCustomers } from './customers';
 import { seasonClickMult, seasonProdMult } from './seasons';
 import { Decimal, level, type GameState } from './state';
 
 export { customerClickMult, customerProdMult, nextCustomer, signedCustomers } from './customers';
 
-const upgradeById = new Map(UPGRADES.map((u) => [u.id, u]));
-const automationById = new Map(AUTOMATIONS.map((a) => [a.id, a]));
-const meritById = new Map(MERITS.map((m) => [m.id, m]));
 const achievementIds = new Set(ACHIEVEMENTS.map((a) => a.id));
 
 /** Production bonus per unlocked achievement, in percent. */
 export const ACHIEVEMENT_PROD_PCT = 1;
 
-export function getUpgrade(id: string): UpgradeDef | undefined {
-  return upgradeById.get(id);
-}
-export function getAutomation(id: string): AutomationDef | undefined {
-  return automationById.get(id);
-}
-export function getMerit(id: string): MeritDef | undefined {
-  return meritById.get(id);
-}
+export const getUpgrade = byId(UPGRADES);
+export const getAutomation = byId(AUTOMATIONS);
+export const getMerit = byId(MERITS);
 
 /** Number of milestone doublings reached for an owned count. */
 export function milestonesReached(count: number): number {
@@ -168,23 +158,23 @@ export function kpPerClick(state: GameState): Decimal {
 
 /** Cost of the next level/unit of an upgrade or automation. */
 export function costOf(state: GameState, id: string): Decimal {
-  const auto = automationById.get(id);
+  const auto = getAutomation(id);
   if (auto) {
     const owned = level(state.automations, id);
     return new Decimal(automationBaseCost(state, auto)).mul(Decimal.pow(BALANCE.automationCostGrowth, owned)).ceil();
   }
-  const up = upgradeById.get(id);
+  const up = getUpgrade(id);
   if (up) return new Decimal(up.baseCost).mul(Decimal.pow(up.costGrowth, level(state.upgrades, id))).ceil();
   throw new Error(`Unknown item: ${id}`);
 }
 
 export function isMaxed(state: GameState, id: string): boolean {
-  const up = upgradeById.get(id);
+  const up = getUpgrade(id);
   return up !== undefined && level(state.upgrades, id) >= up.maxLevel;
 }
 
 export function canBuy(state: GameState, id: string): boolean {
-  if (!automationById.has(id) && !upgradeById.has(id)) return false;
+  if (!getAutomation(id) && !getUpgrade(id)) return false;
   if (isMaxed(state, id)) return false;
   return state.kp.gte(costOf(state, id));
 }
@@ -197,13 +187,13 @@ export function isRevealed(state: GameState, id: string): boolean {
 }
 
 export function meritCost(state: GameState, id: string): Decimal {
-  const m = meritById.get(id);
+  const m = getMerit(id);
   if (!m) throw new Error(`Unknown merit: ${id}`);
   return new Decimal(m.baseCost).mul(Decimal.pow(m.costGrowth, level(state.meritUpgrades, id))).floor();
 }
 
 export function canBuyMerit(state: GameState, id: string): boolean {
-  const m = meritById.get(id);
+  const m = getMerit(id);
   if (!m || level(state.meritUpgrades, id) >= m.maxLevel) return false;
   return state.merits.gte(meritCost(state, id));
 }

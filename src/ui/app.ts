@@ -53,7 +53,7 @@ import { showStats } from './stats';
 import { NetworkView } from './network';
 import { cancelNotifications, notificationsSupported, requestNotifyPermission, scheduleNotifications } from './notifications';
 import { ShopList } from './shop';
-import { showTicket } from './inbox';
+import { renderInboxButton, showTicket } from './inbox';
 import { markTipSeen, nextTip, settleTips, TipBar } from './onboarding';
 
 const GEAR =
@@ -205,12 +205,13 @@ export async function startApp(root: HTMLElement): Promise<void> {
     const gained = kpPerClick(state);
     state = click(state);
     const rect = hero.getBoundingClientRect();
-    floatText(floatLayer, x - rect.left, y - rect.top, `+${fmt(gained)}`);
+    const [lx, ly] = [x - rect.left, y - rect.top];
+    floatText(floatLayer, lx, ly, `+${fmt(gained)}`);
     hub.classList.remove('pop');
     void hub.offsetWidth; // restart the CSS animation
     hub.classList.add('pop');
     ripple(hub, floatLayer);
-    burst(floatLayer, x - rect.left, y - rect.top);
+    burst(floatLayer, lx, ly);
     if (motionOk()) net.pulse();
     sfx.click();
     haptic('light');
@@ -444,18 +445,10 @@ export async function startApp(root: HTMLElement): Promise<void> {
     seasonEl.hidden = !season;
   }
 
-  function renderInbox(): void {
-    const n = state.inbox.length;
-    inboxBtn.hidden = n === 0 && state.ticketsAnswered === 0;
-    inboxBtn.textContent = T.inbox.label(n);
-    inboxBtn.setAttribute('aria-label', T.inbox.aria(n));
-    inboxBtn.classList.toggle('has', n > 0);
-  }
-
   function render(): void {
     renderSeason();
     renderTop();
-    renderInbox();
+    renderInboxButton(inboxBtn, state);
     const buffs = activeBuffs(state);
     if (buffs.length) {
       const b = buffs[0]!;

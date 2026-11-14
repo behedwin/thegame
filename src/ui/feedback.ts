@@ -1,6 +1,6 @@
 // Juice: synthesized sounds, haptics, floating numbers and toasts. No audio files, no network.
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
-import { trimLayer } from './fx';
+import { fxNode, trimLayer } from './fx';
 
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
@@ -105,16 +105,12 @@ export function haptic(strength: 'light' | 'medium' = 'light'): void {
 }
 
 /** Floating "+12" that rises from a point and fades. */
-export function floatText(layer: HTMLElement, x: number, y: number, text: string, big = false): void {
-  const span = document.createElement('span');
-  span.className = big ? 'float-num big' : 'float-num';
+export function floatText(layer: HTMLElement, x: number, y: number, text: string): void {
+  const span = fxNode(layer, 'float-num', x + (Math.random() * 40 - 20), y);
   span.textContent = text;
-  span.style.left = `${x + (Math.random() * 40 - 20)}px`;
-  span.style.top = `${y}px`;
   // A slightly random arc and size so repeated taps do not stack in a straight column.
   span.style.setProperty('--dx', `${(Math.random() * 60 - 30).toFixed(0)}px`);
   span.style.setProperty('--s', (0.9 + Math.random() * 0.3).toFixed(2));
-  layer.append(span);
   span.addEventListener('animationend', () => span.remove());
   trimLayer(layer); // keep the layer light even under heavy tapping
 }

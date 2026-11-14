@@ -1,6 +1,6 @@
 // Random events. Randomness is injected as rng(): number in [0, 1).
 import { BALANCE } from '../content/balance';
-import { EVENTS, type EventDef, type EventEffect } from '../content/registry';
+import { byId, EVENTS, type EventDef, type EventEffect } from '../content/registry';
 import { baseKps, eventCooldownMs } from './rules';
 import { Decimal, earn, type GameState } from './state';
 
@@ -18,11 +18,7 @@ export function mulberry32(seed: number): Rng {
   };
 }
 
-const eventById = new Map(EVENTS.map((e) => [e.id, e]));
-
-export function getEvent(id: string): EventDef | undefined {
-  return eventById.get(id);
-}
+export const getEvent = byId(EVENTS);
 
 /**
  * Roll for a new event. Meant to be called every BALANCE.events.rollIntervalMs of game time.

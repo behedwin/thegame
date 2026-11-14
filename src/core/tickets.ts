@@ -1,15 +1,11 @@
 // Inbox tickets: short support cases with 2-3 trade-off answers. Randomness is injected.
 // No dark patterns: tickets never expire, ignoring them costs nothing, and the inbox stops filling when full.
 import { BALANCE } from '../content/balance';
-import { TICKETS, type TicketChoice, type TicketDef } from '../content/registry';
+import { byId, TICKETS, type TicketChoice, type TicketDef } from '../content/registry';
 import { applyEffect, type Rng } from './events';
 import { Decimal, type GameState } from './state';
 
-const ticketById = new Map(TICKETS.map((t) => [t.id, t]));
-
-export function getTicket(id: string): TicketDef | undefined {
-  return ticketById.get(id);
-}
+export const getTicket = byId(TICKETS);
 
 /** Add one random ticket not already in the inbox, or null if the inbox is full or none is left. */
 function addTicket(inbox: readonly string[], rng: Rng): string[] | null {

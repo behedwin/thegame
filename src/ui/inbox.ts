@@ -20,3 +20,14 @@ export function showTicket(state: GameState, onAnswer: (ticketId: string, choice
   );
   return true;
 }
+
+/** The inbox button appears with the first ticket and then stays, so the header does not jump around. */
+export const inboxButtonVisible = (state: GameState): boolean => state.inbox.length > 0 || state.ticketsAnswered > 0;
+
+export function renderInboxButton(btn: HTMLElement, state: GameState): void {
+  const n = state.inbox.length;
+  btn.hidden = !inboxButtonVisible(state);
+  btn.textContent = T.inbox.label(n);
+  btn.setAttribute('aria-label', T.inbox.aria(n));
+  btn.classList.toggle('has', n > 0);
+}
