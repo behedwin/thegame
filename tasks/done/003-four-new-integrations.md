@@ -1,7 +1,7 @@
 ---
 id: 003
 size: M
-status: ready
+status: done
 touches: [src/content/automations/, src/content/systems/, src/ui/network.ts]
 depends: []
 ---
