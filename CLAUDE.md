@@ -10,6 +10,7 @@ Du är en autonom worker. Följ CLAUDE.md strikt, inklusive HÅRDA STOPP.
 
 1. `git fetch --prune`. Kör `scripts/stale-claims.sh --release` och frigör döda lås. Utan inloggad `gh` listas
    gamla grenar bara som "PR-status okänd" och raderas inte. Låt dem då vara.
+   **Lossa fastnade PR:er** innan du väljer uppgift (se "Fastnade PR:er" nedan).
 2. Välj den första uppgiften i tasks/ (`priority: high` före `normal`, sedan lägsta id) med status `ready`
    vars `depends` är klara och vars `touches` inte överlappar någon öppen `claude/task-*`-gren.
    `node scripts/next-task.mjs` gör urvalet, och första raden är valet.
@@ -25,8 +26,22 @@ Du är en autonom worker. Följ CLAUDE.md strikt, inklusive HÅRDA STOPP.
    meddelande innehåller `[ready]`. Då skapar `auto-pr.yml` PR:en: titeln tas från uppgiftsfilen,
    beskrivningen från journalfilen och etiketten blir `automerge` (S/M) eller `needs-review` (L).
    Gröna `automerge`-PR:er squash-mergas automatiskt.
+8. **Verifiera din PR.** Vänta tills PR:en finns (högst 10 min) och kontrollera att den har rätt etikett och
+   att auto-merge är på för `automerge`. Ligger den efter main: lossa den enligt nedan. Blir CI röd av din
+   ändring: rätta, kör grindarna och pusha igen med `[ready]` (räknas mot regeln om 3 fel). Skriv i
+   slutrapporten om PR:en är mergad, väntar på CI eller behöver ägaren.
 
 Gör högst en uppgift per körning.
+
+### Fastnade PR:er
+`automerge.yml` kör `scripts/unstick-prs.mjs` efter varje push till main, var 15:e minut och vid behov. Skriptet
+uppdaterar `automerge`-PR:er som ligger efter main, slår på auto-merge igen om den har slagits av och varnar för
+PR:er med röd CI. Workers och städaren gör samma kontroll som extra skydd:
+- Med inloggad `gh`: kör `node scripts/unstick-prs.mjs`.
+- Utan `gh` (molnet): gå igenom öppna PR:er med GitHub-verktygen. En `automerge`-PR utan `conflict`/`blocked`
+  som ligger efter main uppdateras: checka ut grenen, `git merge origin/main` och vanlig `git push` (aldrig
+  force på någon annans gren). Går mergen inte rent: `git merge --abort` och lämna den åt städaren.
+- Röd CI på någon annans PR rättas inte av en worker. Det sköter städaren och ägaren.
 
 ### Detaljer till protokollet
 - **`[ready]`** får bara stå i den sista commiten, när grindarna är gröna och journalen är skriven. Pushar
