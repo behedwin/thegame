@@ -64,7 +64,7 @@ describe('save v5: tips', () => {
   });
 
   it('migrates v4 saves: tips on, steps already done count as seen', () => {
-    expect(SAVE_VERSION).toBe(5);
+    expect(SAVE_VERSION).toBeGreaterThanOrEqual(5);
     const veteran = migrate({ version: 4, clicks: 12, automations: { csv: 2 }, eventsClaimed: 1, settings: { sound: true } }, MIGRATIONS, 5);
     expect(veteran.tipsSeen).toEqual(['sync', 'buy', 'event']);
     expect(veteran.settings).toEqual({ sound: true, tips: true });

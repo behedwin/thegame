@@ -1,6 +1,6 @@
 // Random events. Randomness is injected as rng(): number in [0, 1).
 import { BALANCE } from '../content/balance';
-import { EVENTS, type EventDef } from '../content/registry';
+import { EVENTS, type EventDef, type EventEffect } from '../content/registry';
 import { baseKps, eventCooldownMs } from './rules';
 import { Decimal, earn, type GameState } from './state';
 
@@ -58,21 +58,23 @@ export function claimEvent(state: GameState): ClaimResult {
   if (!active || !event || active.expiresAtMs <= state.timeMs) {
     return { state, event: null, granted: new Decimal(0) };
   }
-  let next: GameState = {
+  const next: GameState = {
     ...state,
     activeEvent: null,
     nextEventAtMs: state.timeMs + eventCooldownMs(state),
     eventsClaimed: state.eventsClaimed + 1,
   };
-  let granted = new Decimal(0);
-  const e = event.effect;
+  const r = applyEffect(next, event.id, event.effect);
+  return { state: r.state, event, granted: r.granted };
+}
+
+/** Apply an event/ticket effect: a lump of KP now, or a buff (replacing one from the same source). */
+export function applyEffect(state: GameState, source: string, e: EventEffect): { state: GameState; granted: Decimal } {
   if (e.kind === 'lump') {
-    granted = Decimal.max(baseKps(state).mul(e.seconds), e.minKp);
-    next = earn(next, granted);
-  } else {
-    const buffs = next.buffs.filter((b) => b.source !== event.id);
-    buffs.push({ source: event.id, kind: e.kind, mult: e.mult, untilMs: state.timeMs + e.durationMs });
-    next = { ...next, buffs };
+    const granted = Decimal.max(baseKps(state).mul(e.seconds), e.minKp);
+    return { state: earn(state, granted), granted };
   }
-  return { state: next, event, granted };
+  const buffs = state.buffs.filter((b) => b.source !== source);
+  buffs.push({ source, kind: e.kind, mult: e.mult, untilMs: state.timeMs + e.durationMs });
+  return { state: { ...state, buffs }, granted: new Decimal(0) };
 }

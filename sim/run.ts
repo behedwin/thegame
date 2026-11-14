@@ -8,6 +8,8 @@ const GATES = {
   maxNoAffordableGapSecFirstHour: 180,
   firstPrestigeMinSec: 30 * 60,
   firstPrestigeMaxSec: 90 * 60,
+  /** Task 021: never more than this with nothing to buy and no ticket to answer, over the whole run. */
+  maxIdleGapSec: 120,
 };
 
 function arg(name: string, fallback: number): number {
@@ -47,7 +49,12 @@ for (const r of results) {
     r.firstPrestigeSec > GATES.firstPrestigeMaxSec
   )
     f(`first prestige at ${r.firstPrestigeSec}s`);
+  if (r.maxIdleGapSec > GATES.maxIdleGapSec) f(`nothing to do for ${r.maxIdleGapSec}s`);
 }
+
+/** Picks per ticket choice over all seeds ("<ticket>#<choice>"). */
+const ticketChoices: Record<string, number> = {};
+for (const r of results) for (const [k, n] of Object.entries(r.ticketChoices)) ticketChoices[k] = (ticketChoices[k] ?? 0) + n;
 
 const report = {
   generatedBy: 'npm run sim',
@@ -74,10 +81,14 @@ const report = {
     purchases: stats(pick((r) => r.purchases)),
     eventsSpawned: stats(pick((r) => r.eventsSpawned)),
     eventsClaimed: stats(pick((r) => r.eventsClaimed)),
+    ticketsReceived: stats(pick((r) => r.ticketsReceived)),
+    ticketsAnswered: stats(pick((r) => r.ticketsAnswered)),
+    maxIdleGapSec: stats(pick((r) => r.maxIdleGapSec)),
     meritsEarned: stats(pick((r) => r.merits)),
     finalLog10TotalEarned: stats(pick((r) => r.finalLog10TotalEarned)),
     finalLog10Kps: stats(pick((r) => r.finalLog10Kps)),
   },
+  ticketChoices: Object.fromEntries(Object.entries(ticketChoices).sort(([a], [b]) => a.localeCompare(b))),
 };
 
 writeFileSync('sim-report.json', JSON.stringify(report, null, 2) + '\n');

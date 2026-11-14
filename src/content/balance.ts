@@ -13,7 +13,7 @@ export const BALANCE = {
   },
   prestige: {
     /** Meriter = floor((KP earned this school year / divisor) ^ exponent). */
-    divisor: 4e7,
+    divisor: 6e7,
     exponent: 0.5,
   },
   events: {
@@ -21,5 +21,14 @@ export const BALANCE = {
     chancePerRoll: 1 / 150,
     cooldownMs: 60_000,
     visibleMs: 15_000,
+  },
+  tickets: {
+    /** Inbox size. It stops filling when full; nothing expires. */
+    cap: 3,
+    /** Game time before the first ticket of a new game. */
+    firstAtMs: 120_000,
+    /** Mean game time between tickets, ± jitter (fraction). */
+    intervalMs: 180_000,
+    jitter: 0.25,
   },
 } as const;
