@@ -46,6 +46,7 @@ import { AchievementList } from './achievements';
 import { showCustomers } from './customers';
 import { showStats } from './stats';
 import { NetworkView } from './network';
+import { cancelNotifications, notificationsSupported, requestNotifyPermission, scheduleNotifications } from './notifications';
 import { ShopList } from './shop';
 
 const GEAR =
@@ -252,6 +253,30 @@ export async function startApp(root: HTMLElement): Promise<void> {
       });
       return b;
     };
+    // Notifications: off by default, only in the app. Turning one on asks the OS for permission first.
+    const notifyToggle = (label: string, key: 'notifyOfflineCap' | 'notifySeason') => {
+      const b = h('button', { class: 'toggle', text: label, testId: key, attrs: { 'aria-pressed': String(state.settings[key]) } });
+      b.addEventListener('click', () => {
+        const on = !state.settings[key];
+        void (on ? requestNotifyPermission() : Promise.resolve(true)).then((allowed) => {
+          if (on && !allowed) {
+            toast(T.settings.notifyDenied);
+            return;
+          }
+          state = setSettings(state, { [key]: on });
+          b.setAttribute('aria-pressed', String(on));
+          persist();
+        });
+      });
+      return b;
+    };
+    const notify = notificationsSupported()
+      ? [
+          notifyToggle(T.settings.notifyOfflineCap, 'notifyOfflineCap'),
+          notifyToggle(T.settings.notifySeason, 'notifySeason'),
+          h('p', { class: 'muted', text: T.settings.notifyNote }),
+        ]
+      : [];
     const slider = h('input', {
       testId: 'volume',
       attrs: { type: 'range', min: '0', max: '100', step: '5', value: String(Math.round(state.settings.volume * 100)), 'aria-label': T.settings.volume, style: 'width:100%' },
@@ -279,7 +304,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
     });
     showDialog(
       T.settings.title,
-      [toggle(T.settings.sound, 'sound'), volume, toggle(T.settings.vibration, 'vibration'), stats, wipe, h('p', { class: 'muted', text: T.settings.about })],
+      [toggle(T.settings.sound, 'sound'), volume, toggle(T.settings.vibration, 'vibration'), ...notify, stats, wipe, h('p', { class: 'muted', text: T.settings.about })],
       [{ label: T.settings.close, primary: true }],
       'settings-dialog',
     );
@@ -486,8 +511,12 @@ export async function startApp(root: HTMLElement): Promise<void> {
     setBackground(document.visibilityState === 'hidden');
     if (document.visibilityState === 'hidden') {
       state = touch(state, Date.now());
-      if (!wiping) void saveGame(state);
+      if (!wiping) {
+        void saveGame(state);
+        void scheduleNotifications(state, Date.now());
+      }
     } else {
+      void cancelNotifications();
       resume(Date.now());
       last = performance.now();
       render();
@@ -495,7 +524,10 @@ export async function startApp(root: HTMLElement): Promise<void> {
   });
   window.addEventListener('pagehide', () => {
     state = touch(state, Date.now());
-    if (!wiping) void saveGame(state);
+    if (!wiping) {
+      void saveGame(state);
+      void scheduleNotifications(state, Date.now());
+    }
   });
 
   // ---------- Loop ----------
@@ -530,6 +562,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
   }
 
   syncFeedbackSettings();
+  void cancelNotifications();
   if (loaded.error) toast(T.saveError);
   if (loaded.state) resume(Date.now());
   render();

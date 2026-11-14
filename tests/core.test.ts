@@ -186,7 +186,7 @@ describe('prestige', () => {
       totalEarned: runKpForMerits(10),
       automations: { csv: 40, api: 3 },
       upgrades: { coffee: 3 },
-      settings: { sound: false, vibration: true, volume: 0.7 },
+      settings: { sound: false, vibration: true, volume: 0.7, notifyOfflineCap: false, notifySeason: false },
     };
     s = prestige(s);
     expect(s.merits.toNumber()).toBe(4);
