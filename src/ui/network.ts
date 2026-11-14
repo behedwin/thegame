@@ -1,7 +1,7 @@
 // The hero visual: source systems on the left, your integration hub in the middle,
 // target systems on the right. Data packets flow along the lines.
-import { AUTOMATIONS } from '../content/automations';
-import { systemName } from '../content/names';
+import { AUTOMATIONS } from '../content/registry';
+import { systemName } from '../content/registry';
 
 const NS = 'http://www.w3.org/2000/svg';
 const W = 360;

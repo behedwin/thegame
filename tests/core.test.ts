@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { AUTOMATIONS } from '../src/content/automations';
+import { AUTOMATIONS } from '../src/content/registry';
 import { BALANCE } from '../src/content/balance';
-import { EVENTS } from '../src/content/events';
+import { EVENTS } from '../src/content/registry';
 import {
   applyOffline,
   automationKps,

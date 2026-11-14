@@ -1,0 +1,63 @@
+name: Automerge
+
+# PRs labelled "automerge" are squash-merged as soon as all required checks are green.
+# Uses GitHub's native auto-merge, so it needs branch protection with required checks
+# and "Allow auto-merge" in the repo settings (see README, "Parallella workers").
+#
+# Token: secrets.AUTOMERGE_TOKEN (fine-grained PAT) if set, otherwise GITHUB_TOKEN.
+# With GITHUB_TOKEN, merges and branch updates do NOT trigger new workflow runs
+# (no CI on updated branches, no APK/Pages build after merge). See README.
+
+on:
+  pull_request_target:
+    types: [labeled, unlabeled, opened, reopened, synchronize, ready_for_review]
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: automerge-${{ github.event.pull_request.number || 'main' }}
+  cancel-in-progress: false
+
+jobs:
+  enable:
+    # Never checks out PR code: safe under pull_request_target.
+    if: >-
+      github.event_name == 'pull_request_target' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enable or disable auto-merge (squash)
+        env:
+          GH_TOKEN: ${{ secrets.AUTOMERGE_TOKEN || github.token }}
+          PR: ${{ github.event.pull_request.html_url }}
+          WANTED: ${{ contains(github.event.pull_request.labels.*.name, 'automerge') && !contains(github.event.pull_request.labels.*.name, 'conflict') && !contains(github.event.pull_request.labels.*.name, 'blocked') }}
+        run: |
+          if [ "$WANTED" = "true" ]; then
+            gh pr merge --auto --squash "$PR"
+          else
+            gh pr merge --disable-auto "$PR" 2>/dev/null || true
+          fi
+
+  update-behind:
+    # After main moves, bring open automerge PRs up to date so strict checks can pass.
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update branches that are behind main
+        env:
+          GH_TOKEN: ${{ secrets.AUTOMERGE_TOKEN || github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh pr list -R "$REPO" --label automerge --state open --json number,mergeStateStatus \
+            --jq '.[] | select(.mergeStateStatus == "BEHIND") | .number' |
+          while read -r n; do
+            if ! gh pr update-branch -R "$REPO" "$n"; then
+              echo "PR #$n could not be updated automatically; labelling as conflict"
+              gh pr edit -R "$REPO" "$n" --add-label conflict || true
+            fi
+          done

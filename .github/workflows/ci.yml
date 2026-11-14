@@ -1,13 +1,22 @@
 name: CI
 
+# Runs on PRs (worker branches) and on main. Worker branches are not built on push,
+# only through their PR, to avoid duplicate runs.
 on:
   push:
+    branches: [main]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  # The job name "gates" is the required status check in branch protection (see README).
   gates:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -26,6 +35,8 @@ jobs:
         run: npm run sim
       - name: Gate 5 - size budget
         run: npm run size-check
+      - name: Gate 6 - task queue
+        run: npm run tasks:check
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
       - name: Gate 4 - e2e

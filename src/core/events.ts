@@ -1,6 +1,6 @@
 // Random events. Randomness is injected as rng(): number in [0, 1).
 import { BALANCE } from '../content/balance';
-import { EVENTS, type EventDef } from '../content/events';
+import { EVENTS, type EventDef } from '../content/registry';
 import { baseKps } from './rules';
 import { Decimal, type GameState } from './state';
 
