@@ -5,4 +5,5 @@ export default {
   name: 'Hela Mellansverige (nästan)',
   kind: 'kommun',
   atRunKp: 3_000_000_000,
+  effect: { kind: 'prodPct', pct: 50 },
 } satisfies CustomerDef;

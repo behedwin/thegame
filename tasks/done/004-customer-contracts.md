@@ -1,7 +1,7 @@
 ---
 id: 004
 size: M
-status: ready
+status: done
 touches: [src/content/customers/, src/content/types.ts, src/core/customers.ts, src/core/rules.ts, src/ui/customers.ts, src/ui/app.ts, src/content/texts.ts]
 depends: []
 ---

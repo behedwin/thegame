@@ -2,9 +2,11 @@
 import { AUTOMATIONS, type AutomationDef } from '../content/registry';
 import { BALANCE } from '../content/balance';
 import { MERITS, type MeritDef } from '../content/registry';
-import { CUSTOMERS } from '../content/registry';
 import { UPGRADES, type UpgradeDef } from '../content/registry';
+import { customerClickMult, customerProdMult, signedCustomers } from './customers';
 import { Decimal, level, type GameState } from './state';
+
+export { customerClickMult, customerProdMult, nextCustomer, signedCustomers } from './customers';
 
 const upgradeById = new Map(UPGRADES.map((u) => [u.id, u]));
 const automationById = new Map(AUTOMATIONS.map((a) => [a.id, a]));
@@ -70,7 +72,11 @@ export function meritProdMult(state: GameState): number {
 export function automationKps(state: GameState, def: AutomationDef): Decimal {
   const count = level(state.automations, def.id);
   if (count === 0) return new Decimal(0);
-  return new Decimal(def.kps).mul(count).mul(automationMult(state, def.id)).mul(meritProdMult(state));
+  return new Decimal(def.kps)
+    .mul(count)
+    .mul(automationMult(state, def.id))
+    .mul(meritProdMult(state))
+    .mul(customerProdMult(state));
 }
 
 /** KP per second excluding buffs (used for offline progress). */
@@ -98,6 +104,7 @@ export function kpPerClick(state: GameState): Decimal {
     else if (e.kind === 'clickKpsShare') kpsShare += e.share * lvl;
   }
   mult *= 1 + meritSum(state, 'clickPct') / 100;
+  mult *= customerClickMult(state);
   const base = new Decimal(add).mul(mult).add(kpPerSecond(state).mul(kpsShare));
   return base.mul(buffMult(state, 'clickMult'));
 }
@@ -162,7 +169,7 @@ export function offlineCapMs(state: GameState): number {
 
 /** Number of customers signed this school year (driven by KP earned this year). */
 export function customersSigned(state: GameState): number {
-  return CUSTOMERS.filter((c) => state.runEarned.gte(c.atRunKp)).length;
+  return signedCustomers(state).length;
 }
 
 export function activeBuffs(state: GameState): GameState['buffs'] {

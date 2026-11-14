@@ -73,6 +73,15 @@ export interface SystemDef {
   kind: string;
 }
 
+/**
+ * Contract bonus while the customer is signed (this school year).
+ * By convention: kommun -> prodPct (stable, additive), friskola -> clickPct, koncern -> prodMult.
+ */
+export type CustomerEffect =
+  | { kind: 'prodPct'; pct: number }
+  | { kind: 'clickPct'; pct: number }
+  | { kind: 'prodMult'; mult: number };
+
 /** An invented municipality or school operator. Never a real organisation. */
 export interface CustomerDef {
   id: string;
@@ -80,4 +89,5 @@ export interface CustomerDef {
   kind: 'kommun' | 'friskola' | 'koncern';
   /** Signed when KP earned this school year reaches this amount. Also the sort key. */
   atRunKp: number;
+  effect: CustomerEffect;
 }

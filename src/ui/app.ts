@@ -36,6 +36,7 @@ import { loadGame, saveGame, wipeGame } from '../save/storage';
 import { h, showDialog } from './dialogs';
 import { configureFeedback, floatText, haptic, sfx, toast } from './feedback';
 import { fmt, fmtDuration } from './format';
+import { showCustomers } from './customers';
 import { NetworkView } from './network';
 import { ShopList } from './shop';
 
@@ -76,7 +77,11 @@ export async function startApp(root: HTMLElement): Promise<void> {
     floatLayer,
     eventSlot,
   );
-  const customersEl = h('div', { class: 'customers', testId: 'customers' });
+  const customersEl = h('div', {
+    class: 'customers',
+    testId: 'customers',
+    attrs: { role: 'button', tabindex: '0', 'aria-label': T.customerList.open },
+  });
 
   const tabButtons = {
     automations: h('button', { class: 'tab', text: T.tabs.automations, testId: 'tab-automations' }),
@@ -386,6 +391,13 @@ export async function startApp(root: HTMLElement): Promise<void> {
     });
   }
   prestigeBtn.addEventListener('click', doPrestige);
+  customersEl.addEventListener('click', () => showCustomers(state));
+  customersEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      showCustomers(state);
+    }
+  });
 
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') {
