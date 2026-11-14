@@ -62,6 +62,14 @@ const report = {
     maxNoAffordableGapSecFirstHour: stats(pick((r) => r.maxNoAffordableGapSecFirstHour)),
     meanPurchaseIntervalSecFirst10Min: stats(pick((r) => r.meanPurchaseIntervalSecFirst10Min)),
     firstPrestigeMin: stats(pick((r) => (r.firstPrestigeSec === null ? null : r.firstPrestigeSec / 60))),
+    /** Minutes per school year (round k = time between prestige k-1 and k), seeds that reached it. */
+    roundMin: Object.fromEntries(
+      [2, 3, 4, 5].map((k) => [
+        `r${k}`,
+        stats(pick((r) => (r.prestigeAtSec.length >= k ? (r.prestigeAtSec[k - 1]! - r.prestigeAtSec[k - 2]!) / 60 : null))),
+      ]),
+    ),
+    reachedRound5: results.filter((r) => r.prestigeAtSec.length >= 5).length,
     prestigesIn3h: stats(pick((r) => r.prestiges)),
     purchases: stats(pick((r) => r.purchases)),
     eventsSpawned: stats(pick((r) => r.eventsSpawned)),

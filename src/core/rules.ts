@@ -1,6 +1,7 @@
 // Pure formulas: production, costs, prestige. No side effects.
 import { BALANCE } from '../content/balance';
 import { ACHIEVEMENTS, AUTOMATIONS, MERITS, UPGRADES, type AutomationDef, type UpgradeDef } from '../content/registry';
+import type { MeritDef } from '../content/types';
 import { customerClickMult, customerProdMult, signedCustomers } from './customers';
 import { seasonClickMult, seasonProdMult } from './seasons';
 import { Decimal, level, type GameState } from './state';
@@ -32,14 +33,46 @@ export function nextMilestone(count: number): number | null {
   return BALANCE.milestones.find((m) => count < m) ?? null;
 }
 
-function meritSum(state: GameState, kind: 'prodPct' | 'clickPct' | 'offlineHours'): number {
+type SummedMerit = Exclude<MeritDef['effect']['kind'], 'startAutomation'>;
+
+function meritSum(state: GameState, kind: SummedMerit): number {
   let sum = 0;
   for (const m of MERITS) {
     const e = m.effect;
     if (e.kind !== kind) continue;
-    sum += (e.kind === 'offlineHours' ? e.hours : e.pct) * level(state.meritUpgrades, m.id);
+    const amount = e.kind === 'offlineHours' ? e.hours : 'pct' in e ? e.pct : 0;
+    sum += amount * level(state.meritUpgrades, m.id);
   }
   return sum;
+}
+
+/** Max total event cooldown reduction from merits, in percent. */
+export const MAX_EVENT_COOLDOWN_CUT_PCT = 75;
+
+/** Price factor on automations from merits (multiplicative per level, in (0, 1]). */
+export function automationCostFactor(state: GameState): number {
+  let f = 1;
+  for (const m of MERITS) {
+    if (m.effect.kind !== 'autoDiscountPct') continue;
+    f *= Math.pow(1 - m.effect.pct / 100, level(state.meritUpgrades, m.id));
+  }
+  return f;
+}
+
+/** Base price of an automation's first unit after merit discounts. */
+export function automationBaseCost(state: GameState, def: AutomationDef): number {
+  return def.baseCost * automationCostFactor(state);
+}
+
+/** Time between a claimed/expired event and the next possible one. */
+export function eventCooldownMs(state: GameState): number {
+  const cut = Math.min(MAX_EVENT_COOLDOWN_CUT_PCT, meritSum(state, 'eventCooldownPct'));
+  return BALANCE.events.cooldownMs * (1 - cut / 100);
+}
+
+/** Share of base KP/s credited while away. */
+export function offlineEfficiency(state: GameState): number {
+  return BALANCE.offline.efficiency * (1 + meritSum(state, 'offlineEffPct') / 100);
 }
 
 function buffMult(state: GameState, kind: 'prodMult' | 'clickMult'): number {
@@ -121,7 +154,7 @@ export function costOf(state: GameState, id: string): Decimal {
   const auto = automationById.get(id);
   if (auto) {
     const owned = level(state.automations, id);
-    return new Decimal(auto.baseCost).mul(Decimal.pow(BALANCE.automationCostGrowth, owned)).ceil();
+    return new Decimal(automationBaseCost(state, auto)).mul(Decimal.pow(BALANCE.automationCostGrowth, owned)).ceil();
   }
   const up = upgradeById.get(id);
   if (up) return new Decimal(up.baseCost).mul(Decimal.pow(up.costGrowth, level(state.upgrades, id))).ceil();
@@ -168,6 +201,29 @@ export function pendingMerits(state: GameState): Decimal {
 export function runKpForMerits(merits: number): Decimal {
   const { divisor, exponent } = BALANCE.prestige;
   return new Decimal(merits).pow(1 / exponent).mul(divisor);
+}
+
+/**
+ * Preview for the prestige card: roughly how much faster production runs next school year, in percent,
+ * if all Meriter (owned + pending) go to production merits, cheapest first. 0 when nothing is pending.
+ */
+export function nextYearSpeedupPct(state: GameState): number {
+  const pending = pendingMerits(state);
+  if (pending.lt(1)) return 0;
+  const prod = MERITS.filter((m) => m.effect.kind === 'prodPct');
+  let sim: GameState = { ...state, merits: state.merits.add(pending), meritUpgrades: { ...state.meritUpgrades } };
+  for (let n = 0; n < 500; n++) {
+    const buyable = prod.filter((m) => canBuyMerit(sim, m.id));
+    if (buyable.length === 0) break;
+    buyable.sort((a, b) => meritCost(sim, a.id).cmp(meritCost(sim, b.id)));
+    const id = buyable[0]!.id;
+    sim = {
+      ...sim,
+      merits: sim.merits.sub(meritCost(sim, id)),
+      meritUpgrades: { ...sim.meritUpgrades, [id]: level(sim.meritUpgrades, id) + 1 },
+    };
+  }
+  return Math.max(0, Math.round((meritProdMult(sim) / meritProdMult(state) - 1) * 100));
 }
 
 export function offlineCapMs(state: GameState): number {

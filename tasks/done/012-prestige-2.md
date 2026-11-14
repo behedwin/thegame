@@ -1,7 +1,7 @@
 ---
 id: 012
 size: M
-status: ready
+status: done
 touches: [src/content/merits/, src/core/rules.ts, src/core/actions.ts, src/ui/app.ts, src/content/texts.ts, sim/]
 depends: [010]
 ---
