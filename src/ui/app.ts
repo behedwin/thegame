@@ -45,6 +45,7 @@ import { buyMany, BULK_MODES, resolveBulk, type BulkMode } from '../core/bulk';
 import { loadGame, saveGame, wipeGame } from '../save/storage';
 import { closeTopDialog, h, showDialog } from './dialogs';
 import { configureFeedback, floatText, haptic, setBackground, sfx, toast } from './feedback';
+import { burst, countUp, motionOk, ripple, shownValue } from './fx';
 import { fmt, fmtDuration } from './format';
 import { AchievementList } from './achievements';
 import { showCustomers } from './customers';
@@ -208,7 +209,9 @@ export async function startApp(root: HTMLElement): Promise<void> {
     hub.classList.remove('pop');
     void hub.offsetWidth; // restart the CSS animation
     hub.classList.add('pop');
-    net.pulse();
+    ripple(hub, floatLayer);
+    burst(floatLayer, x - rect.left, y - rect.top);
+    if (motionOk()) net.pulse();
     sfx.click();
     haptic('light');
     renderTop();
@@ -377,7 +380,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
   let lastCustomers = customersSigned(state);
 
   function renderTop(): void {
-    kpEl.textContent = fmt(state.kp);
+    countUp(kpEl, shownValue(kpEl) ?? state.kp, state.kp, 300);
     kpsEl.textContent = `${fmt(kpPerSecond(state))} ${T.perSecond}`;
     kpcEl.textContent = `${fmt(kpPerClick(state))} ${T.perClick}`;
   }
