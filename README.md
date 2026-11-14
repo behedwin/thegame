@@ -37,7 +37,8 @@ CI bygger en osignerad debug-APK vid varje push till `main` (Actions → "Androi
 ## Parallella workers: inställningar i GitHub (för ägaren)
 
 Flera autonoma workers kan arbeta samtidigt. Varje worker låser en uppgift genom att pusha grenen
-`claude/task-<id>` och öppnar sedan en PR. PR:er med etiketten `automerge` (storlek S/M) mergas automatiskt
+`claude/task-<id>`. När den pushar en commit med `[ready]` i meddelandet skapar `auto-pr.yml` PR:en (workers
+skapar inga PR:er själva). PR:er med etiketten `automerge` (storlek S/M) mergas automatiskt
 med squash när CI är grön. Storlek L, och allt med `conflict` eller `blocked`, mergar du själv.
 
 Slå på följande i repot på GitHub. Skärmnamnen gäller GitHub i november 2026.
@@ -70,15 +71,18 @@ Lägg **ingen** regel på `claude/task-*`. Workers måste kunna pusha med `--for
 och `stale-claims.sh --release` måste kunna radera döda lås.
 
 ### 3. Etiketter (Issues → Labels)
-Skapa `automerge`, `conflict` och `blocked`. Med `gh`:
+Skapa `automerge`, `needs-review`, `conflict` och `blocked`. Med `gh`:
 ```bash
 gh label create automerge --color 2DA44E --description "Squash-merge automatically when checks are green"
+gh label create needs-review --color FBCA04 --description "Size L: the owner reviews and merges"
 gh label create conflict  --color D93F0B --description "Rebase conflict outside the task's touches; owner resolves"
 gh label create blocked   --color B60205 --description "Task blocked (gate failed 3x or hard stop)"
 ```
 
 ### 4. Token (rekommenderas): `AUTOMERGE_TOKEN`
-Händelser som `GITHUB_TOKEN` orsakar startar inga nya workflows. Utan egen token gäller därför:
+Används av `auto-pr.yml` (skapar worker-PR:er) och `automerge.yml`. Händelser som `GITHUB_TOKEN` orsakar
+startar inga nya workflows. Utan egen token gäller därför:
+- PR:er som `auto-pr.yml` skapar får ingen CI och mergas aldrig.
 - CI körs inte på grenar som `automerge.yml` uppdaterar ("update branch").
 - APK- och Pages-bygget startar inte efter en auto-merge till `main`.
 

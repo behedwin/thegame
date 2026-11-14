@@ -1,5 +1,5 @@
 // Gate: validates tasks/ so parallel workers can rely on it. Exit 1 on any problem.
-import { loadTasks, SIZES } from './tasks-lib.mjs';
+import { KINDS, loadTasks, SIZES } from './tasks-lib.mjs';
 
 const tasks = loadTasks();
 const errors = [];
@@ -17,6 +17,7 @@ for (const t of [...tasks.queue, ...tasks.done, ...tasks.proposed]) {
   for (const key of ['id', 'size', 'status', 'touches', 'depends']) if (m[key] === undefined) err(t, `missing "${key}"`);
   if (!SIZES.includes(m.size)) err(t, `size must be one of ${SIZES.join('/')}`);
   if (!expected[t.location].includes(m.status)) err(t, `status "${m.status}" not allowed in ${t.location} (expected ${expected[t.location].join('/')})`);
+  if (m.kind !== undefined && !KINDS.includes(m.kind)) err(t, `kind must be one of ${KINDS.join('/')}`);
   if (!Array.isArray(m.touches)) err(t, 'touches must be a list');
   if (!Array.isArray(m.depends)) err(t, 'depends must be a list');
   if (t.location === 'proposed') {

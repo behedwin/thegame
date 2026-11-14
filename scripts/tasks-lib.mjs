@@ -5,6 +5,7 @@ import { join } from 'node:path';
 export const TASK_DIR = 'tasks';
 export const SIZES = ['S', 'M', 'L'];
 export const STATUSES = ['ready', 'blocked', 'done', 'proposed'];
+export const KINDS = ['feature', 'refactor'];
 
 /** Parse the minimal frontmatter we use: `key: value` and `key: [a, b]`. */
 export function parseFrontmatter(text) {
@@ -59,17 +60,21 @@ export function touchesOverlap(a = [], b = []) {
 }
 
 /**
- * Pick eligible tasks in queue order: status ready, all depends done, not claimed,
- * and touches not overlapping any claimed task.
+ * Pick eligible tasks in queue order: status ready, dependencies satisfied, not claimed,
+ * and touches not overlapping any claimed task. A dependency is satisfied when it is done;
+ * for refactor tasks (kind: refactor) a blocked dependency also counts, so one blocked
+ * feature does not stall the whole queue at the next refactor barrier.
  */
 export function eligibleTasks(tasks, claimedIds) {
   const doneIds = new Set(tasks.done.map((t) => t.meta?.id));
+  const blockedIds = new Set(tasks.queue.filter((t) => t.meta?.status === 'blocked').map((t) => t.meta.id));
+  const satisfied = (m, d) => doneIds.has(d) || (m.kind === 'refactor' && blockedIds.has(d));
   const byId = new Map(tasks.queue.map((t) => [t.meta?.id, t]));
   const claimedTouches = claimedIds.map((id) => byId.get(id)?.meta?.touches ?? ['*unknown*']);
   return tasks.queue.filter((t) => {
     const m = t.meta;
     if (!m || m.status !== 'ready' || claimedIds.includes(m.id)) return false;
-    if (!(m.depends ?? []).every((d) => doneIds.has(d))) return false;
+    if (!(m.depends ?? []).every((d) => satisfied(m, d))) return false;
     // A claimed task we cannot find (e.g. not on main) is treated as touching everything.
     if (claimedTouches.some((ct) => ct.includes('*unknown*'))) return false;
     return !claimedTouches.some((ct) => touchesOverlap(m.touches, ct));

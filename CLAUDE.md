@@ -15,33 +15,41 @@ Du är en autonom worker. Följ CLAUDE.md strikt, inklusive HÅRDA STOPP.
    misslyckas, välj nästa uppgift. Max 3 försök, annars avsluta.
 4. Implementera med tester först. Rör bara filer inom `touches`, utom tester och journal (se "Alltid
    tillåtet" nedan).
-5. Rebasa på origin/main, kör alla grindar (`npm run gates`) och pusha med `--force-with-lease`.
-6. Skapa en PR. Lägg etiketten `automerge` om size är S eller M.
-   Lös rebase-konflikter bara i egna filer. Annars: sätt etiketten `conflict`, ta bort låset och avsluta.
-7. Skriv `journal/<tid>-<id>.md`. Lägg högst 1 förslag i `tasks/proposed/`.
+5. Skriv `journal/<tid>-<id>.md` (den blir PR-beskrivningen). Lägg högst 1 förslag i `tasks/proposed/`.
+   Flytta uppgiftsfilen till `tasks/done/` med `status: done` och ta bort låsfilen `tasks/claims/<id>.md`.
+6. Rebasa på origin/main och kör alla grindar (`npm run gates`).
+   Lös rebase-konflikter bara i egna filer. Annars: avbryt rebasen och gå till "Konflikt" nedan.
+7. **Workern skapar inte PR:er själv.** Sista pushen (`git push --force-with-lease`) görs med en commit vars
+   meddelande innehåller `[ready]`. Då skapar `auto-pr.yml` PR:en: titeln tas från uppgiftsfilen,
+   beskrivningen från journalfilen och etiketten blir `automerge` (S/M) eller `needs-review` (L).
+   Gröna `automerge`-PR:er squash-mergas automatiskt.
 
 Gör högst en uppgift per körning.
 
 ### Detaljer till protokollet
+- **`[ready]`** får bara stå i den sista commiten, när grindarna är gröna och journalen är skriven. Pushar
+  utan `[ready]` skapar ingen PR. En ny push med `[ready]` uppdaterar en befintlig PR (idempotent).
 - **Låset** är den fjärrgren som `claim.sh` pushar (`claude/task-<id>`). Låsfilen
-  `tasks/claims/<id>.md` är bara en logg. Ta bort den i samma commit-serie som implementationen, så att PR:en
-  aldrig innehåller den (`npm run tasks:check` fallerar annars). Grenen tas bort automatiskt när PR:en
-  mergas, och då släpper låset.
-- **"Ta bort låset" vid konflikt** betyder att ta bort låsfilen från grenen och lämna PR:en öppen med
-  etiketten `conflict` åt ägaren. Grenen finns kvar och fortsätter att spärra överlappande `touches` tills
-  ägaren har löst konflikten. Det är avsiktligt.
+  `tasks/claims/<id>.md` är bara en logg och får aldrig följa med i `[ready]`-pushen (`npm run tasks:check`
+  fallerar annars). Grenen raderas automatiskt när PR:en mergas, och då släpper låset.
+- **Konflikt** (rebase-konflikt i filer utanför `touches`): `git rebase --abort`, ta bort låsfilen, skriv
+  journalen och pusha grenen med en commit som innehåller `[ready] [conflict]`. PR:en skapas då med etiketten
+  `conflict` (ingen auto-merge) åt ägaren, och grenen fortsätter att spärra överlappande `touches` tills ägaren
+  har löst konflikten. Avsluta sedan.
 - **Alltid tillåtet utöver `touches`:**
   - nya testfiler (`tests/<id>-*.test.ts`, `e2e/<id>-*.spec.ts`);
   - befintliga testfiler, men bara för att anpassa dem till ändrat beteende;
   - `journal/` och `decisions/`;
-  - den egna uppgiftsfilen (flytta den till `tasks/done/` med `status: done` i PR:en);
+  - den egna uppgiftsfilen (flytta den till `tasks/done/` med `status: done`);
   - högst en ny fil i `tasks/proposed/`.
-- **PR-beskrivning:** uppgifts-id och rubrik, vad som ändrats, grindresultat och (vid balansändring) sim-siffror
-  före och efter från `sim-report.json`.
-- **Storlek L** får aldrig `automerge`. Ägaren mergar.
-- **Grind fallerar 3 gånger på samma uppgift:** återställ ändringarna och sätt `status: blocked` med en sektion
-  `## Blockerad` (grind, felutdata och hypotes) i uppgiftsfilen. Skapa en PR med bara den ändringen och
-  journalen, med etiketten `blocked` (utan `automerge`). Detta ersätter BLOCKED.md.
+- **Journalen = PR-beskrivningen:** uppgifts-id och rubrik, vad som ändrats, grindresultat och (vid
+  balansändring) sim-siffror före och efter från `sim-report.json`.
+- **Storlek L** får `needs-review` i stället för `automerge`. Ägaren mergar.
+- **Grind fallerar 3 gånger på samma uppgift:** återställ ändringarna och låt uppgiftsfilen ligga kvar i
+  `tasks/` med `status: blocked` och en sektion `## Blockerad` (grind, felutdata och hypotes). Skriv
+  journalen och pusha med `[ready]`. `auto-pr.yml` sätter då etiketten `blocked` (ingen auto-merge). Detta
+  ersätter BLOCKED.md. Refaktoreringsuppgifter (`kind: refactor`) räknar blockerade beroenden som klara, så
+  kön stannar inte vid nästa spärr.
 - **HÅRT STOPP** under arbetet: gör samma sak som ovan, men skriv "HÅRT STOPP: <vad>" som orsak och stoppa.
 
 ## Regler
