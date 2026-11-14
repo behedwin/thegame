@@ -71,6 +71,8 @@ export interface SystemDef {
   name: string;
   /** What kind of system it pretends to be, so the joke works without knowing the original. */
   kind: string;
+  /** Optional parody marketing slogan (max 40 chars), shown when the system is tapped on the map. */
+  tagline?: string;
 }
 
 /**

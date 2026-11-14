@@ -2,7 +2,7 @@ import type { CustomerDef } from '../types';
 
 export default {
   id: 'storkopings-stad',
-  name: 'Storköpings stad',
+  name: 'Stackholms stad',
   kind: 'kommun',
   atRunKp: 2_000_000,
   effect: { kind: 'prodPct', pct: 3 },

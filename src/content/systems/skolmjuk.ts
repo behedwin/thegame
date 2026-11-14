@@ -4,4 +4,5 @@ export default {
   id: 'skolmjuk',
   name: 'Skolmjuk',
   kind: 'Skoladministration',
+  tagline: 'Administration är kärlek',
 } satisfies SystemDef;
