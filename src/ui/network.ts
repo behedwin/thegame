@@ -9,7 +9,25 @@ const H = 300;
 const HUB = { x: W / 2, y: H / 2 };
 const NODE_W = 98;
 const NODE_H = 34;
-const MAX_PACKETS = 48;
+export const MAX_PACKETS = 60;
+export const HUB_TIERS = 5;
+
+/** Visual hub tier 0..4 from total KP/s: one step per two decades from 10 KP/s. Pure looks, no bonus. */
+export function hubTier(kps: number): number {
+  return kps >= 10 ? Math.min(HUB_TIERS - 1, 1 + Math.floor(Math.log10(kps) / 2 - 0.5)) : 0;
+}
+
+/** Packets per second on a line from its share of KP/s: +1.1 per decade from 0.6, capped at 5; 0 if idle. */
+export function flowRate(share: number): number {
+  return share > 0 ? 0.6 + 1.1 * Math.max(0, 4 + Math.log10(Math.min(1, share))) : 0;
+}
+
+/** Live packets each line may have: one each, the rest shared by rate; the sum never exceeds the cap. */
+export function packetBudget(rates: readonly number[], cap: number): number[] {
+  const n = rates.filter((r) => r > 0).length;
+  const sum = rates.reduce((s, r) => s + Math.max(0, r), 0);
+  return rates.map((r) => (r > 0 && n <= cap ? 1 + Math.floor(((cap - n) * r) / sum) : 0));
+}
 /** The map never shows more rows than this; older integrations make room for new ones. */
 export const MAX_ROWS = 6;
 
@@ -52,8 +70,9 @@ interface Row {
   group: SVGGElement;
   lines: SVGPathElement;
   visible: boolean;
-  /** Packets per second currently emitted by this row. */
+  /** Packets per second currently emitted by this row, and how many may be live at once. */
   rate: number;
+  budget: number;
   acc: number;
   /** Cached path length (0 until first measured). */
   len: number;
@@ -94,6 +113,10 @@ export class NetworkView {
   private packetLayer: SVGGElement;
   private layoutKey = '';
   private booted = false;
+  private tier = -1;
+  private frameAcc = 0;
+  /** Queried once; with reduced motion no packets travel at all. */
+  private readonly calm = typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)') : null;
   private tip: SVGTextElement;
   private tipTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -103,8 +126,12 @@ export class NetworkView {
     const grad = el('radialGradient', { id: 'hubGlow' });
     grad.append(el('stop', { offset: '0%', 'stop-color': 'var(--accent)', 'stop-opacity': 0.45 }));
     grad.append(el('stop', { offset: '100%', 'stop-color': 'var(--accent)', 'stop-opacity': 0 }));
-    defs.append(grad);
-    this.svg.append(defs, el('circle', { cx: HUB.x, cy: HUB.y, r: 110, fill: 'url(#hubGlow)', class: 'hub-glow' }));
+    const dots = el('pattern', { id: 'netDots', width: 24, height: 24, patternUnits: 'userSpaceOnUse' });
+    dots.append(el('circle', { cx: 2, cy: 2, r: 0.9, style: 'fill: var(--muted)' }));
+    defs.append(grad, dots);
+    this.svg.append(defs, el('rect', { x: -24, y: -24, width: W + 48, height: H + 48, fill: 'url(#netDots)', class: 'net-bg' }),
+      el('circle', { cx: HUB.x, cy: HUB.y, r: 110, fill: 'url(#hubGlow)', class: 'hub-glow' }),
+      el('circle', { cx: HUB.x, cy: HUB.y, r: 68, class: 'hub-ring' }));
 
     const lineLayer = el('g', {});
     const nodeLayer = el('g', {});
@@ -128,7 +155,7 @@ export class NetworkView {
       group.append(node(4, a.from, 'src'), node(W - NODE_W - 4, a.to, 'dst'));
       outer.append(group);
       nodeLayer.append(outer);
-      this.rows.push({ id: a.id, y: H / 2, outer, group, lines, visible: false, rate: 0, acc: 0, len: 0 });
+      this.rows.push({ id: a.id, y: H / 2, outer, group, lines, visible: false, rate: 0, budget: 0, acc: 0, len: 0 });
     }
     this.layout(pickRows(this.rows.map(() => false), MAX_ROWS));
   }
@@ -175,17 +202,23 @@ export class NetworkView {
     if (visible && this.booted) for (const e of [row.group, row.lines]) flashClass(e, 'boot', 1000);
   }
 
-  /** Update which rows are visible and how busy they are. counts/kps per automation id. */
-  update(counts: Record<string, number>, kpsLog: Record<string, number>): void {
+  /** Update rows (counts and KP/s shares per automation id) and the hub tier; returns a tier gained in play. */
+  update(counts: Record<string, number>, shares: Record<string, number>, kps: number): number | null {
     const owned = this.rows.map((row) => (counts[row.id] ?? 0) > 0);
     this.layout(pickRows(owned, MAX_ROWS));
     this.rows.forEach((row, i) => {
       const busy = owned[i]! && row.visible;
       row.lines.classList.toggle('active', busy);
-      // 0.6 packets/s for a fresh integration, up to ~5/s for huge ones.
-      row.rate = busy ? Math.min(5, 0.6 + (kpsLog[row.id] ?? 0) * 0.45) : 0;
+      row.rate = busy ? Math.max(0.6, flowRate(shares[row.id] ?? 0)) : 0;
     });
+    const budget = packetBudget(this.rows.map((r) => r.rate), MAX_PACKETS - 8); // room for manual packets
+    this.rows.forEach((row, i) => { row.budget = budget[i]!; });
+    const tier = hubTier(kps);
+    const gained = this.booted && tier > this.tier ? tier : null;
+    this.tier = tier;
+    this.svg.dataset.tier = String(tier);
     this.booted = true;
+    return gained;
   }
 
   /** A manual sync: a bright packet travels along a random active line from its source into the hub. */
@@ -202,18 +235,22 @@ export class NetworkView {
     }
     const c = el('circle', { r: manual ? 5 : 3.2, class: manual ? 'packet manual' : 'packet' });
     this.packetLayer.append(c);
-    this.packets.push({ row, t: 0, speed: manual ? 1.2 : 0.35 + Math.random() * 0.15, el: c, manual });
+    const speed = manual ? 1.2 : 0.25 + row.rate * 0.05 + Math.random() * 0.1; // busy lines run faster
+    this.packets.push({ row, t: 0, speed, el: c, manual });
   }
 
   /** Advance animation by dt seconds. */
   frame(dt: number): void {
+    this.frameAcc += dt; // 30 fps is plenty; rAF already pauses while the app is hidden
+    if (this.frameAcc < 1 / 31) return;
+    dt = this.frameAcc;
+    this.frameAcc = 0;
     for (const row of this.rows) {
-      if (row.rate <= 0) continue;
-      row.acc += row.rate * dt;
-      while (row.acc >= 1) {
-        row.acc -= 1;
-        this.spawn(row, false);
-      }
+      if (row.rate <= 0 || this.calm?.matches) continue;
+      row.acc = Math.min(1, row.acc + row.rate * dt);
+      if (row.acc < 1) continue;
+      row.acc = 0;
+      if (this.packets.filter((p) => p.row === row && !p.manual).length < row.budget) this.spawn(row, false);
     }
     const keep: Packet[] = [];
     for (const p of this.packets) {

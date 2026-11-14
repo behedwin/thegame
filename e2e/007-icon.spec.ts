@@ -28,7 +28,7 @@ test('favicon, manifest and icons are served locally from the built app', async 
 
   const svg = await page.request.get(new URL(iconHref!, page.url()).href);
   expect(svg.status()).toBe(200);
-  await page.setContent(`<body style="margin:0;background:#888"><img src="${new URL(iconHref!, page.url()).href}" width="256" height="256"></body>`);
+  await page.setContent(`<link rel="icon" href="data:,"><body style="margin:0;background:#888"><img src="${new URL(iconHref!, page.url()).href}" width="256" height="256"></body>`);
   await page.waitForTimeout(200);
   await page.screenshot({ path: 'e2e-output/007-icon.png', clip: { x: 0, y: 0, width: 256, height: 256 } });
 
