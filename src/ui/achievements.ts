@@ -16,7 +16,7 @@ export class AchievementList {
     const unlocked = ACHIEVEMENTS.filter((a) => hasAchievement(state, a.id)).length;
     const cards = ACHIEVEMENTS.map((a) => {
       const done = hasAchievement(state, a.id);
-      const card = h(
+      return h(
         'div',
         { class: 'card', testId: `achievement-${a.id}`, attrs: { 'data-unlocked': String(done) } },
         h(
@@ -26,8 +26,6 @@ export class AchievementList {
           h('div', { class: 'card-desc', text: a.desc }),
         ),
       );
-      if (!done) card.style.opacity = '0.55';
-      return card;
     });
     this.host.replaceChildren(
       h('p', { class: 'muted', testId: 'achievement-summary', text: T.achievements.summary(unlocked, ACHIEVEMENTS.length, unlocked * ACHIEVEMENT_PROD_PCT) }),
