@@ -22,6 +22,9 @@ export function getUpgrade(id: string): UpgradeDef | undefined {
 export function getAutomation(id: string): AutomationDef | undefined {
   return automationById.get(id);
 }
+export function getMerit(id: string): MeritDef | undefined {
+  return meritById.get(id);
+}
 
 /** Number of milestone doublings reached for an owned count. */
 export function milestonesReached(count: number): number {
@@ -31,6 +34,20 @@ export function milestonesReached(count: number): number {
 /** Next milestone threshold above count, or null if all reached. */
 export function nextMilestone(count: number): number | null {
   return BALANCE.milestones.find((m) => count < m) ?? null;
+}
+
+/** Progress from the last reached milestone towards the next, 0–100 (100 when all are reached). */
+export function milestoneProgressPct(count: number): number {
+  const next = nextMilestone(count);
+  if (next === null) return 100;
+  const prev = BALANCE.milestones.filter((m) => m <= count).pop() ?? 0;
+  return ((count - prev) / (next - prev)) * 100;
+}
+
+/** Flavour name of the latest milestone reached at this count, or null if none (or unnamed). */
+export function milestoneName(def: AutomationDef, count: number): string | null {
+  const reached = milestonesReached(count);
+  return reached > 0 ? (def.milestoneNames?.[reached - 1] ?? null) : null;
 }
 
 type SummedMerit = Exclude<MeritDef['effect']['kind'], 'startAutomation'>;

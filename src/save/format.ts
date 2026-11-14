@@ -51,6 +51,11 @@ export function migrate(
   return current;
 }
 
+/** The distinct strings of an array, in first-seen order; anything else gives []. */
+function uniqueStrings(v: unknown): string[] {
+  return Array.isArray(v) ? [...new Set(v.filter((a): a is string => typeof a === 'string'))] : [];
+}
+
 function dec(v: unknown, fallback: Decimal): Decimal {
   if (typeof v !== 'string' && typeof v !== 'number') return fallback;
   try {
@@ -148,12 +153,8 @@ export function deserialize(text: string, nowMs: number): GameState {
         untilMs: num(b.untilMs, 0),
       })),
     eventsClaimed: num(s.eventsClaimed, 0),
-    achievements: Array.isArray(s.achievements)
-      ? [...new Set(s.achievements.filter((a): a is string => typeof a === 'string'))]
-      : [],
-    tipsSeen: Array.isArray(s.tipsSeen)
-      ? [...new Set(s.tipsSeen.filter((a): a is string => typeof a === 'string'))]
-      : [],
+    achievements: uniqueStrings(s.achievements),
+    tipsSeen: uniqueStrings(s.tipsSeen),
     settings: {
       sound: typeof settings.sound === 'boolean' ? settings.sound : d.settings.sound,
       vibration: typeof settings.vibration === 'boolean' ? settings.vibration : d.settings.vibration,

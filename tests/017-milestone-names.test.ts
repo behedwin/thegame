@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { BALANCE } from '../src/content/balance';
 import { AUTOMATIONS } from '../src/content/registry';
-import { milestoneName } from '../src/ui/shop';
+import { milestoneName } from '../src/core';
 
 describe('named milestones', () => {
   it('every automation names each milestone (non-empty, at most one per milestone)', () => {

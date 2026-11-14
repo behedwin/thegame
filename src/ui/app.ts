@@ -23,6 +23,7 @@ import {
   kpPerClick,
   kpPerSecond,
   level,
+  milestoneName,
   milestonesReached,
   newAchievements,
   nextYearSpeedupPct,
@@ -47,7 +48,7 @@ import { showCustomers } from './customers';
 import { showStats } from './stats';
 import { NetworkView } from './network';
 import { cancelNotifications, notificationsSupported, requestNotifyPermission, scheduleNotifications } from './notifications';
-import { milestoneName, ShopList } from './shop';
+import { ShopList } from './shop';
 import { markTipSeen, nextTip, settleTips, TipBar } from './onboarding';
 
 const GEAR =
@@ -114,11 +115,12 @@ export async function startApp(root: HTMLElement): Promise<void> {
     attrs: { role: 'button', tabindex: '0', 'aria-label': T.customerList.open },
   });
 
-  const tabButtons = {
-    automations: h('button', { class: 'tab', attrs: { role: 'tab' }, text: T.tabs.automations, testId: 'tab-automations' }),
-    upgrades: h('button', { class: 'tab', attrs: { role: 'tab' }, text: T.tabs.upgrades, testId: 'tab-upgrades' }),
-    prestige: h('button', { class: 'tab', attrs: { role: 'tab' }, text: T.tabs.prestige, testId: 'tab-prestige' }),
-    achievements: h('button', { class: 'tab', attrs: { role: 'tab' }, text: T.tabs.achievements, testId: 'tab-achievements' }),
+  const tabButton = (t: Tab) => h('button', { class: 'tab', attrs: { role: 'tab' }, text: T.tabs[t], testId: `tab-${t}` });
+  const tabButtons: Record<Tab, HTMLElement> = {
+    automations: tabButton('automations'),
+    upgrades: tabButton('upgrades'),
+    prestige: tabButton('prestige'),
+    achievements: tabButton('achievements'),
   };
   const achievementList = new AchievementList();
   const panel = h('section', { class: 'panel' });
@@ -172,7 +174,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
       hero,
       tips.host,
       customersEl,
-      h('nav', { class: 'tabs', attrs: { role: 'tablist', 'aria-label': T.a11y.tabsAria } }, tabButtons.automations, tabButtons.upgrades, tabButtons.prestige, tabButtons.achievements),
+      h('nav', { class: 'tabs', attrs: { role: 'tablist', 'aria-label': T.a11y.tabsAria } }, ...Object.values(tabButtons)),
       panel,
     ),
   );
@@ -219,8 +221,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
     const def = getAutomation(id);
     if (def && milestonesReached(level(state.automations, id)) > milestonesReached(level(before.automations, id))) {
       const count = level(state.automations, id);
-      const named = milestoneName(def, count);
-      toast(named ? `${T.toastMilestone(def.name, count)}. ${named}!` : T.toastMilestone(def.name, count), 'good');
+      toast(T.toastMilestone(def.name, count, milestoneName(def, count)), 'good');
       sfx.milestone();
     }
     persist();
