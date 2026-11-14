@@ -6,7 +6,7 @@ import { h, showDialog } from './dialogs';
 import { fmt } from './format';
 
 /** Body elements for the customer list. Exported separately for testability. */
-export function customerListBody(state: GameState): HTMLElement[] {
+function customerListBody(state: GameState): HTMLElement[] {
   const signed = new Set(signedCustomers(state).map((c) => c.id));
   const next = nextCustomer(state);
   const rows = CUSTOMERS.filter((c) => signed.has(c.id)).map((c) =>

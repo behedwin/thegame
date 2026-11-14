@@ -11,6 +11,7 @@ import {
   applyOffline,
   automationKps,
   buy,
+  type CalendarDay,
   buyMerit,
   canPrestige,
   claimEvent,
@@ -51,7 +52,7 @@ const SYNC =
   '<svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true"><path fill="currentColor" d="M12 4V1L8 5l4 4V6a6 6 0 0 1 5.7 7.9l1.5 1.5A8 8 0 0 0 12 4zm0 14a6 6 0 0 1-5.7-7.9L4.8 8.6A8 8 0 0 0 12 20v3l4-4-4-4z"/></svg>';
 
 /** Today's local calendar day, injected into the pure core for seasons. */
-function today(): { month: number; day: number } {
+function today(): CalendarDay {
   const d = new Date();
   return { month: d.getMonth() + 1, day: d.getDate() };
 }
@@ -130,6 +131,12 @@ export async function startApp(root: HTMLElement): Promise<void> {
     h('h3', { class: 'list-title', text: T.prestige.shopTitle }),
     lists.merits.host,
   );
+  const tabViews: Record<Tab, { host: HTMLElement; bulk: boolean; render: () => void }> = {
+    automations: { host: lists.automations.host, bulk: true, render: () => lists.automations.render(state) },
+    upgrades: { host: lists.upgrades.host, bulk: true, render: () => lists.upgrades.render(state) },
+    prestige: { host: prestigeView, bulk: false, render: () => renderPrestige() },
+    achievements: { host: achievementList.host, bulk: false, render: () => achievementList.render(state) },
+  };
 
   root.replaceChildren(
     h(
@@ -387,33 +394,26 @@ export async function startApp(root: HTMLElement): Promise<void> {
     if (tabButtons.achievements.hidden && tab === 'achievements') tab = 'automations';
     for (const [k, b] of Object.entries(tabButtons)) b.classList.toggle('active', k === tab);
 
-    const wanted =
-      tab === 'automations'
-        ? lists.automations.host
-        : tab === 'upgrades'
-          ? lists.upgrades.host
-          : tab === 'achievements'
-            ? achievementList.host
-            : prestigeView;
-    if (panel.lastElementChild !== wanted) {
-      if (tab === 'prestige' || tab === 'achievements') panel.replaceChildren(wanted);
-      else panel.replaceChildren(bulkBar, wanted);
+    // Shop tabs get the bulk bar above their list; the others show only their view.
+    const view = tabViews[tab];
+    if (panel.lastElementChild !== view.host) {
+      if (view.bulk) panel.replaceChildren(bulkBar, view.host);
+      else panel.replaceChildren(view.host);
     }
-    if (tab === 'automations') lists.automations.render(state);
-    else if (tab === 'upgrades') lists.upgrades.render(state);
-    else if (tab === 'achievements') achievementList.render(state);
-    else {
-      const pending = pendingMerits(state);
-      const next = runKpForMerits(pending.toNumber() + 1);
-      prestigeInfo.replaceChildren(
-        h('p', { class: 'merits-owned', text: T.prestige.merits(fmt(state.merits)) }),
-        h('p', { text: T.prestige.pending(fmt(pending)) }),
-        h('p', { class: 'muted', text: T.prestige.next(fmt(next)) }),
-      );
-      prestigeBtn.textContent = T.prestige.button(fmt(pending));
-      prestigeBtn.disabled = !canPrestige(state);
-      lists.merits.render(state);
-    }
+    view.render();
+  }
+
+  function renderPrestige(): void {
+    const pending = pendingMerits(state);
+    const next = runKpForMerits(pending.toNumber() + 1);
+    prestigeInfo.replaceChildren(
+      h('p', { class: 'merits-owned', text: T.prestige.merits(fmt(state.merits)) }),
+      h('p', { text: T.prestige.pending(fmt(pending)) }),
+      h('p', { class: 'muted', text: T.prestige.next(fmt(next)) }),
+    );
+    prestigeBtn.textContent = T.prestige.button(fmt(pending));
+    prestigeBtn.disabled = !canPrestige(state);
+    lists.merits.render(state);
   }
 
   // ---------- Events ----------
