@@ -1,7 +1,7 @@
 ---
 id: 022
 size: M
-status: ready
+status: done
 touches: [src/content/tickets/, src/content/events/]
 depends: [021]
 priority: normal
