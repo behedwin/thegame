@@ -31,7 +31,7 @@ test('tapping a system on the network map shows its parody tagline', async ({ pa
   }, JSON.stringify(save));
   await page.goto('/');
   await expect(page.locator('.net-row.shown')).toHaveCount(3);
-  const tip = page.locator('svg.network .net-tip');
+  const tip = page.locator('.net-tip');
   await expect(tip).toHaveCSS('opacity', '0');
 
   const node = page.locator('.net-row.shown .net-dst').first();

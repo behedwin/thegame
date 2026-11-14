@@ -100,6 +100,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
     { class: 'hero' },
     net.svg,
     h('div', { class: 'side-labels' }, h('span', { text: T.sourceSystems }), h('span', { text: T.targetSystems })),
+    net.tip,
     hub,
     floatLayer,
     eventSlot,
