@@ -9,6 +9,7 @@ export const T = {
   currency: 'KP',
   currencyLong: 'Kunskapspoäng',
   perSecond: 'KP/s',
+  perEach: (kps: string) => `+${kps} KP/s styck`,
   perClick: 'KP/klick',
   hubLabel: 'SYNKA',
   hubAria: 'Synka data manuellt',
@@ -57,7 +58,8 @@ export const T = {
     toast: (name: string) => `Trofé: ${name}! +1\u00a0% produktion`,
     toastMany: (n: number) => `${n} nya troféer! +${n}\u00a0% produktion`,
   },
-  toastMilestone: (name: string, count: number) => `Milstolpe! ${count} st ${name}: produktionen ×2`,
+  toastMilestone: (name: string, count: number, named?: string | null) =>
+    `Milstolpe! ${count} st ${name}: produktionen ×2${named ? `. ${named}!` : ''}`,
   season: {
     banner: (s: SeasonDef) => `${s.name}: ${s.desc}`,
     aria: 'Säsong just nu',

@@ -1,39 +1,34 @@
 // Shop lists: automations, upgrades and the merit shop. Cards are built once per
 // "reveal signature" and then cheaply updated every render.
-import { AUTOMATIONS } from '../content/registry';
-import { BALANCE } from '../content/balance';
-import { MERITS } from '../content/registry';
+import { AUTOMATIONS, MERITS, UPGRADES } from '../content/registry';
 import { T } from '../content/texts';
-import { UPGRADES } from '../content/registry';
 import {
   automationKps,
   canBuy,
   canBuyMerit,
   costOf,
   getAutomation,
+  getMerit,
+  getUpgrade,
   isMaxed,
   isRevealed,
   level,
   meritCost,
-  milestonesReached,
+  milestoneName,
+  milestoneProgressPct,
   nextMilestone,
   type GameState,
 } from '../core';
-import type { AutomationDef } from '../content/types';
 import { costOfMany, resolveBulk, type BulkMode } from '../core/bulk';
 import { h } from './dialogs';
 import { fmt } from './format';
-
-/** Flavour name of the latest milestone reached at this count, or null if none (or unnamed). */
-export function milestoneName(def: AutomationDef, count: number): string | null {
-  const reached = milestonesReached(count);
-  return reached > 0 ? (def.milestoneNames?.[reached - 1] ?? null) : null;
-}
 
 export type ShopKind = 'automations' | 'upgrades' | 'merits';
 
 interface Card {
   id: string;
+  /** Display name, also used in the buy button's screen reader label. */
+  name: string;
   root: HTMLElement;
   level: HTMLElement;
   sub: HTMLElement;
@@ -48,8 +43,6 @@ export class ShopList {
   private signature = '';
   /** Bulk mode for automations and upgrades (×1 / ×10 / MAX). */
   bulk: BulkMode = 1;
-  /** Display names per id, used for the buy buttons' screen reader labels. */
-  private readonly names = new Map<string, string>();
 
   constructor(
     readonly host: HTMLElement,
@@ -66,16 +59,10 @@ export class ShopList {
 
   private build(s: GameState, ids: string[], teaser: boolean): void {
     this.host.replaceChildren();
-    const names = this.names;
     this.cards = ids.map((id) => {
       const def =
-        this.kind === 'automations'
-          ? AUTOMATIONS.find((a) => a.id === id)!
-          : this.kind === 'upgrades'
-            ? UPGRADES.find((u) => u.id === id)!
-            : MERITS.find((m) => m.id === id)!;
+        this.kind === 'automations' ? getAutomation(id)! : this.kind === 'upgrades' ? getUpgrade(id)! : getMerit(id)!;
       const lvl = h('span', { class: 'card-level' });
-      names.set(id, def.name);
       const sub = h('div', { class: 'card-sub' });
       const btn = h('button', { class: 'buy', testId: `buy-${id}` });
       const bar = this.kind === 'automations' ? h('div', { class: 'bar-fill' }) : null;
@@ -92,7 +79,7 @@ export class ShopList {
       const root = h('div', { class: 'card', testId: `card-${id}` }, info, btn);
       btn.addEventListener('click', () => this.onBuy(id, btn));
       this.host.append(root);
-      return { id, root, level: lvl, sub, btn, bar, named };
+      return { id, name: def.name, root, level: lvl, sub, btn, bar, named };
     });
     if (teaser) this.host.append(h('div', { class: 'card teaser', text: T.lockedTeaser }));
     this.update(s);
@@ -118,21 +105,17 @@ export class ShopList {
         const named = milestoneName(def, count);
         c.sub.textContent = count
           ? `${fmt(automationKps(s, def))} ${T.perSecond} · ${next ? T.milestoneProgress(next) : T.allMilestones}`
-          : `+${fmt(def.kps)} ${T.perSecond} styck`;
+          : T.perEach(fmt(def.kps));
         if (c.named) c.named.textContent = named ? `“${named}”` : '';
-        if (c.bar) {
-          const prev = [0, ...BALANCE.milestones].filter((m) => m <= count).pop() ?? 0;
-          const pct = next ? ((count - prev) / (next - prev)) * 100 : 100;
-          c.bar.style.width = `${pct}%`;
-        }
+        if (c.bar) c.bar.style.width = `${milestoneProgressPct(count)}%`;
         this.setPriceButton(c, s);
       } else if (this.kind === 'upgrades') {
-        const def = UPGRADES.find((u) => u.id === c.id)!;
+        const def = getUpgrade(c.id)!;
         c.level.textContent = T.level(level(s.upgrades, c.id), def.maxLevel);
         if (isMaxed(s, c.id)) this.setButton(c, T.maxed, false, true);
         else this.setPriceButton(c, s);
       } else {
-        const def = MERITS.find((m) => m.id === c.id)!;
+        const def = getMerit(c.id)!;
         const lvl = level(s.meritUpgrades, c.id);
         c.level.textContent = T.level(lvl, def.maxLevel);
         if (lvl >= def.maxLevel) this.setButton(c, T.maxed, false, true);
@@ -155,7 +138,7 @@ export class ShopList {
   private setButton(c: Card, label: string, enabled: boolean, maxed = false): void {
     if (c.btn.textContent !== label) {
       c.btn.textContent = label;
-      c.btn.setAttribute('aria-label', T.a11y.buyAria(this.names.get(c.id) ?? c.id, label));
+      c.btn.setAttribute('aria-label', T.a11y.buyAria(c.name, label));
     }
     c.btn.disabled = !enabled;
     c.root.classList.toggle('affordable', enabled);
