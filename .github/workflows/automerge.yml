@@ -13,6 +13,9 @@ on:
     types: [labeled, unlabeled, opened, reopened, synchronize, ready_for_review]
   push:
     branches: [main]
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -52,31 +55,19 @@ jobs:
             echo "No automerge label: leaving auto-merge as it is."
           fi
 
-  update-behind:
-    # After main moves, bring open automerge PRs up to date so strict checks can pass.
-    # "Behind" is computed with the compare API against the pushed main commit, NOT with
-    # mergeStateStatus: right after a merge GitHub still reports UNKNOWN for the other PRs, so
-    # filtering on BEHIND skipped them and they sat green-but-behind until the next push to main.
-    if: github.event_name == 'push'
+  unstick:
+    # Keeps automerge PRs from getting stuck: updates PRs that are behind main, re-enables auto-merge
+    # that got switched off, and warns about PRs whose checks fail. Runs after every push to main,
+    # every 15 minutes as a safety net, and on demand. Logic: scripts/unstick-prs.mjs (+ pr-lib.mjs).
+    # "Behind" comes from the compare API, NOT mergeStateStatus: right after a merge GitHub reports
+    # UNKNOWN for the other PRs, so a BEHIND filter skipped them and they sat green-but-behind (#21).
+    if: github.event_name != 'pull_request_target'
     runs-on: ubuntu-latest
     steps:
-      - name: Update branches that are behind main
+      - uses: actions/checkout@v7
+      - name: Unstick automerge PRs
         env:
           GH_TOKEN: ${{ secrets.AUTOMERGE_TOKEN || github.token }}
           REPO: ${{ github.repository }}
           MAIN_SHA: ${{ github.sha }}
-        run: |
-          gh pr list -R "$REPO" --label automerge --state open --json number,headRefOid,labels \
-            --jq '.[] | select([.labels[].name] | index("conflict") or index("blocked") | not) | "\(.number) \(.headRefOid)"' |
-          while read -r n head; do
-            behind="$(gh api "repos/$REPO/compare/$MAIN_SHA...$head" --jq '.behind_by')"
-            if [ "$behind" = "0" ]; then
-              echo "PR #$n is up to date with main"
-              continue
-            fi
-            echo "PR #$n is $behind commit(s) behind main; updating"
-            if ! gh pr update-branch -R "$REPO" "$n"; then
-              echo "PR #$n could not be updated automatically; labelling as conflict"
-              gh pr edit -R "$REPO" "$n" --add-label conflict || true
-            fi
-          done
+        run: node scripts/unstick-prs.mjs
