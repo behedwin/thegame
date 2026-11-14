@@ -17,6 +17,8 @@ export const T = {
   owned: (n: number) => `${n} st`,
   level: (n: number, max: number) => (max === 1 ? (n > 0 ? 'Klar' : '') : `Nivå ${n}/${max}`),
   maxed: 'Max',
+  bulk: { aria: 'Antal att köpa', one: '×1', ten: '×10', max: 'MAX' },
+  buyMany: (n: number, cost: string) => `×${n}\n${cost} KP`,
   milestoneProgress: (next: number) => `Mot ${next} st: ×2`,
   allMilestones: 'Alla milstolpar nådda',
   lockedTeaser: 'Något nytt dyker upp snart …',

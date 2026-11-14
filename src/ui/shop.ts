@@ -18,6 +18,7 @@ import {
   nextMilestone,
   type GameState,
 } from '../core';
+import { costOfMany, resolveBulk, type BulkMode } from '../core/bulk';
 import { h } from './dialogs';
 import { fmt } from './format';
 
@@ -35,6 +36,8 @@ interface Card {
 export class ShopList {
   private cards: Card[] = [];
   private signature = '';
+  /** Bulk mode for automations and upgrades (×1 / ×10 / MAX). */
+  bulk: BulkMode = 1;
 
   constructor(
     readonly host: HTMLElement,
@@ -104,12 +107,12 @@ export class ShopList {
           const pct = next ? ((count - prev) / (next - prev)) * 100 : 100;
           c.bar.style.width = `${pct}%`;
         }
-        this.setButton(c, fmt(costOf(s, c.id)) + ' KP', canBuy(s, c.id));
+        this.setPriceButton(c, s);
       } else if (this.kind === 'upgrades') {
         const def = UPGRADES.find((u) => u.id === c.id)!;
         c.level.textContent = T.level(level(s.upgrades, c.id), def.maxLevel);
         if (isMaxed(s, c.id)) this.setButton(c, T.maxed, false, true);
-        else this.setButton(c, fmt(costOf(s, c.id)) + ' KP', canBuy(s, c.id));
+        else this.setPriceButton(c, s);
       } else {
         const def = MERITS.find((m) => m.id === c.id)!;
         const lvl = level(s.meritUpgrades, c.id);
@@ -118,6 +121,17 @@ export class ShopList {
         else this.setButton(c, `${fmt(meritCost(s, c.id))} ★`, canBuyMerit(s, c.id));
       }
     }
+  }
+
+  /** Price label and state for automations/upgrades, honouring the bulk mode. */
+  private setPriceButton(c: Card, s: GameState): void {
+    if (this.bulk === 1) {
+      this.setButton(c, fmt(costOf(s, c.id)) + ' KP', canBuy(s, c.id));
+      return;
+    }
+    const n = resolveBulk(s, c.id, this.bulk);
+    const cost = costOfMany(s, c.id, n);
+    this.setButton(c, T.buyMany(n, fmt(cost)), s.kp.gte(cost));
   }
 
   private setButton(c: Card, label: string, enabled: boolean, maxed = false): void {

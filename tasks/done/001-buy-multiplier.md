@@ -1,7 +1,7 @@
 ---
 id: 001
 size: S
-status: ready
+status: done
 touches: [src/core/bulk.ts, src/ui/shop.ts, src/ui/app.ts, src/ui/style.css, src/content/texts.ts]
 depends: []
 ---
