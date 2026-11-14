@@ -507,14 +507,19 @@ export async function startApp(root: HTMLElement): Promise<void> {
     });
   }
 
+  /** The player leaves (app hidden or page closed): save and plan opt-in notifications. */
+  function leave(): void {
+    const now = Date.now();
+    state = touch(state, now);
+    if (wiping) return;
+    void saveGame(state);
+    void scheduleNotifications(state, now);
+  }
+
   document.addEventListener('visibilitychange', () => {
     setBackground(document.visibilityState === 'hidden');
     if (document.visibilityState === 'hidden') {
-      state = touch(state, Date.now());
-      if (!wiping) {
-        void saveGame(state);
-        void scheduleNotifications(state, Date.now());
-      }
+      leave();
     } else {
       void cancelNotifications();
       resume(Date.now());
@@ -522,13 +527,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
       render();
     }
   });
-  window.addEventListener('pagehide', () => {
-    state = touch(state, Date.now());
-    if (!wiping) {
-      void saveGame(state);
-      void scheduleNotifications(state, Date.now());
-    }
-  });
+  window.addEventListener('pagehide', leave);
 
   // ---------- Loop ----------
   let last = performance.now();
