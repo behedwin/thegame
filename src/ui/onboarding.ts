@@ -6,6 +6,12 @@ import { h } from './dialogs';
 
 export type TipId = 'event' | 'sync' | 'buy';
 
+/** "Visa introduktionen igen": a tour through the tips, kept in memory only. It ignores
+ * prestiges, done, tipsSeen and the tips setting, so it works for any player. */
+export const TOUR = ['sync', 'buy', 'event', 'help'] as const;
+export type TourStep = (typeof TOUR)[number];
+export const tourNext = (s: TourStep): TourStep | null => TOUR[TOUR.indexOf(s) + 1] ?? null;
+
 interface TipDef {
   id: TipId;
   /** The tip may be shown now. */
@@ -70,23 +76,35 @@ export class TipBar {
     text: '×',
     attrs: { 'aria-label': T.tips.close, style: 'border:0;background:transparent;color:var(--muted);font-size:20px;line-height:1;padding:4px 8px' },
   });
-  /** The tip currently on screen. */
+  private readonly next = h('button', {
+    testId: 'tip-next',
+    attrs: { hidden: '', style: 'border:0;border-radius:8px;background:var(--accent);color:var(--accent-ink);font-size:13px;padding:6px 12px' },
+  });
+  /** The regular tip on screen, and the tour step on screen. */
   shown: TipId | null = null;
+  step: TourStep | null = null;
+  /** What each tour step points at. It gets an outline, which never moves the layout. */
+  marks: Partial<Record<TourStep, HTMLElement>> = {};
 
-  constructor(onClose: (id: TipId) => void, onOff: () => void) {
-    this.host.append(this.text, this.off, this.close);
-    this.close.addEventListener('click', () => {
-      if (this.shown) onClose(this.shown);
-    });
+  constructor(onClose: (id: TipId | null) => void, onOff: () => void, onNext: () => void) {
+    this.host.append(this.text, this.next, this.off, this.close);
+    this.close.addEventListener('click', () => onClose(this.shown));
     this.off.addEventListener('click', onOff);
+    this.next.addEventListener('click', onNext);
   }
 
-  render(tip: TipId | null): void {
-    if (tip === this.shown) return;
-    this.shown = tip;
-    if (tip) {
-      this.text.textContent = T.tips[tip];
-      this.host.dataset.tip = tip;
+  render(tip: TipId | null, step: TourStep | null = null): void {
+    if (tip === this.shown && step === this.step) return;
+    if (this.step) Object.assign(this.marks[this.step]?.style ?? {}, { outline: '', outlineOffset: '' });
+    [this.shown, this.step] = [step ? null : tip, step];
+    if (step) Object.assign(this.marks[step]?.style ?? {}, { outline: '2px solid var(--accent)', outlineOffset: '4px' });
+    this.next.hidden = !step;
+    this.off.hidden = !!step;
+    this.next.textContent = step === TOUR.at(-1) ? T.tips.done : T.tips.next;
+    const key = step ?? tip;
+    if (key) {
+      this.text.textContent = step ? T.tips.tour[step] : T.tips[tip!];
+      this.host.dataset.tip = key;
       this.host.hidden = false;
       this.host.style.display = 'flex';
     } else {

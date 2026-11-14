@@ -1,7 +1,7 @@
 ---
 id: 031
 size: S
-status: ready
+status: done
 touches: [src/ui/onboarding.ts, src/ui/help.ts, src/ui/app.ts, src/content/texts.ts]
 depends: [029]
 priority: normal

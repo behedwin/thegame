@@ -74,6 +74,14 @@ export const T = {
     event: 'Tips: Ett event! Tryck snabbt innan tiden tar slut.',
     close: 'Stäng tipset',
     off: 'Inga fler tips',
+    next: 'Nästa',
+    done: 'Klar',
+    tour: {
+      sync: 'Tryck på SYNKA för att flytta data mellan systemen och tjäna KP.',
+      buy: 'Köp integrationer i listan nedan. De synkar åt dig, även när du är borta.',
+      event: 'Ibland dyker ett event upp här. Tryck snabbt innan tiden tar slut så får du en bonus.',
+      help: 'Hjälpen hittar du under kugghjulet, under Hjälp.',
+    },
   },
   buffActive: (mult: number, sec: number) => `×${mult} produktion · ${sec} s`,
   welcomeTitle: 'Välkommen tillbaka!',
@@ -105,7 +113,7 @@ export const T = {
     done: (n: string) => `Nytt läsår! +${n} Meriter`,
     locked: 'Låses upp senare under läsåret.',
   },
-  help: { open: 'Hjälp', title: 'Så spelar du', close: 'Stäng' },
+  help: { open: 'Hjälp', title: 'Så spelar du', close: 'Stäng', replay: 'Visa introduktionen igen' },
   settings: {
     title: 'Inställningar',
     sound: 'Ljud',
