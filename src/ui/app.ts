@@ -45,7 +45,8 @@ import { buyMany, BULK_MODES, resolveBulk, type BulkMode } from '../core/bulk';
 import { loadGame, saveGame, wipeGame } from '../save/storage';
 import { closeTopDialog, h, showDialog } from './dialogs';
 import { configureFeedback, floatText, haptic, setBackground, sfx, toast } from './feedback';
-import { burst, countUp, motionOk, ripple, shownValue } from './fx';
+import { burst, countUp, motionOk, reducedMotion, ripple, shownValue } from './fx';
+import { confetti, effectsFor, flashClass, stamp, yearTransition } from './celebrate';
 import { fmt, fmtDuration } from './format';
 import { AchievementList } from './achievements';
 import { showCustomers } from './customers';
@@ -207,9 +208,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
     const rect = hero.getBoundingClientRect();
     const [lx, ly] = [x - rect.left, y - rect.top];
     floatText(floatLayer, lx, ly, `+${fmt(gained)}`);
-    hub.classList.remove('pop');
-    void hub.offsetWidth; // restart the CSS animation
-    hub.classList.add('pop');
+    flashClass(hub, 'pop', 300);
     ripple(hub, floatLayer);
     burst(floatLayer, lx, ly);
     if (motionOk()) net.pulse();
@@ -224,14 +223,19 @@ export async function startApp(root: HTMLElement): Promise<void> {
     if (state === before) return;
     sfx.buy();
     haptic('medium');
-    const card = btn.closest('.card');
-    card?.classList.add('flash');
-    setTimeout(() => card?.classList.remove('flash'), 300);
+    const card = btn.closest<HTMLElement>('.card');
+    flashClass(card, 'flash', 300);
+    const fx = effectsFor(bulk === 1 ? 'buy' : 'bulkBuy', reducedMotion());
+    const [r, l] = [btn.getBoundingClientRect(), card?.getBoundingClientRect() ?? btn.getBoundingClientRect()];
+    if (card && fx.some((e) => e.endsWith('urst'))) burst(card, r.left - l.left + r.width / 2, r.top - l.top + r.height / 2, { count: fx.includes('bigBurst') ? 12 : 7 });
     const def = getAutomation(id);
     if (def && milestonesReached(level(state.automations, id)) > milestonesReached(level(before.automations, id))) {
       const count = level(state.automations, id);
       toast(T.toastMilestone(def.name, count, milestoneName(def, count)), 'good');
       sfx.milestone();
+      flashClass(card, 'sheen', 900);
+      if (card) stamp(card, T.celebrate.double);
+      if (effectsFor('milestone', reducedMotion()).includes('confetti')) confetti(r.left + r.width / 2, r.top);
     }
     persist();
     render();
@@ -259,11 +263,11 @@ export async function startApp(root: HTMLElement): Promise<void> {
         onClick: () => {
           state = prestige(state);
           lastCustomers = customersSigned(state);
-          toast(T.prestige.done(fmt(gained)), 'good');
           sfx.fanfare();
           haptic('medium');
           persist();
           render();
+          yearTransition(T.prestige.title, gained, () => toast(T.prestige.done(fmt(gained)), 'good'));
         },
       },
     ]);
@@ -457,12 +461,15 @@ export async function startApp(root: HTMLElement): Promise<void> {
     } else buffEl.hidden = true;
 
     const signed = customersSigned(state);
+    const who = signed ? `${T.customers(signed)} · ${CUSTOMERS[signed - 1]!.name}` : T.noCustomers;
+    if (customersEl.firstChild?.nodeValue !== who) customersEl.textContent = who; // keeps a running stamp
     if (signed > lastCustomers) {
       toast(T.toastCustomer(CUSTOMERS[signed - 1]!.name), 'good');
       sfx.customer();
+      stamp(customersEl, T.celebrate.signed);
+      if (effectsFor('customer', reducedMotion()).includes('shake')) flashClass(customersEl, 'shake', 500);
     }
     lastCustomers = signed;
-    customersEl.textContent = signed ? `${T.customers(signed)} · ${CUSTOMERS[signed - 1]!.name}` : T.noCustomers;
 
     const counts: Record<string, number> = {};
     const kpsLog: Record<string, number> = {};

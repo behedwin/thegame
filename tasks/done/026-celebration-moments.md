@@ -1,7 +1,7 @@
 ---
 id: 026
 size: M
-status: ready
+status: done
 touches: [src/ui/, src/content/texts.ts]
 depends: [024]
 priority: normal

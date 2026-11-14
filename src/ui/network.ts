@@ -1,6 +1,7 @@
 // The hero visual: source systems on the left, your integration hub in the middle,
 // target systems on the right. Data packets flow along the lines.
 import { AUTOMATIONS, SYSTEMS, systemName, type SystemDef } from '../content/registry';
+import { flashClass } from './celebrate';
 
 const NS = 'http://www.w3.org/2000/svg';
 const W = 360;
@@ -92,6 +93,7 @@ export class NetworkView {
   private packets: Packet[] = [];
   private packetLayer: SVGGElement;
   private layoutKey = '';
+  private booted = false;
   private tip: SVGTextElement;
   private tipTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -169,6 +171,8 @@ export class NetworkView {
     row.visible = visible;
     row.group.classList.toggle('shown', visible);
     row.lines.classList.toggle('shown', visible);
+    // A newly unlocked system "boots" and its line is drawn in (not on the first layout after load).
+    if (visible && this.booted) for (const e of [row.group, row.lines]) flashClass(e, 'boot', 1000);
   }
 
   /** Update which rows are visible and how busy they are. counts/kps per automation id. */
@@ -181,6 +185,7 @@ export class NetworkView {
       // 0.6 packets/s for a fresh integration, up to ~5/s for huge ones.
       row.rate = busy ? Math.min(5, 0.6 + (kpsLog[row.id] ?? 0) * 0.45) : 0;
     });
+    this.booted = true;
   }
 
   /** A manual sync: a bright packet travels along a random active line from its source into the hub. */
