@@ -62,6 +62,8 @@ function today(): CalendarDay {
 
 type Tab = 'automations' | 'upgrades' | 'prestige' | 'achievements';
 const AUTOSAVE_MS = 10_000;
+/** Hold-to-sync repeat interval: about 8 clicks per second. */
+const HOLD_REPEAT_MS = 125;
 
 export async function startApp(root: HTMLElement): Promise<void> {
   const loaded = await loadGame(Date.now());
@@ -461,16 +463,43 @@ export async function startApp(root: HTMLElement): Promise<void> {
   }
 
   // ---------- Events ----------
+  // Hold to sync: the first click is immediate, then it repeats at about 8/s while held, so
+  // nobody has to tap fast (accessibility). Keyboard auto-repeat is ignored for the same cap.
+  let holdTimer: ReturnType<typeof setInterval> | null = null;
+  let holdX = 0;
+  let holdY = 0;
+  function startHold(x: number, y: number): void {
+    stopHold();
+    holdX = x;
+    holdY = y;
+    doClick(x, y);
+    holdTimer = setInterval(() => doClick(holdX, holdY), HOLD_REPEAT_MS);
+  }
+  function stopHold(): void {
+    if (holdTimer !== null) clearInterval(holdTimer);
+    holdTimer = null;
+  }
   hub.addEventListener('pointerdown', (e) => {
     e.preventDefault();
-    doClick(e.clientX, e.clientY);
+    if (!e.isPrimary) return;
+    startHold(e.clientX, e.clientY);
   });
+  hub.addEventListener('pointermove', (e) => {
+    holdX = e.clientX;
+    holdY = e.clientY;
+  });
+  for (const type of ['pointerup', 'pointercancel', 'pointerleave', 'blur'] as const) hub.addEventListener(type, stopHold);
+  hub.addEventListener('contextmenu', (e) => e.preventDefault());
   hub.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
+      if (e.repeat) return;
       const r = hub.getBoundingClientRect();
-      doClick(r.left + r.width / 2, r.top);
+      startHold(r.left + r.width / 2, r.top);
     }
+  });
+  hub.addEventListener('keyup', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') stopHold();
   });
   hub.addEventListener('animationend', () => hub.classList.remove('pop'));
   settingsBtn.addEventListener('click', openSettings);
@@ -519,6 +548,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
   document.addEventListener('visibilitychange', () => {
     setBackground(document.visibilityState === 'hidden');
     if (document.visibilityState === 'hidden') {
+      stopHold();
       leave();
     } else {
       void cancelNotifications();
