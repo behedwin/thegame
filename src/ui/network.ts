@@ -10,10 +10,35 @@ const HUB = { x: W / 2, y: H / 2 };
 const NODE_W = 98;
 const NODE_H = 34;
 const MAX_PACKETS = 48;
+/** The map never shows more rows than this; older integrations make room for new ones. */
+export const MAX_ROWS = 6;
+
+/** Indices of the rows to show: the owned ones (or the first if none), at most `max`, newest kept. */
+export function pickRows(owned: readonly boolean[], max: number): number[] {
+  const idx = owned.flatMap((o, i) => (o ? [i] : []));
+  if (idx.length === 0) return owned.length ? [0] : [];
+  return idx.slice(-max);
+}
+
+/** Evenly spaced row centres for n rows in a map of the given height; one row sits in the middle. */
+export function rowYs(n: number, height: number): number[] {
+  if (n <= 1) return n === 1 ? [height / 2] : [];
+  const pad = 30;
+  const span = Math.min(height - 2 * pad, (n - 1) * 52);
+  const top = (height - span) / 2;
+  return Array.from({ length: n }, (_, i) => top + (i * span) / (n - 1));
+}
+
+function rowPath(y: number): string {
+  return `M ${NODE_W + 6} ${y} C ${HUB.x - 40} ${y}, ${HUB.x - 50} ${HUB.y}, ${HUB.x} ${HUB.y} ` +
+    `C ${HUB.x + 50} ${HUB.y}, ${HUB.x + 40} ${y}, ${W - NODE_W - 6} ${y}`;
+}
 
 interface Row {
   id: string;
   y: number;
+  /** Positions the row (translate); the inner group fades in and out. */
+  outer: SVGGElement;
   group: SVGGElement;
   lines: SVGPathElement;
   visible: boolean;
@@ -39,12 +64,13 @@ function el<K extends keyof SVGElementTagNameMap>(tag: K, attrs: Record<string, 
   return e;
 }
 
-function node(x: number, y: number, label: string, side: 'src' | 'dst'): SVGGElement {
+/** A node drawn around y = 0; the row group is translated to its place. */
+function node(x: number, label: string, side: 'src' | 'dst'): SVGGElement {
   const g = el('g', { class: `net-node net-${side}` });
   g.append(
-    el('rect', { x, y: y - NODE_H / 2, width: NODE_W, height: NODE_H, rx: 10 }),
+    el('rect', { x, y: -NODE_H / 2, width: NODE_W, height: NODE_H, rx: 10 }),
   );
-  const text = el('text', { x: x + NODE_W / 2, y: y + 4, 'text-anchor': 'middle' });
+  const text = el('text', { x: x + NODE_W / 2, y: 4, 'text-anchor': 'middle' });
   text.textContent = label;
   g.append(text);
   return g;
@@ -55,6 +81,7 @@ export class NetworkView {
   private rows: Row[] = [];
   private packets: Packet[] = [];
   private packetLayer: SVGGElement;
+  private layoutKey = '';
 
   constructor() {
     this.svg = el('svg', { viewBox: `0 0 ${W} ${H}`, class: 'network', 'aria-hidden': 'true' });
@@ -70,19 +97,42 @@ export class NetworkView {
     this.packetLayer = el('g', {});
     this.svg.append(lineLayer, this.packetLayer, nodeLayer);
 
-    const n = AUTOMATIONS.length;
-    AUTOMATIONS.forEach((a, i) => {
-      const y = 40 + (i * (H - 80)) / Math.max(1, n - 1);
-      const path = `M ${NODE_W + 6} ${y} C ${HUB.x - 40} ${y}, ${HUB.x - 50} ${HUB.y}, ${HUB.x} ${HUB.y} ` +
-        `C ${HUB.x + 50} ${HUB.y}, ${HUB.x + 40} ${y}, ${W - NODE_W - 6} ${y}`;
-      const lines = el('path', { d: path, class: 'net-line' });
+    for (const a of AUTOMATIONS) {
+      const lines = el('path', { d: rowPath(H / 2), class: 'net-line' });
       lineLayer.append(lines);
+      const outer = el('g', { transform: `translate(0 ${H / 2})` });
       const group = el('g', { class: 'net-row' });
-      group.append(node(4, y, systemName(a.from), 'src'), node(W - NODE_W - 4, y, systemName(a.to), 'dst'));
-      nodeLayer.append(group);
-      this.rows.push({ id: a.id, y, group, lines, visible: false, rate: 0, acc: 0, len: 0 });
+      group.append(node(4, systemName(a.from), 'src'), node(W - NODE_W - 4, systemName(a.to), 'dst'));
+      outer.append(group);
+      nodeLayer.append(outer);
+      this.rows.push({ id: a.id, y: H / 2, outer, group, lines, visible: false, rate: 0, acc: 0, len: 0 });
+    }
+    this.layout(pickRows(this.rows.map(() => false), MAX_ROWS));
+  }
+
+  /** Show exactly the given rows, evenly spaced; hide the rest. */
+  private layout(shown: number[]): void {
+    const key = shown.join(',');
+    if (key === this.layoutKey) return;
+    this.layoutKey = key;
+    const ys = rowYs(shown.length, H);
+    shown.forEach((i, k) => {
+      const row = this.rows[i]!;
+      const y = ys[k]!;
+      if (row.y !== y) {
+        row.y = y;
+        row.lines.setAttribute('d', rowPath(y));
+        row.outer.setAttribute('transform', `translate(0 ${y})`);
+        row.len = 0;
+      }
     });
-    this.setRowVisible(this.rows[0]!, true);
+    const keep = new Set(shown);
+    this.rows.forEach((row, i) => this.setRowVisible(row, keep.has(i)));
+    this.packets = this.packets.filter((p) => {
+      if (p.row.visible) return true;
+      p.el.remove();
+      return false;
+    });
   }
 
   private setRowVisible(row: Row, visible: boolean): void {
@@ -94,12 +144,13 @@ export class NetworkView {
 
   /** Update which rows are visible and how busy they are. counts/kps per automation id. */
   update(counts: Record<string, number>, kpsLog: Record<string, number>): void {
+    const owned = this.rows.map((row) => (counts[row.id] ?? 0) > 0);
+    this.layout(pickRows(owned, MAX_ROWS));
     this.rows.forEach((row, i) => {
-      const owned = (counts[row.id] ?? 0) > 0;
-      this.setRowVisible(row, owned || i === 0);
-      row.lines.classList.toggle('active', owned);
+      const busy = owned[i]! && row.visible;
+      row.lines.classList.toggle('active', busy);
       // 0.6 packets/s for a fresh integration, up to ~5/s for huge ones.
-      row.rate = owned ? Math.min(5, 0.6 + (kpsLog[row.id] ?? 0) * 0.45) : 0;
+      row.rate = busy ? Math.min(5, 0.6 + (kpsLog[row.id] ?? 0) * 0.45) : 0;
     });
   }
 
