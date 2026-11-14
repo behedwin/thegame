@@ -20,6 +20,7 @@ import {
   kpPerSecond,
   level,
   milestonesReached,
+  newAchievements,
   pendingMerits,
   prestige,
   rollEvent,
@@ -35,6 +36,7 @@ import { loadGame, saveGame, wipeGame } from '../save/storage';
 import { h, showDialog } from './dialogs';
 import { configureFeedback, floatText, haptic, sfx, toast } from './feedback';
 import { fmt, fmtDuration } from './format';
+import { AchievementList } from './achievements';
 import { showCustomers } from './customers';
 import { NetworkView } from './network';
 import { ShopList } from './shop';
@@ -44,7 +46,7 @@ const GEAR =
 const SYNC =
   '<svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true"><path fill="currentColor" d="M12 4V1L8 5l4 4V6a6 6 0 0 1 5.7 7.9l1.5 1.5A8 8 0 0 0 12 4zm0 14a6 6 0 0 1-5.7-7.9L4.8 8.6A8 8 0 0 0 12 20v3l4-4-4-4z"/></svg>';
 
-type Tab = 'automations' | 'upgrades' | 'prestige';
+type Tab = 'automations' | 'upgrades' | 'prestige' | 'achievements';
 const AUTOSAVE_MS = 10_000;
 
 export async function startApp(root: HTMLElement): Promise<void> {
@@ -86,7 +88,9 @@ export async function startApp(root: HTMLElement): Promise<void> {
     automations: h('button', { class: 'tab', text: T.tabs.automations, testId: 'tab-automations' }),
     upgrades: h('button', { class: 'tab', text: T.tabs.upgrades, testId: 'tab-upgrades' }),
     prestige: h('button', { class: 'tab', text: T.tabs.prestige, testId: 'tab-prestige' }),
+    achievements: h('button', { class: 'tab', text: T.tabs.achievements, testId: 'tab-achievements' }),
   };
+  const achievementList = new AchievementList();
   const panel = h('section', { class: 'panel' });
   const lists = {
     automations: new ShopList(h('div', { class: 'list' }), 'automations', (id, btn) => doBuy(id, btn)),
@@ -130,7 +134,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
       ),
       hero,
       customersEl,
-      h('nav', { class: 'tabs' }, tabButtons.automations, tabButtons.upgrades, tabButtons.prestige),
+      h('nav', { class: 'tabs' }, tabButtons.automations, tabButtons.upgrades, tabButtons.prestige, tabButtons.achievements),
       panel,
     ),
   );
@@ -312,6 +316,16 @@ export async function startApp(root: HTMLElement): Promise<void> {
     }
   }
 
+  function announceAchievements(before: GameState): void {
+    const fresh = newAchievements(before, state);
+    if (!fresh.length) return;
+    // Loading an old save can unlock many at once: one summary toast instead of a flood.
+    if (fresh.length > 3) toast(T.achievements.toastMany(fresh.length), 'good');
+    else for (const a of fresh) toast(T.achievements.toast(a.name), 'good');
+    sfx.fanfare();
+    persist();
+  }
+
   function prestigeUnlocked(): boolean {
     return state.prestiges > 0 || state.runEarned.gte(runKpForMerits(1).mul(0.25));
   }
@@ -346,15 +360,25 @@ export async function startApp(root: HTMLElement): Promise<void> {
     const showPrestige = prestigeUnlocked();
     tabButtons.prestige.hidden = !showPrestige;
     if (!showPrestige && tab === 'prestige') tab = 'automations';
+    tabButtons.achievements.hidden = state.achievements.length === 0;
+    if (tabButtons.achievements.hidden && tab === 'achievements') tab = 'automations';
     for (const [k, b] of Object.entries(tabButtons)) b.classList.toggle('active', k === tab);
 
-    const wanted = tab === 'automations' ? lists.automations.host : tab === 'upgrades' ? lists.upgrades.host : prestigeView;
+    const wanted =
+      tab === 'automations'
+        ? lists.automations.host
+        : tab === 'upgrades'
+          ? lists.upgrades.host
+          : tab === 'achievements'
+            ? achievementList.host
+            : prestigeView;
     if (panel.lastElementChild !== wanted) {
-      if (tab === 'prestige') panel.replaceChildren(wanted);
+      if (tab === 'prestige' || tab === 'achievements') panel.replaceChildren(wanted);
       else panel.replaceChildren(bulkBar, wanted);
     }
     if (tab === 'automations') lists.automations.render(state);
     else if (tab === 'upgrades') lists.upgrades.render(state);
+    else if (tab === 'achievements') achievementList.render(state);
     else {
       const pending = pendingMerits(state);
       const next = runKpForMerits(pending.toNumber() + 1);
@@ -421,7 +445,9 @@ export async function startApp(root: HTMLElement): Promise<void> {
   function frame(now: number): void {
     const dt = Math.min(1000, Math.max(0, now - last));
     last = now;
+    const before = state;
     state = tick(state, dt);
+    announceAchievements(before);
     rollAcc += dt;
     while (rollAcc >= BALANCE.events.rollIntervalMs) {
       rollAcc -= BALANCE.events.rollIntervalMs;

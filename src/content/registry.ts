@@ -1,6 +1,6 @@
 // Content registry. Every definition lives in its own file and is discovered with
 // import.meta.glob. Never maintain a central list by hand: add a file instead.
-import type { AutomationDef, CustomerDef, EventDef, MeritDef, SystemDef, UpgradeDef } from './types';
+import type { AchievementDef, AutomationDef, CustomerDef, EventDef, MeritDef, SystemDef, UpgradeDef } from './types';
 
 type Modules<T> = Record<string, { default: T }>;
 
@@ -33,6 +33,11 @@ export const SYSTEMS = collect(import.meta.glob<{ default: SystemDef }>('./syste
 export const CUSTOMERS = collect(
   import.meta.glob<{ default: CustomerDef }>('./customers/*.ts', { eager: true }),
   (a, b) => a.atRunKp - b.atRunKp,
+);
+
+export const ACHIEVEMENTS = collect(
+  import.meta.glob<{ default: AchievementDef }>('./achievements/*.ts', { eager: true }),
+  byOrder,
 );
 
 const systemById = new Map(SYSTEMS.map((s) => [s.id, s]));

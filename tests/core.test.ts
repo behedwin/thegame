@@ -3,6 +3,7 @@ import { AUTOMATIONS } from '../src/content/registry';
 import { BALANCE } from '../src/content/balance';
 import { EVENTS } from '../src/content/registry';
 import {
+  achievementProdMult,
   applyOffline,
   automationKps,
   buy,
@@ -246,7 +247,8 @@ describe('events', () => {
     expect(kpPerSecond(state).toNumber()).toBeCloseTo(9, 9);
     const later = tick(state, 31_000);
     expect(later.buffs).toHaveLength(0);
-    expect(kpPerSecond(later).toNumber()).toBeCloseTo(3, 9);
+    // Achievements unlocked by the tick (first event, first customer) add +1 % each.
+    expect(kpPerSecond(later).toNumber()).toBeCloseTo(3 * achievementProdMult(later), 9);
   });
 
   it('events expire if ignored and start the cooldown', () => {

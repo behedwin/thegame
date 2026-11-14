@@ -1,8 +1,8 @@
 ---
 id: 006
 size: M
-status: ready
-touches: [src/content/achievements/, src/content/types.ts, src/content/registry.ts, src/core/achievements.ts, src/core/state.ts, src/core/rules.ts, src/save/, src/ui/achievements.ts, src/ui/app.ts, src/content/texts.ts]
+status: done
+touches: [src/content/achievements/, src/content/types.ts, src/content/registry.ts, src/core/achievements.ts, src/core/actions.ts, src/core/index.ts, src/core/state.ts, src/core/rules.ts, src/save/, src/ui/achievements.ts, src/ui/app.ts, src/content/texts.ts]
 depends: [005]
 ---
 

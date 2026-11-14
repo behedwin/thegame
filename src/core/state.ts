@@ -43,6 +43,8 @@ export interface GameState {
   nextEventAtMs: number;
   buffs: Buff[];
   eventsClaimed: number;
+  /** Unlocked achievement ids, in unlock order. Kept across school years. */
+  achievements: string[];
   settings: Settings;
 }
 
@@ -64,6 +66,7 @@ export function createInitialState(nowMs: number): GameState {
     nextEventAtMs: 0,
     buffs: [],
     eventsClaimed: 0,
+    achievements: [],
     settings: { sound: true, vibration: true },
   };
 }
