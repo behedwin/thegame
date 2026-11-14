@@ -1,7 +1,7 @@
 ---
 id: 016
 size: S
-status: ready
+status: done
 touches: [src/ui/app.ts]
 depends: [015]
 ---
