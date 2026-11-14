@@ -53,3 +53,36 @@ describe('eligibleTasks', () => {
     expect(ids(['999'])).toEqual([]);
   });
 });
+
+describe('refactor barriers', () => {
+  type K = Meta & { kind?: string };
+  const t = (meta: K) => ({ file: `${meta.id}-x.md`, path: `tasks/${meta.id}-x.md`, location: 'queue', meta });
+  const done = [{ ...t({ id: '001', status: 'done', touches: [], depends: [] }), location: 'done' }];
+  const mk = (blockedStatus: string, kind?: string) => ({
+    queue: [
+      t({ id: '002', status: blockedStatus, touches: ['a/'], depends: [] }),
+      t({ id: '005', status: 'ready', touches: ['src/'], depends: ['001', '002'], ...(kind ? { kind } : {}) }),
+      t({ id: '006', status: 'ready', touches: ['b/'], depends: ['002'] }),
+    ],
+    done,
+    proposed: [],
+    claims: [],
+  });
+  const ids = (tasks: ReturnType<typeof mk>) => eligibleTasks(tasks, []).map((x: { meta: Meta }) => x.meta.id);
+
+  it('a refactor task is ready when every dependency is done or blocked', () => {
+    expect(ids(mk('blocked', 'refactor'))).toEqual(['005']);
+  });
+
+  it('a feature task still requires its dependencies to be done', () => {
+    expect(ids(mk('blocked', 'refactor'))).not.toContain('006');
+  });
+
+  it('without kind: refactor a blocked dependency keeps the task waiting', () => {
+    expect(ids(mk('blocked'))).toEqual([]);
+  });
+
+  it('a refactor task still waits for dependencies that are only ready', () => {
+    expect(ids(mk('ready', 'refactor'))).toEqual(['002']);
+  });
+});

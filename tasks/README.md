@@ -17,6 +17,7 @@ size: M                 # S (< 1 h) | M (en körning) | L (flera körningar, mer
 status: ready           # ready | blocked | done | proposed
 touches: [src/ui/app.ts, src/content/events/]   # filer, eller kataloger som slutar med /
 depends: [005]          # id:n som måste ligga i tasks/done/
+kind: refactor          # valfri: feature (standard) | refactor
 ---
 # Rubrik
 
@@ -27,8 +28,9 @@ Beskrivning och motivering.
   innehåller den andra) körs aldrig samtidigt. Var hellre för bred än för smal.
 - Utöver `touches` får en worker alltid röra: nya testfiler (`tests/<id>-*.test.ts`, `e2e/<id>-*.spec.ts`),
   `journal/`, `decisions/`, sin egen uppgiftsfil och högst 1 ny fil i `tasks/proposed/`.
-- Var femte uppgift är en refaktoreringsuppgift (005, 010, 015 …). Med `depends` fungerar den som en spärr:
-  den väntar in de fyra uppgifterna före sig, och de fyra efter väntar in den.
+- Var femte uppgift är en refaktoreringsuppgift (005, 010, 015 …) med `kind: refactor`. Med `depends`
+  fungerar den som en spärr: den väntar in de fyra uppgifterna före sig, och de fyra efter väntar in den. En
+  refaktoreringsuppgift räknar `blocked` beroenden som klara, så att en blockerad uppgift inte stoppar kön.
 - `blocked`: lägg till en sektion `## Blockerad` med orsak (grindfel ×3, HÅRT STOPP osv.).
 
 ## Verktyg
