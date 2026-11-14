@@ -1,7 +1,6 @@
 // The hero visual: source systems on the left, your integration hub in the middle,
 // target systems on the right. Data packets flow along the lines.
-import { AUTOMATIONS } from '../content/registry';
-import { systemName } from '../content/registry';
+import { AUTOMATIONS, SYSTEMS, systemName, type SystemDef } from '../content/registry';
 
 const NS = 'http://www.w3.org/2000/svg';
 const W = 360;
@@ -27,6 +26,16 @@ export function rowYs(n: number, height: number): number[] {
   const span = Math.min(height - 2 * pad, (n - 1) * 52);
   const top = (height - span) / 2;
   return Array.from({ length: n }, (_, i) => top + (i * span) / (n - 1));
+}
+
+/** How long a tapped system's tip stays on the map. */
+const TIP_MS = 4000;
+
+/** Text shown when a system is tapped: its parody tagline, or its kind if it has none. */
+export function nodeTip(id: string, systems: readonly SystemDef[] = SYSTEMS): string {
+  const s = systems.find((x) => x.id === id);
+  if (!s) return id;
+  return s.tagline ? `${s.name}: ”${s.tagline}”` : `${s.name} · ${s.kind}`;
 }
 
 function rowPath(y: number): string {
@@ -65,8 +74,9 @@ function el<K extends keyof SVGElementTagNameMap>(tag: K, attrs: Record<string, 
 }
 
 /** A node drawn around y = 0; the row group is translated to its place. */
-function node(x: number, label: string, side: 'src' | 'dst'): SVGGElement {
-  const g = el('g', { class: `net-node net-${side}` });
+function node(x: number, systemId: string, side: 'src' | 'dst'): SVGGElement {
+  const g = el('g', { class: `net-node net-${side}`, 'data-system': systemId, style: 'cursor: pointer' });
+  const label = systemName(systemId);
   g.append(
     el('rect', { x, y: -NODE_H / 2, width: NODE_W, height: NODE_H, rx: 10 }),
   );
@@ -82,6 +92,8 @@ export class NetworkView {
   private packets: Packet[] = [];
   private packetLayer: SVGGElement;
   private layoutKey = '';
+  private tip: SVGTextElement;
+  private tipTimer: ReturnType<typeof setTimeout> | undefined;
 
   constructor() {
     this.svg = el('svg', { viewBox: `0 0 ${W} ${H}`, class: 'network', 'aria-hidden': 'true' });
@@ -95,19 +107,36 @@ export class NetworkView {
     const lineLayer = el('g', {});
     const nodeLayer = el('g', {});
     this.packetLayer = el('g', {});
-    this.svg.append(lineLayer, this.packetLayer, nodeLayer);
+    this.tip = el('text', {
+      x: W / 2, y: 14, 'text-anchor': 'middle', class: 'net-tip',
+      style: 'fill: var(--muted); font-size: 10px; font-style: italic; opacity: 0; transition: opacity 0.3s; pointer-events: none',
+    });
+    this.svg.append(lineLayer, this.packetLayer, nodeLayer, this.tip);
+    nodeLayer.addEventListener('click', (e) => {
+      const g = (e.target as Element).closest<SVGGElement>('.net-node');
+      const row = g && this.rows.find((r) => r.group.contains(g));
+      if (g?.dataset.system && row?.visible) this.showTip(nodeTip(g.dataset.system));
+    });
 
     for (const a of AUTOMATIONS) {
       const lines = el('path', { d: rowPath(H / 2), class: 'net-line' });
       lineLayer.append(lines);
       const outer = el('g', { transform: `translate(0 ${H / 2})` });
       const group = el('g', { class: 'net-row' });
-      group.append(node(4, systemName(a.from), 'src'), node(W - NODE_W - 4, systemName(a.to), 'dst'));
+      group.append(node(4, a.from, 'src'), node(W - NODE_W - 4, a.to, 'dst'));
       outer.append(group);
       nodeLayer.append(outer);
       this.rows.push({ id: a.id, y: H / 2, outer, group, lines, visible: false, rate: 0, acc: 0, len: 0 });
     }
     this.layout(pickRows(this.rows.map(() => false), MAX_ROWS));
+  }
+
+  /** Show a short, discreet line about a tapped system at the top of the map. */
+  private showTip(text: string): void {
+    this.tip.textContent = text;
+    this.tip.style.opacity = '1';
+    clearTimeout(this.tipTimer);
+    this.tipTimer = setTimeout(() => { this.tip.style.opacity = '0'; }, TIP_MS);
   }
 
   /** Show exactly the given rows, evenly spaced; hide the rest. */

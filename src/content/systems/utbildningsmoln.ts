@@ -4,4 +4,5 @@ export default {
   id: 'utbildningsmoln',
   name: 'Utbildningsmoln',
   kind: 'Molntjänst',
+  tagline: 'Molnigt med uppehåll',
 } satisfies SystemDef;
