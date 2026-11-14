@@ -44,6 +44,7 @@ import { configureFeedback, floatText, haptic, setBackground, sfx, toast } from 
 import { fmt, fmtDuration } from './format';
 import { AchievementList } from './achievements';
 import { showCustomers } from './customers';
+import { showStats } from './stats';
 import { NetworkView } from './network';
 import { ShopList } from './shop';
 
@@ -264,6 +265,8 @@ export async function startApp(root: HTMLElement): Promise<void> {
       persist();
     });
     const volume = h('label', { class: 'muted', text: T.settings.volume }, slider);
+    const stats = h('button', { class: 'btn wide', text: T.stats.open, testId: 'open-stats' });
+    stats.addEventListener('click', () => showStats(state));
     const wipe = h('button', { class: 'btn danger wide', text: T.settings.wipe });
     wipe.addEventListener('click', () => {
       if (!armed) {
@@ -276,7 +279,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
     });
     showDialog(
       T.settings.title,
-      [toggle(T.settings.sound, 'sound'), volume, toggle(T.settings.vibration, 'vibration'), wipe, h('p', { class: 'muted', text: T.settings.about })],
+      [toggle(T.settings.sound, 'sound'), volume, toggle(T.settings.vibration, 'vibration'), stats, wipe, h('p', { class: 'muted', text: T.settings.about })],
       [{ label: T.settings.close, primary: true }],
       'settings-dialog',
     );
