@@ -44,16 +44,22 @@ export const SEASONS = collect(import.meta.glob<{ default: SeasonDef }>('./seaso
 
 export const TICKETS = collect(import.meta.glob<{ default: TicketDef }>('./tickets/*.ts', { eager: true }), none);
 
-const systemById = new Map(SYSTEMS.map((s) => [s.id, s]));
-const customerById = new Map(CUSTOMERS.map((c) => [c.id, c]));
+/** O(1) lookup by id over a content list. Unknown ids give undefined. */
+export function byId<T extends { id: string }>(list: readonly T[]): (id: string) => T | undefined {
+  const map = new Map(list.map((d) => [d.id, d]));
+  return (id) => map.get(id);
+}
+
+const getSystem = byId(SYSTEMS);
+const getCustomer = byId(CUSTOMERS);
 
 export function systemName(id: string): string {
-  return systemById.get(id)?.name ?? id;
+  return getSystem(id)?.name ?? id;
 }
 
 /** Display name of a ticket sender: a system or a customer. */
 export function senderName(id: string): string {
-  return customerById.get(id)?.name ?? systemName(id);
+  return getCustomer(id)?.name ?? systemName(id);
 }
 
 export type * from './types';

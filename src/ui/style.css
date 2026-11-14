@@ -93,16 +93,21 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
   box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 18%, transparent), 0 10px 30px rgba(0, 0, 0, 0.45);
 }
-.hub.pop { animation: pop 0.16s ease-out; }
-@keyframes pop { 40% { transform: scale(0.9); } 100% { transform: scale(1); } }
+.hub.pop { animation: pop 0.3s ease-out; }
+@keyframes pop { 25% { transform: scale(1.1, 0.86); } 55% { transform: scale(0.94, 1.06); } 80% { transform: scale(1.02, 0.98); } 100% { transform: scale(1); } }
+.kp-value { display: inline-block; }
+.fx-p { position: absolute; width: 7px; height: 5px; border-radius: 2px; background: var(--accent); box-shadow: 0 0 4px var(--accent); }
+.fx-ring { position: absolute; border-radius: 50%; border: 2px solid var(--accent); }
 
 .float-layer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
 .float-num {
   position: absolute; font-weight: 800; color: var(--gold); font-size: 1.25rem; text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
   animation: rise 0.9s ease-out forwards; white-space: nowrap; transform: translateX(-50%);
 }
-.float-num.big { font-size: 1.75rem; }
-@keyframes rise { to { transform: translate(-50%, -70px); opacity: 0; } }
+@keyframes rise {
+  50% { transform: translate(calc(-50% + var(--dx, 0px) * 0.6), -48px) scale(var(--s, 1)); }
+  to { transform: translate(calc(-50% + var(--dx, 0px)), -72px) scale(var(--s, 1)); opacity: 0; }
+}
 
 .event-slot { position: absolute; left: 0; right: 0; top: 0; display: flex; justify-content: center; pointer-events: none; }
 .event-card {

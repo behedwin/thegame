@@ -22,6 +22,7 @@ test('holding SYNKA repeats about 8 clicks per second and stops on release', asy
   await page.mouse.down();
   await page.waitForTimeout(1500);
   await page.mouse.up();
+  await page.waitForTimeout(400); // let the KP counter finish rolling up
   const afterHold = await kp(page);
   expect(afterHold).toBeGreaterThanOrEqual(1 + 6);
   expect(afterHold).toBeLessThanOrEqual(1 + 16);
@@ -35,6 +36,7 @@ test('holding SYNKA repeats about 8 clicks per second and stops on release', asy
   await page.keyboard.down('Enter');
   await page.waitForTimeout(1000);
   await page.keyboard.up('Enter');
+  await page.waitForTimeout(400); // let the KP counter finish rolling up
   const afterKey = await kp(page);
   expect(afterKey - afterHold).toBeGreaterThanOrEqual(4);
   expect(afterKey - afterHold).toBeLessThanOrEqual(11);
