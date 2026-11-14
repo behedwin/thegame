@@ -472,13 +472,14 @@ export async function startApp(root: HTMLElement): Promise<void> {
     lastCustomers = signed;
 
     const counts: Record<string, number> = {};
-    const kpsLog: Record<string, number> = {};
+    const shares: Record<string, number> = {};
+    const total = kpPerSecond(state);
     for (const a of AUTOMATIONS) {
       counts[a.id] = level(state.automations, a.id);
-      const k = automationKps(state, a);
-      kpsLog[a.id] = k.gt(0) ? Math.max(0, k.log10() + 1) : 0;
+      shares[a.id] = total.gt(0) ? automationKps(state, a).div(total).toNumber() : 0;
     }
-    net.update(counts, kpsLog);
+    const tierUp = net.update(counts, shares, total.toNumber());
+    if (tierUp !== null) toast(T.hubTierUp(T.hubTiers[tierUp]!), 'good');
     renderEvent();
     renderTips();
 

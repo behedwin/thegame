@@ -13,6 +13,8 @@ export const T = {
   perClick: 'KP/klick',
   hubLabel: 'SYNKA',
   hubAria: 'Synka data manuellt',
+  hubTiers: ['Skolnav', 'Kommunnav', 'Regionnav', 'Nationellt nav', 'Datahjärta'],
+  hubTierUp: (name: string) => `Navet har uppgraderats till ${name}`,
   sourceSystems: 'Källsystem',
   targetSystems: 'Målsystem',
   tabs: {
