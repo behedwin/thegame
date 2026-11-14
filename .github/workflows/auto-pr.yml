@@ -1,14 +1,15 @@
 name: Auto PR
 
-# Workers never open PRs themselves. When a worker pushes a commit whose message
-# contains [ready] to claude/task-<id>, this workflow opens (or updates) the PR:
+# Workers never open PRs themselves. When a worker (or the idea intake) pushes a commit whose message
+# contains [ready] to claude/task-<id> or claude/idea-<slug>, this workflow opens (or updates) the PR:
 # title from the task file, body from the journal file, label automerge (S/M),
 # needs-review (L), conflict ([conflict] in the message) or blocked (status blocked).
+# Idea branches get automerge only if the diff touches nothing but tasks/, else needs-review.
 # Uses AUTOMERGE_TOKEN so the new PR triggers CI and automerge.yml.
 
 on:
   push:
-    branches: ['claude/task-*']
+    branches: ['claude/task-*', 'claude/idea-*']
 
 permissions:
   contents: read

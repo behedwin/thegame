@@ -4,7 +4,7 @@ Kön är ersättningen för BACKLOG.md. Den är byggd för flera autonoma worker
 
 | Plats | Innehåll | Tillåten status |
 |---|---|---|
-| `tasks/NNN-slug.md` | Kön. **Lägst NNN först** = högst prioritet. | `ready`, `blocked` |
+| `tasks/NNN-slug.md` | Kön. `priority: high` före `normal`, sedan **lägst NNN först**. | `ready`, `blocked` |
 | `tasks/done/NNN-slug.md` | Klara uppgifter (flyttas hit i samma PR som implementationen). | `done` |
 | `tasks/proposed/p-slug.md` | Förslag som inte är godkända än. | `proposed` |
 | `tasks/claims/<id>.md` | Lås. Finns **bara på grenen** `claude/task-<id>` och får aldrig nå main. | – |
@@ -18,6 +18,7 @@ status: ready           # ready | blocked | done | proposed
 touches: [src/ui/app.ts, src/content/events/]   # filer, eller kataloger som slutar med /
 depends: [005]          # id:n som måste ligga i tasks/done/
 kind: refactor          # valfri: feature (standard) | refactor
+priority: normal        # valfri: high | normal (standard). high väljs före normal
 ---
 # Rubrik
 
@@ -36,6 +37,7 @@ Beskrivning och motivering.
 ## Verktyg
 - `npm run tasks:check`: validerar allt ovan. Ingår i CI och i `npm run gates`.
 - `node scripts/next-task.mjs`: listar valbara uppgifter i ordning (efter `git fetch --prune`).
+  `--queue` visar hela kön med placering.
 - `scripts/claim.sh <id> <run-id>`: tar låset.
 - `scripts/stale-claims.sh [--release]`: listar döda lås och kan frigöra dem.
 
