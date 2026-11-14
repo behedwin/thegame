@@ -1,0 +1,88 @@
+{
+  "generatedBy": "npm run sim",
+  "seeds": 200,
+  "simulatedHours": 3,
+  "gates": {
+    "firstPurchaseMaxSec": 15,
+    "firstAutomationMaxSec": 90,
+    "maxNoAffordableGapSecFirstHour": 180,
+    "firstPrestigeMinSec": 1800,
+    "firstPrestigeMaxSec": 5400
+  },
+  "passed": true,
+  "failures": [],
+  "pacing": {
+    "firstPurchaseSec": {
+      "min": 2,
+      "p50": 3,
+      "p95": 4,
+      "max": 6
+    },
+    "firstAutomationSec": {
+      "min": 4,
+      "p50": 6,
+      "p95": 12,
+      "max": 12
+    },
+    "maxNoAffordableGapSecFirstHour": {
+      "min": 28,
+      "p50": 36,
+      "p95": 39,
+      "max": 40
+    },
+    "meanPurchaseIntervalSecFirst10Min": {
+      "min": 5.357142857142857,
+      "p50": 6.122448979591836,
+      "p95": 7.228915662650603,
+      "max": 7.894736842105263
+    },
+    "firstPrestigeMin": {
+      "min": 37.86666666666667,
+      "p50": 47.25,
+      "p95": 52.9,
+      "max": 58.2
+    },
+    "prestigesIn3h": {
+      "min": 4,
+      "p50": 4,
+      "p95": 4,
+      "max": 5
+    },
+    "purchases": {
+      "min": 1388,
+      "p50": 1640,
+      "p95": 1669,
+      "max": 1775
+    },
+    "eventsSpawned": {
+      "min": 38,
+      "p50": 51,
+      "p95": 60,
+      "max": 62
+    },
+    "eventsClaimed": {
+      "min": 17,
+      "p50": 38,
+      "p95": 50,
+      "max": 57
+    },
+    "meritsEarned": {
+      "min": 16,
+      "p50": 16,
+      "p95": 16,
+      "max": 32
+    },
+    "finalLog10TotalEarned": {
+      "min": 9.546958791625093,
+      "p50": 9.841305299630088,
+      "p95": 10.105461458296116,
+      "max": 10.140847933732303
+    },
+    "finalLog10Kps": {
+      "min": 2.0008677215312267,
+      "p50": 6.332805737901808,
+      "p95": 6.846979726371336,
+      "max": 7.324231057312244
+    }
+  }
+}

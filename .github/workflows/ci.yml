@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Gate 1 - typecheck
+        run: npm run typecheck
+      - name: Gate 2 - unit tests
+        run: npm test
+      - name: Gate 3 - pacing simulation (200 seeds x 3 h)
+        run: npm run sim
+      - name: Gate 5 - size budget
+        run: npm run size-check
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+      - name: Gate 4 - e2e
+        run: npm run e2e
+      - name: Upload sim report and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate-reports
+          path: |
+            sim-report.json
+            e2e-output/
+          if-no-files-found: ignore

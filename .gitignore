@@ -1,0 +1,16 @@
+node_modules/
+dist/
+e2e-output/
+coverage/
+*.log
+.DS_Store
+# Android build output (project files are committed)
+android/app/build/
+android/build/
+android/.gradle/
+android/local.properties
+android/app/src/main/assets/public/
+android/.idea/
+*.apk
+*.keystore
+*.jks

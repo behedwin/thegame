@@ -1,0 +1,129 @@
+// Shop lists: automations, upgrades and the merit shop. Cards are built once per
+// "reveal signature" and then cheaply updated every render.
+import { AUTOMATIONS } from '../content/automations';
+import { BALANCE } from '../content/balance';
+import { MERITS } from '../content/merits';
+import { T } from '../content/texts';
+import { UPGRADES } from '../content/upgrades';
+import {
+  automationKps,
+  canBuy,
+  canBuyMerit,
+  costOf,
+  getAutomation,
+  isMaxed,
+  isRevealed,
+  level,
+  meritCost,
+  nextMilestone,
+  type GameState,
+} from '../core';
+import { h } from './dialogs';
+import { fmt } from './format';
+
+export type ShopKind = 'automations' | 'upgrades' | 'merits';
+
+interface Card {
+  id: string;
+  root: HTMLElement;
+  level: HTMLElement;
+  sub: HTMLElement;
+  btn: HTMLButtonElement;
+  bar: HTMLElement | null;
+}
+
+export class ShopList {
+  private cards: Card[] = [];
+  private signature = '';
+
+  constructor(
+    readonly host: HTMLElement,
+    private readonly kind: ShopKind,
+    private readonly onBuy: (id: string, btn: HTMLElement) => void,
+  ) {}
+
+  private visibleIds(s: GameState): { ids: string[]; teaser: boolean } {
+    if (this.kind === 'merits') return { ids: MERITS.map((m) => m.id), teaser: false };
+    const all = this.kind === 'automations' ? AUTOMATIONS.map((a) => a.id) : UPGRADES.map((u) => u.id);
+    const ids = all.filter((id) => isRevealed(s, id));
+    return { ids, teaser: ids.length < all.length };
+  }
+
+  private build(s: GameState, ids: string[], teaser: boolean): void {
+    this.host.replaceChildren();
+    this.cards = ids.map((id) => {
+      const def =
+        this.kind === 'automations'
+          ? AUTOMATIONS.find((a) => a.id === id)!
+          : this.kind === 'upgrades'
+            ? UPGRADES.find((u) => u.id === id)!
+            : MERITS.find((m) => m.id === id)!;
+      const lvl = h('span', { class: 'card-level' });
+      const sub = h('div', { class: 'card-sub' });
+      const btn = h('button', { class: 'buy', testId: `buy-${id}` });
+      const bar = this.kind === 'automations' ? h('div', { class: 'bar-fill' }) : null;
+      const info = h(
+        'div',
+        { class: 'card-info' },
+        h('div', { class: 'card-title' }, h('span', { text: def.name }), lvl),
+        h('div', { class: 'card-desc', text: def.desc }),
+        sub,
+      );
+      if (bar) info.append(h('div', { class: 'bar' }, bar));
+      const root = h('div', { class: 'card', testId: `card-${id}` }, info, btn);
+      btn.addEventListener('click', () => this.onBuy(id, btn));
+      this.host.append(root);
+      return { id, root, level: lvl, sub, btn, bar };
+    });
+    if (teaser) this.host.append(h('div', { class: 'card teaser', text: T.lockedTeaser }));
+    this.update(s);
+  }
+
+  /** Rebuild if the visible set changed, then refresh numbers. */
+  render(s: GameState): void {
+    const { ids, teaser } = this.visibleIds(s);
+    const sig = ids.join(',') + (teaser ? '+' : '');
+    if (sig !== this.signature) {
+      this.signature = sig;
+      this.build(s, ids, teaser);
+    } else this.update(s);
+  }
+
+  private update(s: GameState): void {
+    for (const c of this.cards) {
+      if (this.kind === 'automations') {
+        const count = level(s.automations, c.id);
+        c.level.textContent = count ? T.owned(count) : '';
+        const def = getAutomation(c.id)!;
+        const next = nextMilestone(count);
+        c.sub.textContent = count
+          ? `${fmt(automationKps(s, def))} ${T.perSecond} · ${next ? T.milestoneProgress(next) : T.allMilestones}`
+          : `+${fmt(def.kps)} ${T.perSecond} styck`;
+        if (c.bar) {
+          const prev = [0, ...BALANCE.milestones].filter((m) => m <= count).pop() ?? 0;
+          const pct = next ? ((count - prev) / (next - prev)) * 100 : 100;
+          c.bar.style.width = `${pct}%`;
+        }
+        this.setButton(c, fmt(costOf(s, c.id)) + ' KP', canBuy(s, c.id));
+      } else if (this.kind === 'upgrades') {
+        const def = UPGRADES.find((u) => u.id === c.id)!;
+        c.level.textContent = T.level(level(s.upgrades, c.id), def.maxLevel);
+        if (isMaxed(s, c.id)) this.setButton(c, T.maxed, false, true);
+        else this.setButton(c, fmt(costOf(s, c.id)) + ' KP', canBuy(s, c.id));
+      } else {
+        const def = MERITS.find((m) => m.id === c.id)!;
+        const lvl = level(s.meritUpgrades, c.id);
+        c.level.textContent = T.level(lvl, def.maxLevel);
+        if (lvl >= def.maxLevel) this.setButton(c, T.maxed, false, true);
+        else this.setButton(c, `${fmt(meritCost(s, c.id))} ★`, canBuyMerit(s, c.id));
+      }
+    }
+  }
+
+  private setButton(c: Card, label: string, enabled: boolean, maxed = false): void {
+    if (c.btn.textContent !== label) c.btn.textContent = label;
+    c.btn.disabled = !enabled;
+    c.root.classList.toggle('affordable', enabled);
+    c.root.classList.toggle('maxed', maxed);
+  }
+}
