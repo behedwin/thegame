@@ -30,7 +30,8 @@ Gör högst en uppgift per körning.
 
 ### Detaljer till protokollet
 - **`[ready]`** får bara stå i den sista commiten, när grindarna är gröna och journalen är skriven. Pushar
-  utan `[ready]` skapar ingen PR. En ny push med `[ready]` uppdaterar en befintlig PR (idempotent).
+  utan `[ready]` skapar ingen PR. En ny push med `[ready]` uppdaterar en befintlig PR (idempotent). Ligger grenen
+  efter main uppdaterar `auto-pr.yml` den automatiskt.
 - **Låset** är den fjärrgren som `claim.sh` pushar (`claude/task-<id>`). Låsfilen
   `tasks/claims/<id>.md` är bara en logg och får aldrig följa med i `[ready]`-pushen (`npm run tasks:check`
   fallerar annars). Grenen raderas automatiskt när PR:en mergas, och då släpper låset.
