@@ -9,4 +9,10 @@ export default {
   kps: 3,
   from: 'edsovo',
   to: 'utbildningsmoln',
+  milestoneNames: [
+    'Nattlig synk körs nu varje timme',
+    'Måndagskraschen har flyttats till tisdag',
+    'Loggen får plats på en skärm',
+    'Ingen har märkt något på en hel termin',
+  ],
 } satisfies AutomationDef;

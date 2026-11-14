@@ -9,4 +9,10 @@ export default {
   kps: 800_000,
   from: 'kaputt',
   to: 'gurgelklassrum',
+  milestoneNames: [
+    'Bara två inloggningar kvar',
+    'Lärplattformen känner igen verktyget',
+    'Betygen följer med tillbaka',
+    'Ett klick betyder faktiskt ett klick',
+  ],
 } satisfies AutomationDef;

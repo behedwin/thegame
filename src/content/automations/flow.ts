@@ -9,4 +9,10 @@ export default {
   kps: 25,
   from: 'vanlikum',
   to: 'mikromjuk',
+  milestoneNames: [
+    'Bäcken rinner nu mest nedför',
+    'Flödet har fått en karta',
+    'Inga fler mystiska dubbletter',
+    'Synken hinner före lunchrasten',
+  ],
 } satisfies AutomationDef;

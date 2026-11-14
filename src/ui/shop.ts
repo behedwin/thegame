@@ -15,12 +15,20 @@ import {
   isRevealed,
   level,
   meritCost,
+  milestonesReached,
   nextMilestone,
   type GameState,
 } from '../core';
+import type { AutomationDef } from '../content/types';
 import { costOfMany, resolveBulk, type BulkMode } from '../core/bulk';
 import { h } from './dialogs';
 import { fmt } from './format';
+
+/** Flavour name of the latest milestone reached at this count, or null if none (or unnamed). */
+export function milestoneName(def: AutomationDef, count: number): string | null {
+  const reached = milestonesReached(count);
+  return reached > 0 ? (def.milestoneNames?.[reached - 1] ?? null) : null;
+}
 
 export type ShopKind = 'automations' | 'upgrades' | 'merits';
 
@@ -31,6 +39,8 @@ interface Card {
   sub: HTMLElement;
   btn: HTMLButtonElement;
   bar: HTMLElement | null;
+  /** Latest named milestone (automations only). */
+  named: HTMLElement | null;
 }
 
 export class ShopList {
@@ -65,6 +75,7 @@ export class ShopList {
       const sub = h('div', { class: 'card-sub' });
       const btn = h('button', { class: 'buy', testId: `buy-${id}` });
       const bar = this.kind === 'automations' ? h('div', { class: 'bar-fill' }) : null;
+      const named = this.kind === 'automations' ? h('div', { class: 'card-desc card-milestone', testId: `milestone-${id}` }) : null;
       const info = h(
         'div',
         { class: 'card-info' },
@@ -72,11 +83,12 @@ export class ShopList {
         h('div', { class: 'card-desc', text: def.desc }),
         sub,
       );
+      if (named) info.append(named);
       if (bar) info.append(h('div', { class: 'bar' }, bar));
       const root = h('div', { class: 'card', testId: `card-${id}` }, info, btn);
       btn.addEventListener('click', () => this.onBuy(id, btn));
       this.host.append(root);
-      return { id, root, level: lvl, sub, btn, bar };
+      return { id, root, level: lvl, sub, btn, bar, named };
     });
     if (teaser) this.host.append(h('div', { class: 'card teaser', text: T.lockedTeaser }));
     this.update(s);
@@ -99,9 +111,11 @@ export class ShopList {
         c.level.textContent = count ? T.owned(count) : '';
         const def = getAutomation(c.id)!;
         const next = nextMilestone(count);
+        const named = milestoneName(def, count);
         c.sub.textContent = count
           ? `${fmt(automationKps(s, def))} ${T.perSecond} · ${next ? T.milestoneProgress(next) : T.allMilestones}`
           : `+${fmt(def.kps)} ${T.perSecond} styck`;
+        if (c.named) c.named.textContent = named ? `“${named}”` : '';
         if (c.bar) {
           const prev = [0, ...BALANCE.milestones].filter((m) => m <= count).pop() ?? 0;
           const pct = next ? ((count - prev) / (next - prev)) * 100 : 100;

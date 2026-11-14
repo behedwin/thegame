@@ -9,4 +9,10 @@ export default {
   kps: 220,
   from: 'paron',
   to: 'gurgel',
+  milestoneNames: [
+    'Dokumentationen har uppdaterats till 2017',
+    'API:et svarar med rätt statuskod',
+    'Paginering fungerar på första försöket',
+    'Versionsnumret har passerat v2-final',
+  ],
 } satisfies AutomationDef;

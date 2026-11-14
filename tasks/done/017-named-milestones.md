@@ -1,7 +1,7 @@
 ---
 id: 017
 size: S
-status: ready
+status: done
 touches: [src/content/automations/, src/content/types.ts, src/ui/app.ts, src/ui/shop.ts]
 depends: [015]
 ---

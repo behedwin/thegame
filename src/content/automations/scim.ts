@@ -9,4 +9,10 @@ export default {
   kps: 12_000,
   from: 'passiv',
   to: 'itsforgetting',
+  milestoneNames: [
+    'Konton skapas före de tas bort',
+    'Sommarlovsrensningen frågar först',
+    'Klassbyten hanteras utan supportärende',
+    'Ingen elev har två konton längre',
+  ],
 } satisfies AutomationDef;
