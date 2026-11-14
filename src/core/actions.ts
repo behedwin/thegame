@@ -1,18 +1,9 @@
 // State transitions. All functions are pure: they return a new state and never mutate the input.
 import { BALANCE } from '../content/balance';
 import { MERITS } from '../content/registry';
-import { canBuy, canBuyMerit, costOf, getAutomation, kpPerClick, kpPerSecond, meritCost, baseKps, offlineCapMs, pendingMerits } from './rules';
-import { createInitialState, Decimal, level, type GameState } from './state';
-
-function earn(state: GameState, amount: Decimal): GameState {
-  if (amount.lte(0)) return state;
-  return {
-    ...state,
-    kp: state.kp.add(amount),
-    runEarned: state.runEarned.add(amount),
-    totalEarned: state.totalEarned.add(amount),
-  };
-}
+import { buyMany } from './bulk';
+import { baseKps, canBuyMerit, kpPerClick, kpPerSecond, meritCost, offlineCapMs, pendingMerits } from './rules';
+import { createInitialState, Decimal, earn, level, type GameState } from './state';
 
 /** Advance game time by dtMs: production, buff and event expiry. */
 export function tick(state: GameState, dtMs: number): GameState {
@@ -39,13 +30,7 @@ export function click(state: GameState, times = 1): GameState {
 
 /** Buy one level of an upgrade or one unit of an automation. Returns the same state if not affordable. */
 export function buy(state: GameState, id: string): GameState {
-  if (!canBuy(state, id)) return state;
-  const cost = costOf(state, id);
-  const kp = state.kp.sub(cost);
-  if (getAutomation(id)) {
-    return { ...state, kp, automations: { ...state.automations, [id]: level(state.automations, id) + 1 } };
-  }
-  return { ...state, kp, upgrades: { ...state.upgrades, [id]: level(state.upgrades, id) + 1 } };
+  return buyMany(state, id, 1);
 }
 
 export function buyMerit(state: GameState, id: string): GameState {

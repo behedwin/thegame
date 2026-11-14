@@ -1,8 +1,6 @@
 // Pure formulas: production, costs, prestige. No side effects.
-import { AUTOMATIONS, type AutomationDef } from '../content/registry';
 import { BALANCE } from '../content/balance';
-import { MERITS, type MeritDef } from '../content/registry';
-import { UPGRADES, type UpgradeDef } from '../content/registry';
+import { AUTOMATIONS, MERITS, UPGRADES, type AutomationDef, type UpgradeDef } from '../content/registry';
 import { customerClickMult, customerProdMult, signedCustomers } from './customers';
 import { Decimal, level, type GameState } from './state';
 
@@ -18,9 +16,6 @@ export function getUpgrade(id: string): UpgradeDef | undefined {
 export function getAutomation(id: string): AutomationDef | undefined {
   return automationById.get(id);
 }
-export function getMerit(id: string): MeritDef | undefined {
-  return meritById.get(id);
-}
 
 /** Number of milestone doublings reached for an owned count. */
 export function milestonesReached(count: number): number {
@@ -35,12 +30,9 @@ export function nextMilestone(count: number): number | null {
 function meritSum(state: GameState, kind: 'prodPct' | 'clickPct' | 'offlineHours'): number {
   let sum = 0;
   for (const m of MERITS) {
-    const lvl = level(state.meritUpgrades, m.id);
-    if (lvl === 0) continue;
     const e = m.effect;
-    if (e.kind === 'prodPct' && kind === 'prodPct') sum += e.pct * lvl;
-    else if (e.kind === 'clickPct' && kind === 'clickPct') sum += e.pct * lvl;
-    else if (e.kind === 'offlineHours' && kind === 'offlineHours') sum += e.hours * lvl;
+    if (e.kind !== kind) continue;
+    sum += (e.kind === 'offlineHours' ? e.hours : e.pct) * level(state.meritUpgrades, m.id);
   }
   return sum;
 }

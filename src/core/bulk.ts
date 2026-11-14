@@ -1,6 +1,6 @@
 // Bulk buying (×1 / ×10 / MAX). Pure: never mutates the input state.
 import { BALANCE } from '../content/balance';
-import { getAutomation, getUpgrade, isMaxed } from './rules';
+import { getAutomation, getUpgrade } from './rules';
 import { Decimal, level, type GameState } from './state';
 
 export type BulkMode = 1 | 10 | 'max';
@@ -29,6 +29,8 @@ function curve(state: GameState, id: string): Curve | null {
 
 function rawSum(c: Curve, n: number): Decimal {
   const first = new Decimal(c.base).mul(Decimal.pow(c.growth, c.owned));
+  // n = 1 exactly, so a single buy costs the same as costOf() (the geometric formula drifts).
+  if (n === 1) return first;
   if (c.growth === 1) return first.mul(n);
   return first.mul(Decimal.pow(c.growth, n).sub(1)).div(c.growth - 1);
 }
@@ -75,7 +77,7 @@ export function resolveBulk(state: GameState, id: string, mode: BulkMode): numbe
 /** Buy exactly n units/levels, or nothing (same state) if not possible. */
 export function buyMany(state: GameState, id: string, n: number): GameState {
   const c = curve(state, id);
-  if (!c || !(n >= 1) || !Number.isInteger(n) || n > c.remaining || isMaxed(state, id)) return state;
+  if (!c || !(n >= 1) || !Number.isInteger(n) || n > c.remaining) return state;
   const cost = costOfMany(state, id, n);
   if (state.kp.lt(cost)) return state;
   const kp = state.kp.sub(cost);

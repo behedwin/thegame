@@ -2,7 +2,7 @@
 import { BALANCE } from '../content/balance';
 import { EVENTS, type EventDef } from '../content/registry';
 import { baseKps } from './rules';
-import { Decimal, type GameState } from './state';
+import { Decimal, earn, type GameState } from './state';
 
 export type Rng = () => number;
 
@@ -18,8 +18,10 @@ export function mulberry32(seed: number): Rng {
   };
 }
 
+const eventById = new Map(EVENTS.map((e) => [e.id, e]));
+
 export function getEvent(id: string): EventDef | undefined {
-  return EVENTS.find((e) => e.id === id);
+  return eventById.get(id);
 }
 
 /**
@@ -66,12 +68,7 @@ export function claimEvent(state: GameState): ClaimResult {
   const e = event.effect;
   if (e.kind === 'lump') {
     granted = Decimal.max(baseKps(state).mul(e.seconds), e.minKp);
-    next = {
-      ...next,
-      kp: next.kp.add(granted),
-      runEarned: next.runEarned.add(granted),
-      totalEarned: next.totalEarned.add(granted),
-    };
+    next = earn(next, granted);
   } else {
     const buffs = next.buffs.filter((b) => b.source !== event.id);
     buffs.push({ source: event.id, kind: e.kind, mult: e.mult, untilMs: state.timeMs + e.durationMs });
