@@ -15,7 +15,7 @@ import {
   tick,
   type GameState,
 } from '../src/core';
-import { deserialize, migrate, SAVE_VERSION, serialize } from '../src/save/format';
+import { deserialize, migrate, MIGRATIONS, SAVE_VERSION, serialize } from '../src/save/format';
 
 const fresh = () => createInitialState(1_000);
 
@@ -146,8 +146,8 @@ describe('production bonus', () => {
 
 describe('save format v2', () => {
   it('bumps the version and migrates v1 saves to an empty list', () => {
-    expect(SAVE_VERSION).toBe(2);
-    expect(migrate({ version: 1, kp: '5' })).toEqual({ version: 2, kp: '5', achievements: [] });
+    expect(SAVE_VERSION).toBeGreaterThanOrEqual(2);
+    expect(migrate({ version: 1, kp: '5' }, MIGRATIONS, 2)).toEqual({ version: 2, kp: '5', achievements: [] });
     expect(deserialize(JSON.stringify({ version: 1, kp: '5' }), 0).achievements).toEqual([]);
   });
 

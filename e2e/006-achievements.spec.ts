@@ -49,7 +49,7 @@ test('achievements: old save unlocks on load, tab lists them, unlocks persist af
   await page.waitForTimeout(300);
   await page.reload();
   const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('CapacitorStorage.skolintegratoren.save')!));
-  expect(stored.version).toBe(2);
+  expect(stored.version).toBeGreaterThanOrEqual(2);
   expect(stored.achievements).toHaveLength(4);
   await page.getByTestId('tab-achievements').click();
   await expect(page.getByTestId('achievement-summary')).toContainText('4 av 20');

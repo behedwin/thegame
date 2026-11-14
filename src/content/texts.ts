@@ -82,6 +82,7 @@ export const T = {
   settings: {
     title: 'Inställningar',
     sound: 'Ljud',
+    volume: 'Volym',
     vibration: 'Vibration',
     wipe: 'Radera all spelhistorik',
     wipeConfirm: 'Tryck igen för att radera. Går inte att ångra.',

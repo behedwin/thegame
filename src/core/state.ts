@@ -19,7 +19,11 @@ export interface ActiveEvent {
 export interface Settings {
   sound: boolean;
   vibration: boolean;
+  /** Master volume, 0-1. */
+  volume: number;
 }
+
+export const DEFAULT_VOLUME = 0.7;
 
 /** Today's date (month 1-12, day 1-31), injected by the UI. Never read from a clock in core. */
 export interface CalendarDay {
@@ -78,7 +82,7 @@ export function createInitialState(nowMs: number): GameState {
     buffs: [],
     eventsClaimed: 0,
     achievements: [],
-    settings: { sound: true, vibration: true },
+    settings: { sound: true, vibration: true, volume: DEFAULT_VOLUME },
   };
 }
 
