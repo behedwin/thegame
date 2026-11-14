@@ -1,5 +1,7 @@
 // App shell: owns the game state, runs the loop, wires DOM events. Wall clock and
 // Math.random live here and are injected into the pure core.
+import { App } from '@capacitor/app';
+import { Capacitor } from '@capacitor/core';
 import { BALANCE } from '../content/balance';
 import { AUTOMATIONS, CUSTOMERS, systemName } from '../content/registry';
 import { T } from '../content/texts';
@@ -33,7 +35,7 @@ import {
 } from '../core';
 import { buyMany, BULK_MODES, resolveBulk, type BulkMode } from '../core/bulk';
 import { loadGame, saveGame, wipeGame } from '../save/storage';
-import { h, showDialog } from './dialogs';
+import { closeTopDialog, h, showDialog } from './dialogs';
 import { configureFeedback, floatText, haptic, sfx, toast } from './feedback';
 import { fmt, fmtDuration } from './format';
 import { AchievementList } from './achievements';
@@ -421,6 +423,24 @@ export async function startApp(root: HTMLElement): Promise<void> {
       showCustomers(state);
     }
   });
+
+  // Back: close the top dialog, otherwise save and minimize (never quit, so nothing is lost).
+  function handleBack(): void {
+    if (closeTopDialog()) return;
+    if (!Capacitor.isNativePlatform()) return;
+    persist();
+    void App.minimizeApp().catch(() => {
+      /* not supported: ignore */
+    });
+  }
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') handleBack();
+  });
+  if (Capacitor.isNativePlatform()) {
+    void App.addListener('backButton', handleBack).catch(() => {
+      /* plugin missing: keep default behaviour */
+    });
+  }
 
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') {
