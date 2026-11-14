@@ -39,7 +39,7 @@ import {
 import { buyMany, BULK_MODES, resolveBulk, type BulkMode } from '../core/bulk';
 import { loadGame, saveGame, wipeGame } from '../save/storage';
 import { closeTopDialog, h, showDialog } from './dialogs';
-import { configureFeedback, floatText, haptic, sfx, toast } from './feedback';
+import { configureFeedback, floatText, haptic, setBackground, sfx, toast } from './feedback';
 import { fmt, fmtDuration } from './format';
 import { AchievementList } from './achievements';
 import { showCustomers } from './customers';
@@ -171,7 +171,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
   }
 
   function syncFeedbackSettings(): void {
-    configureFeedback(state.settings.sound, state.settings.vibration);
+    configureFeedback(state.settings.sound, state.settings.vibration, state.settings.volume);
   }
 
   function doClick(x: number, y: number): void {
@@ -200,7 +200,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
     const def = getAutomation(id);
     if (def && milestonesReached(level(state.automations, id)) > milestonesReached(level(before.automations, id))) {
       toast(T.toastMilestone(def.name, level(state.automations, id)), 'good');
-      sfx.fanfare();
+      sfx.milestone();
     }
     persist();
     render();
@@ -250,6 +250,19 @@ export async function startApp(root: HTMLElement): Promise<void> {
       });
       return b;
     };
+    const slider = h('input', {
+      testId: 'volume',
+      attrs: { type: 'range', min: '0', max: '100', step: '5', value: String(Math.round(state.settings.volume * 100)), 'aria-label': T.settings.volume, style: 'width:100%' },
+    });
+    slider.addEventListener('input', () => {
+      state = setSettings(state, { volume: Number(slider.value) / 100 });
+      syncFeedbackSettings();
+    });
+    slider.addEventListener('change', () => {
+      sfx.buy();
+      persist();
+    });
+    const volume = h('label', { class: 'muted', text: T.settings.volume }, slider);
     const wipe = h('button', { class: 'btn danger wide', text: T.settings.wipe });
     wipe.addEventListener('click', () => {
       if (!armed) {
@@ -262,7 +275,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
     });
     showDialog(
       T.settings.title,
-      [toggle(T.settings.sound, 'sound'), toggle(T.settings.vibration, 'vibration'), wipe, h('p', { class: 'muted', text: T.settings.about })],
+      [toggle(T.settings.sound, 'sound'), volume, toggle(T.settings.vibration, 'vibration'), wipe, h('p', { class: 'muted', text: T.settings.about })],
       [{ label: T.settings.close, primary: true }],
       'settings-dialog',
     );
@@ -372,7 +385,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
     const signed = customersSigned(state);
     if (signed > lastCustomers) {
       toast(T.toastCustomer(CUSTOMERS[signed - 1]!.name), 'good');
-      sfx.fanfare();
+      sfx.customer();
     }
     lastCustomers = signed;
     customersEl.textContent = signed ? `${T.customers(signed)} · ${CUSTOMERS[signed - 1]!.name}` : T.noCustomers;
@@ -464,6 +477,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
   }
 
   document.addEventListener('visibilitychange', () => {
+    setBackground(document.visibilityState === 'hidden');
     if (document.visibilityState === 'hidden') {
       state = touch(state, Date.now());
       if (!wiping) void saveGame(state);

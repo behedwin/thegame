@@ -1,7 +1,7 @@
 // Versioned save format. Pure functions: no storage access here.
-import { createInitialState, Decimal, type GameState } from '../core/state';
+import { createInitialState, Decimal, DEFAULT_VOLUME, type GameState } from '../core/state';
 
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
 /** Raw JSON shape. Unknown on purpose: anything may come out of storage. */
 export type RawSave = { version: number; [key: string]: unknown };
@@ -14,6 +14,8 @@ export type Migration = (save: RawSave) => RawSave;
 export const MIGRATIONS: Record<number, Migration> = {
   // v2 (task 006): achievements. Older saves start with none; tick() unlocks what already holds.
   1: (s) => ({ ...s, version: 2, achievements: [] }),
+  // v3 (task 011): master volume in settings.
+  2: (s) => ({ ...s, version: 3, settings: { ...obj(s.settings), volume: DEFAULT_VOLUME } }),
 };
 
 export class SaveError extends Error {}
@@ -138,6 +140,7 @@ export function deserialize(text: string, nowMs: number): GameState {
     settings: {
       sound: typeof settings.sound === 'boolean' ? settings.sound : d.settings.sound,
       vibration: typeof settings.vibration === 'boolean' ? settings.vibration : d.settings.vibration,
+      volume: Math.min(1, Math.max(0, num(settings.volume, d.settings.volume))),
     },
   };
 }
