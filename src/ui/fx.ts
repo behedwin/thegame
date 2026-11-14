@@ -40,8 +40,9 @@ export function reducedMotion(): boolean {
 /** Effects run only when motion is welcome and the app is on screen. */
 export const motionOk = (): boolean => !reducedMotion() && document.visibilityState !== 'hidden';
 
-function fxNode(layer: HTMLElement, cls: string, x: number, y: number): HTMLElement {
-  const d = document.createElement('i');
+/** An absolutely placed effect node at (x, y) in `layer`. */
+export function fxNode(layer: HTMLElement, cls: string, x: number, y: number): HTMLElement {
+  const d = document.createElement('span');
   d.className = cls;
   d.style.left = `${x}px`;
   d.style.top = `${y}px`;
