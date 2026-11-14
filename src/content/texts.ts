@@ -87,6 +87,7 @@ export const T = {
     later: 'Senare',
     empty: 'Inga ärenden just nu. Alla är nöjda, för stunden.',
   },
+  celebrate: { double: '×2', signed: 'Påskrivet!' },
   prestige: {
     title: 'Nytt läsår',
     intro:
