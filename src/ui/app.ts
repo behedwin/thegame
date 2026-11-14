@@ -48,6 +48,7 @@ import { showStats } from './stats';
 import { NetworkView } from './network';
 import { cancelNotifications, notificationsSupported, requestNotifyPermission, scheduleNotifications } from './notifications';
 import { milestoneName, ShopList } from './shop';
+import { markTipSeen, nextTip, settleTips, TipBar } from './onboarding';
 
 const GEAR =
   '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3h-4l-.4 2.9a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.4 7.4 0 0 0 1.7 1L11 21h4l.4-2.9a7.4 7.4 0 0 0 1.7-1l2.5 1 2-3.5zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg>';
@@ -94,6 +95,18 @@ export async function startApp(root: HTMLElement): Promise<void> {
     hub,
     floatLayer,
     eventSlot,
+  );
+  const tips = new TipBar(
+    (id) => {
+      state = markTipSeen(state, id);
+      persist();
+      render();
+    },
+    () => {
+      state = setSettings(state, { tips: false });
+      persist();
+      render();
+    },
   );
   const customersEl = h('div', {
     class: 'customers',
@@ -157,6 +170,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
         seasonEl,
       ),
       hero,
+      tips.host,
       customersEl,
       h('nav', { class: 'tabs' }, tabButtons.automations, tabButtons.upgrades, tabButtons.prestige, tabButtons.achievements),
       panel,
@@ -247,13 +261,14 @@ export async function startApp(root: HTMLElement): Promise<void> {
 
   function openSettings(): void {
     let armed = false;
-    const toggle = (label: string, key: 'sound' | 'vibration') => {
-      const b = h('button', { class: 'toggle', text: label, attrs: { 'aria-pressed': String(state.settings[key]) } });
+    const toggle = (label: string, key: 'sound' | 'vibration' | 'tips') => {
+      const b = h('button', { class: 'toggle', text: label, testId: `toggle-${key}`, attrs: { 'aria-pressed': String(state.settings[key]) } });
       b.addEventListener('click', () => {
         state = setSettings(state, { [key]: !state.settings[key] });
         b.setAttribute('aria-pressed', String(state.settings[key]));
         syncFeedbackSettings();
         persist();
+        render();
       });
       return b;
     };
@@ -308,7 +323,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
     });
     showDialog(
       T.settings.title,
-      [toggle(T.settings.sound, 'sound'), volume, toggle(T.settings.vibration, 'vibration'), ...notify, stats, wipe, h('p', { class: 'muted', text: T.settings.about })],
+      [toggle(T.settings.sound, 'sound'), volume, toggle(T.settings.vibration, 'vibration'), toggle(T.settings.tips, 'tips'), ...notify, stats, wipe, h('p', { class: 'muted', text: T.settings.about })],
       [{ label: T.settings.close, primary: true }],
       'settings-dialog',
     );
@@ -432,6 +447,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
     }
     net.update(counts, kpsLog);
     renderEvent();
+    renderTips();
 
     const showPrestige = prestigeUnlocked();
     tabButtons.prestige.hidden = !showPrestige;
@@ -447,6 +463,15 @@ export async function startApp(root: HTMLElement): Promise<void> {
       else panel.replaceChildren(view.host);
     }
     view.render();
+  }
+
+  function renderTips(): void {
+    const settled = settleTips(state, tips.shown);
+    if (settled !== state) {
+      state = settled;
+      persist();
+    }
+    tips.render(nextTip(state));
   }
 
   function renderPrestige(): void {
