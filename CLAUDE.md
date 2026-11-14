@@ -81,8 +81,10 @@ När ägaren skriver **"Ny idé: <text>"** eller **"Ny idé (prio): <text>"**:
    krockar och varför, och **skapa ingenting**.
 2. **Annars:** skapa 1–3 uppgifter i `tasks/` med `status: ready`, `size`, `touches`, `depends` och `priority`.
    - `priority: high` om ägaren skrev "Ny idé (prio)", annars `priority: normal`.
-   - Är idén större än L ska den delas upp i flera uppgifter. Ryms den inte i tre uppgifter läggs resten som
-     förslag i `tasks/proposed/`, och det ska sägas i svaret.
+   - **Ingen ny uppgift i kön får vara L**, bara S eller M. Det gäller även förslag som flyttas till kön.
+     En L-PR får `needs-review` och väntar på ägaren, och under tiden spärrar dess `touches` alla
+     överlappande uppgifter, ofta hela kön. Är idén större än M ska den delas upp i flera uppgifter. Ryms den
+     inte i tre uppgifter läggs resten som förslag i `tasks/proposed/`, och det ska sägas i svaret.
    - Id: nästa lediga efter `git fetch` (högsta id i `tasks/` och `tasks/done/` på origin/main, plus 1). Landar
      ett id på en multipel av 5 läggs en refaktoreringsuppgift där (`kind: refactor`, `depends`: de fyra
      närmast föregående id:na), och numreringen fortsätter på nästa id. Den räknas inte in i 1–3.
