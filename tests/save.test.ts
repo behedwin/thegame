@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buy, click, createInitialState, Decimal, spawnEvent, type GameState } from '../src/core';
-import { EVENTS } from '../src/content/events';
+import { EVENTS } from '../src/content/registry';
 import { deserialize, migrate, SAVE_VERSION, SaveError, serialize, type Migration } from '../src/save/format';
 
 function played(): GameState {

@@ -9,11 +9,13 @@
     "preview": "vite preview --port 4173 --strictPort",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
-    "sim": "tsx sim/run.ts",
+    "sim": "node scripts/run-sim.mjs",
     "e2e": "playwright test",
     "size-check": "node scripts/size-check.mjs",
-    "gates": "npm run typecheck && npm test && npm run sim && npm run size-check && npm run build && npm run e2e",
-    "android:sync": "npm run build && cap sync android"
+    "gates": "npm run typecheck && npm test && npm run sim && npm run size-check && npm run tasks:check && npm run build && npm run e2e",
+    "android:sync": "npm run build && cap sync android",
+    "tasks:check": "node scripts/check-tasks.mjs",
+    "tasks:next": "node scripts/next-task.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.6.2",
@@ -26,7 +28,6 @@
     "@capacitor/cli": "^8.6.2",
     "@playwright/test": "^1.65.1",
     "@types/node": "^26.6.6",
-    "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "vite": "^8.3.8",
     "vitest": "^5.1.0"

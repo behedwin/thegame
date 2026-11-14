@@ -1,10 +1,10 @@
 // Shop lists: automations, upgrades and the merit shop. Cards are built once per
 // "reveal signature" and then cheaply updated every render.
-import { AUTOMATIONS } from '../content/automations';
+import { AUTOMATIONS } from '../content/registry';
 import { BALANCE } from '../content/balance';
-import { MERITS } from '../content/merits';
+import { MERITS } from '../content/registry';
 import { T } from '../content/texts';
-import { UPGRADES } from '../content/upgrades';
+import { UPGRADES } from '../content/registry';
 import {
   automationKps,
   canBuy,

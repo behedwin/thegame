@@ -1,9 +1,9 @@
 // Pure formulas: production, costs, prestige. No side effects.
-import { AUTOMATIONS, type AutomationDef } from '../content/automations';
+import { AUTOMATIONS, type AutomationDef } from '../content/registry';
 import { BALANCE } from '../content/balance';
-import { MERITS, type MeritDef } from '../content/merits';
-import { CUSTOMERS } from '../content/names';
-import { UPGRADES, type UpgradeDef } from '../content/upgrades';
+import { MERITS, type MeritDef } from '../content/registry';
+import { CUSTOMERS } from '../content/registry';
+import { UPGRADES, type UpgradeDef } from '../content/registry';
 import { Decimal, level, type GameState } from './state';
 
 const upgradeById = new Map(UPGRADES.map((u) => [u.id, u]));

@@ -1,7 +1,7 @@
 // A bot that plays the pure core like a reasonably attentive human.
-import { AUTOMATIONS } from '../src/content/automations';
-import { MERITS } from '../src/content/merits';
-import { UPGRADES } from '../src/content/upgrades';
+import { AUTOMATIONS } from '../src/content/registry';
+import { MERITS } from '../src/content/registry';
+import { UPGRADES } from '../src/content/registry';
 import {
   buy,
   buyMerit,

@@ -14,3 +14,4 @@ android/.idea/
 *.apk
 *.keystore
 *.jks
+sim-report.json

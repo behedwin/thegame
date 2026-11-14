@@ -1,6 +1,6 @@
 // State transitions. All functions are pure: they return a new state and never mutate the input.
 import { BALANCE } from '../content/balance';
-import { MERITS } from '../content/merits';
+import { MERITS } from '../content/registry';
 import { canBuy, canBuyMerit, costOf, getAutomation, kpPerClick, kpPerSecond, meritCost, baseKps, offlineCapMs, pendingMerits } from './rules';
 import { createInitialState, Decimal, level, type GameState } from './state';
 
