@@ -1,7 +1,7 @@
 ---
 id: 019
 size: S
-status: ready
+status: done
 touches: [src/ui/, src/content/texts.ts, index.html]
 depends: [015]
 ---

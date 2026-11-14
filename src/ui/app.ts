@@ -85,7 +85,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
   const net = new NetworkView();
   const hub = h('button', { class: 'hub', testId: 'hub', attrs: { 'aria-label': T.hubAria } });
   hub.innerHTML = `${SYNC}<span>${T.hubLabel}</span>`;
-  const floatLayer = h('div', { class: 'float-layer' });
+  const floatLayer = h('div', { class: 'float-layer', attrs: { 'aria-hidden': 'true' } });
   const eventSlot = h('div', { class: 'event-slot' });
   const hero = h(
     'section',
@@ -115,10 +115,10 @@ export async function startApp(root: HTMLElement): Promise<void> {
   });
 
   const tabButtons = {
-    automations: h('button', { class: 'tab', text: T.tabs.automations, testId: 'tab-automations' }),
-    upgrades: h('button', { class: 'tab', text: T.tabs.upgrades, testId: 'tab-upgrades' }),
-    prestige: h('button', { class: 'tab', text: T.tabs.prestige, testId: 'tab-prestige' }),
-    achievements: h('button', { class: 'tab', text: T.tabs.achievements, testId: 'tab-achievements' }),
+    automations: h('button', { class: 'tab', attrs: { role: 'tab' }, text: T.tabs.automations, testId: 'tab-automations' }),
+    upgrades: h('button', { class: 'tab', attrs: { role: 'tab' }, text: T.tabs.upgrades, testId: 'tab-upgrades' }),
+    prestige: h('button', { class: 'tab', attrs: { role: 'tab' }, text: T.tabs.prestige, testId: 'tab-prestige' }),
+    achievements: h('button', { class: 'tab', attrs: { role: 'tab' }, text: T.tabs.achievements, testId: 'tab-achievements' }),
   };
   const achievementList = new AchievementList();
   const panel = h('section', { class: 'panel' });
@@ -172,7 +172,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
       hero,
       tips.host,
       customersEl,
-      h('nav', { class: 'tabs' }, tabButtons.automations, tabButtons.upgrades, tabButtons.prestige, tabButtons.achievements),
+      h('nav', { class: 'tabs', attrs: { role: 'tablist', 'aria-label': T.a11y.tabsAria } }, tabButtons.automations, tabButtons.upgrades, tabButtons.prestige, tabButtons.achievements),
       panel,
     ),
   );
@@ -375,7 +375,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
       timer.style.animationDuration = `${remaining}ms`;
       eventEl = h(
         'button',
-        { class: 'event-card', testId: 'event' },
+        { class: 'event-card', testId: 'event', attrs: { 'aria-label': `${def.title}. ${T.eventTap}` } },
         h('strong', { text: def.title }),
         h('span', { text: T.eventTap }),
         timer,
@@ -454,7 +454,10 @@ export async function startApp(root: HTMLElement): Promise<void> {
     if (!showPrestige && tab === 'prestige') tab = 'automations';
     tabButtons.achievements.hidden = state.achievements.length === 0;
     if (tabButtons.achievements.hidden && tab === 'achievements') tab = 'automations';
-    for (const [k, b] of Object.entries(tabButtons)) b.classList.toggle('active', k === tab);
+    for (const [k, b] of Object.entries(tabButtons)) {
+      b.classList.toggle('active', k === tab);
+      b.setAttribute('aria-selected', String(k === tab));
+    }
 
     // Shop tabs get the bulk bar above their list; the others show only their view.
     const view = tabViews[tab];
