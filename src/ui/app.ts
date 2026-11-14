@@ -1,8 +1,7 @@
 // App shell: owns the game state, runs the loop, wires DOM events. Wall clock and
 // Math.random live here and are injected into the pure core.
-import { AUTOMATIONS } from '../content/registry';
 import { BALANCE } from '../content/balance';
-import { CUSTOMERS, systemName } from '../content/registry';
+import { AUTOMATIONS, CUSTOMERS, systemName } from '../content/registry';
 import { T } from '../content/texts';
 import {
   activeBuffs,

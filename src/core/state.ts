@@ -71,3 +71,14 @@ export function createInitialState(nowMs: number): GameState {
 export function level(map: Record<string, number>, id: string): number {
   return map[id] ?? 0;
 }
+
+/** Credit earned KP to the wallet and both lifetime counters. Returns the same state for amount ≤ 0. */
+export function earn(state: GameState, amount: Decimal): GameState {
+  if (amount.lte(0)) return state;
+  return {
+    ...state,
+    kp: state.kp.add(amount),
+    runEarned: state.runEarned.add(amount),
+    totalEarned: state.totalEarned.add(amount),
+  };
+}
