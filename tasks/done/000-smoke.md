@@ -1,7 +1,7 @@
 ---
 id: 000
 size: S
-status: ready
+status: done
 touches: [journal/]
 depends: []
 ---
