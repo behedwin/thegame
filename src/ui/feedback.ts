@@ -53,7 +53,7 @@ function audio(): AudioContext | null {
   }
 }
 
-function tone(freq: number, startIn: number, duration: number, volume: number, type: OscillatorType = 'sine'): void {
+function tone(freq: number, startIn: number, duration: number, peak: number, type: OscillatorType = 'sine'): void {
   const a = audio();
   if (!a) return;
   const t0 = a.currentTime + startIn;
@@ -62,7 +62,7 @@ function tone(freq: number, startIn: number, duration: number, volume: number, t
   osc.type = type;
   osc.frequency.setValueAtTime(freq, t0);
   gain.gain.setValueAtTime(0.0001, t0);
-  gain.gain.exponentialRampToValueAtTime(volume, t0 + 0.008);
+  gain.gain.exponentialRampToValueAtTime(peak, t0 + 0.008);
   gain.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
   osc.connect(gain).connect(master ?? a.destination);
   osc.start(t0);
