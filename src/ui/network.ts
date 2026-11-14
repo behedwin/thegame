@@ -63,7 +63,7 @@ interface Packet {
   t: number;
   speed: number;
   el: SVGCircleElement;
-  /** Manual packets start at the hub and only travel the second half. */
+  /** Manual packets stop at the hub, halfway along the line. */
   manual: boolean;
 }
 
@@ -183,7 +183,7 @@ export class NetworkView {
     });
   }
 
-  /** A manual sync: bright packet from the hub to a target system. */
+  /** A manual sync: a bright packet travels along a random active line from its source into the hub. */
   pulse(): void {
     const visible = this.rows.filter((r) => r.visible);
     const row = visible[Math.floor(Math.random() * visible.length)] ?? this.rows[0]!;
@@ -197,7 +197,7 @@ export class NetworkView {
     }
     const c = el('circle', { r: manual ? 5 : 3.2, class: manual ? 'packet manual' : 'packet' });
     this.packetLayer.append(c);
-    this.packets.push({ row, t: manual ? 0.5 : 0, speed: manual ? 1.4 : 0.35 + Math.random() * 0.15, el: c, manual });
+    this.packets.push({ row, t: 0, speed: manual ? 1.2 : 0.35 + Math.random() * 0.15, el: c, manual });
   }
 
   /** Advance animation by dt seconds. */
@@ -213,7 +213,7 @@ export class NetworkView {
     const keep: Packet[] = [];
     for (const p of this.packets) {
       p.t += p.speed * dt;
-      if (p.t >= 1) {
+      if (p.t >= (p.manual ? 0.5 : 1)) {
         p.el.remove();
         continue;
       }

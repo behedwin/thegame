@@ -63,8 +63,8 @@ test('a ticket can be opened and answered, and the result survives a reload', as
   await page.getByTestId('ticket-choice-1').click();
   await expect(page.locator('.toast').last()).toContainText('klump KP');
   await expect(inbox).toHaveText('Inkorg');
-  const kp = Number((await page.getByTestId('kp-value').textContent())!.replace(/\s/g, ''));
-  expect(kp).toBeGreaterThanOrEqual(110);
+  // The counter rolls up to the new value.
+  await expect.poll(async () => Number((await page.getByTestId('kp-value').textContent())!.replace(/\s/g, ''))).toBeGreaterThanOrEqual(110);
 
   await page.waitForTimeout(300);
   await page.reload();
