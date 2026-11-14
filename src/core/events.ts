@@ -1,7 +1,7 @@
 // Random events. Randomness is injected as rng(): number in [0, 1).
 import { BALANCE } from '../content/balance';
 import { EVENTS, type EventDef } from '../content/registry';
-import { baseKps } from './rules';
+import { baseKps, eventCooldownMs } from './rules';
 import { Decimal, earn, type GameState } from './state';
 
 export type Rng = () => number;
@@ -61,7 +61,7 @@ export function claimEvent(state: GameState): ClaimResult {
   let next: GameState = {
     ...state,
     activeEvent: null,
-    nextEventAtMs: state.timeMs + BALANCE.events.cooldownMs,
+    nextEventAtMs: state.timeMs + eventCooldownMs(state),
     eventsClaimed: state.eventsClaimed + 1,
   };
   let granted = new Decimal(0);

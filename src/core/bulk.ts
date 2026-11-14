@@ -1,6 +1,6 @@
 // Bulk buying (×1 / ×10 / MAX). Pure: never mutates the input state.
 import { BALANCE } from '../content/balance';
-import { getAutomation, getUpgrade } from './rules';
+import { automationBaseCost, getAutomation, getUpgrade } from './rules';
 import { Decimal, level, type GameState } from './state';
 
 export type BulkMode = 1 | 10 | 'max';
@@ -17,7 +17,7 @@ interface Curve {
 function curve(state: GameState, id: string): Curve | null {
   const auto = getAutomation(id);
   if (auto) {
-    return { base: auto.baseCost, growth: BALANCE.automationCostGrowth, owned: level(state.automations, id), remaining: Infinity };
+    return { base: automationBaseCost(state, auto), growth: BALANCE.automationCostGrowth, owned: level(state.automations, id), remaining: Infinity };
   }
   const up = getUpgrade(id);
   if (up) {

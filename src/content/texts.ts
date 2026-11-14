@@ -71,6 +71,7 @@ export const T = {
       'Börja om från noll med nya kunder, men behåll dina Meriter. Meriter köper permanenta bonusar som gör varje läsår snabbare.',
     pending: (n: string) => `Nytt läsår ger nu: ${n} Meriter`,
     next: (kp: string) => `Nästa merit vid ${kp} KP intjänat i år`,
+    preview: (pct: string) => `Nästa läsår går ~${pct} % snabbare`,
     button: (n: string) => `Starta nytt läsår (+${n})`,
     confirm: 'Säker? Integrationer, uppgraderingar och KP nollställs.',
     confirmYes: 'Ja, nytt läsår!',

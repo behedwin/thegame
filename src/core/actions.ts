@@ -1,9 +1,18 @@
 // State transitions. All functions are pure: they return a new state and never mutate the input.
-import { BALANCE } from '../content/balance';
 import { MERITS } from '../content/registry';
 import { checkAchievements } from './achievements';
 import { buyMany } from './bulk';
-import { baseKps, canBuyMerit, kpPerClick, kpPerSecond, meritCost, offlineCapMs, pendingMerits } from './rules';
+import {
+  baseKps,
+  canBuyMerit,
+  eventCooldownMs,
+  kpPerClick,
+  kpPerSecond,
+  meritCost,
+  offlineCapMs,
+  offlineEfficiency,
+  pendingMerits,
+} from './rules';
 import { createInitialState, Decimal, earn, level, type GameState } from './state';
 
 /** Advance game time by dtMs: production, buff and event expiry, achievement unlocks. */
@@ -17,7 +26,7 @@ export function tick(state: GameState, dtMs: number): GameState {
   let nextEventAtMs = next.nextEventAtMs;
   if (activeEvent && activeEvent.expiresAtMs <= timeMs) {
     activeEvent = null;
-    nextEventAtMs = timeMs + BALANCE.events.cooldownMs;
+    nextEventAtMs = timeMs + eventCooldownMs(state);
   }
   return checkAchievements({ ...next, timeMs, buffs, activeEvent, nextEventAtMs });
 }
@@ -96,7 +105,7 @@ export function applyOffline(state: GameState, nowMs: number): OfflineResult {
     return { state: { ...state, lastSeenMs: nowMs }, earned: new Decimal(0), creditedMs: 0, awayMs: 0 };
   }
   const creditedMs = Math.min(awayMs, offlineCapMs(state));
-  const earned = baseKps(state).mul((creditedMs / 1000) * BALANCE.offline.efficiency);
+  const earned = baseKps(state).mul((creditedMs / 1000) * offlineEfficiency(state));
   const next = earn(state, earned);
   return { state: { ...next, lastSeenMs: nowMs }, earned, creditedMs, awayMs };
 }

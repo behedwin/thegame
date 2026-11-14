@@ -25,6 +25,7 @@ import {
   level,
   milestonesReached,
   newAchievements,
+  nextYearSpeedupPct,
   pendingMerits,
   prestige,
   rollEvent,
@@ -419,9 +420,11 @@ export async function startApp(root: HTMLElement): Promise<void> {
   function renderPrestige(): void {
     const pending = pendingMerits(state);
     const next = runKpForMerits(pending.toNumber() + 1);
+    const speedup = nextYearSpeedupPct(state);
     prestigeInfo.replaceChildren(
       h('p', { class: 'merits-owned', text: T.prestige.merits(fmt(state.merits)) }),
       h('p', { text: T.prestige.pending(fmt(pending)) }),
+      ...(speedup > 0 ? [h('p', { class: 'prestige-preview', testId: 'prestige-preview', text: T.prestige.preview(String(speedup)) })] : []),
       h('p', { class: 'muted', text: T.prestige.next(fmt(next)) }),
     );
     prestigeBtn.textContent = T.prestige.button(fmt(pending));

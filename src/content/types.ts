@@ -37,7 +37,13 @@ export type MeritEffect =
   | { kind: 'prodPct'; pct: number }
   | { kind: 'clickPct'; pct: number }
   | { kind: 'offlineHours'; hours: number }
-  | { kind: 'startAutomation'; id: string; count: number };
+  | { kind: 'startAutomation'; id: string; count: number }
+  /** Automations cost pct % less per level (multiplicative). */
+  | { kind: 'autoDiscountPct'; pct: number }
+  /** Event cooldown pct % shorter per level (additive, capped). */
+  | { kind: 'eventCooldownPct'; pct: number }
+  /** Offline earnings +pct % per level (additive). */
+  | { kind: 'offlineEffPct'; pct: number };
 
 export interface MeritDef {
   id: string;

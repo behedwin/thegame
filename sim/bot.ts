@@ -31,6 +31,8 @@ export interface SeedResult {
   firstPurchaseSec: number | null;
   firstAutomationSec: number | null;
   firstPrestigeSec: number | null;
+  /** Game time (s) of every prestige, in order. Round k lasts prestigeAtSec[k-1] - prestigeAtSec[k-2]. */
+  prestigeAtSec: number[];
   /** Longest stretch in the first hour where nothing at all was affordable. */
   maxNoAffordableGapSecFirstHour: number;
   /** Mean seconds between purchases during the first 10 minutes. */
@@ -75,6 +77,7 @@ export function simulateSeed(seed: number, durationSec: number): SeedResult {
     firstPurchaseSec: null,
     firstAutomationSec: null,
     firstPrestigeSec: null,
+    prestigeAtSec: [],
     maxNoAffordableGapSecFirstHour: 0,
     meanPurchaseIntervalSecFirst10Min: null,
     purchases: 0,
@@ -140,6 +143,7 @@ export function simulateSeed(seed: number, durationSec: number): SeedResult {
           s = prestige(s);
           r.prestiges++;
           r.firstPrestigeSec ??= t;
+          r.prestigeAtSec.push(t);
           for (let n = 0; n < 200; n++) {
             const affordable = MERITS.filter((m) => canBuyMerit(s, m.id));
             if (affordable.length === 0) break;
