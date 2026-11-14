@@ -1,3 +1,5 @@
+Detta repo ligger på GitHub. Skills och arbetsflöden för Azure DevOps gäller inte här. Följ endast protokollet i denna fil.
+
 # CLAUDE.md – arbetsregler för Skolintegratören
 
 Läs först: VISION.md, tasks/README.md, de senaste filerna i journal/ och decisions/.
