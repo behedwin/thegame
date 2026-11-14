@@ -115,3 +115,28 @@ export interface AchievementDef {
   desc: string;
   condition: AchievementCondition;
 }
+
+/** A day in the calendar year, 1-based (month 1-12, day 1-31). */
+export interface MonthDay {
+  month: number;
+  day: number;
+}
+
+/** Temporary multiplier while a season is active. */
+export type SeasonEffect = { kind: 'prodMult'; mult: number } | { kind: 'clickMult'; mult: number };
+
+/**
+ * A recurring school-year season (Höstlov, Nationella prov …). Active every year between start and end
+ * (inclusive). A window may wrap over New Year (start after end). Never FOMO: it comes back every year.
+ */
+export interface SeasonDef {
+  id: string;
+  /** Tie-break when windows overlap. Lower wins. */
+  order: number;
+  name: string;
+  /** Flavour line shown in the season banner. */
+  desc: string;
+  start: MonthDay;
+  end: MonthDay;
+  effect: SeasonEffect;
+}

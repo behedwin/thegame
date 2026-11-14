@@ -1,5 +1,5 @@
 // All player-facing UI strings (Swedish). Game data texts live next to their data.
-import type { CustomerDef, CustomerEffect } from './types';
+import type { CustomerDef, CustomerEffect, SeasonDef } from './types';
 
 const num = (n: number) => String(Math.round(n * 100) / 100).replace('.', ',');
 const pctText = (n: number) => `${num(n)}\u00a0%`;
@@ -54,6 +54,10 @@ export const T = {
     toastMany: (n: number) => `${n} nya troféer! +${n}\u00a0% produktion`,
   },
   toastMilestone: (name: string, count: number) => `Milstolpe! ${count} st ${name}: produktionen ×2`,
+  season: {
+    banner: (s: SeasonDef) => `${s.name}: ${s.desc}`,
+    aria: 'Säsong just nu',
+  },
   eventTap: 'Tryck för att lösa!',
   buffActive: (mult: number, sec: number) => `×${mult} produktion · ${sec} s`,
   welcomeTitle: 'Välkommen tillbaka!',

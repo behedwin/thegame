@@ -2,6 +2,7 @@
 import { BALANCE } from '../content/balance';
 import { ACHIEVEMENTS, AUTOMATIONS, MERITS, UPGRADES, type AutomationDef, type UpgradeDef } from '../content/registry';
 import { customerClickMult, customerProdMult, signedCustomers } from './customers';
+import { seasonClickMult, seasonProdMult } from './seasons';
 import { Decimal, level, type GameState } from './state';
 
 export { customerClickMult, customerProdMult, nextCustomer, signedCustomers } from './customers';
@@ -80,7 +81,8 @@ export function automationKps(state: GameState, def: AutomationDef): Decimal {
     .mul(automationMult(state, def.id))
     .mul(meritProdMult(state))
     .mul(achievementProdMult(state))
-    .mul(customerProdMult(state));
+    .mul(customerProdMult(state))
+    .mul(seasonProdMult(state));
 }
 
 /** KP per second excluding buffs (used for offline progress). */
@@ -109,6 +111,7 @@ export function kpPerClick(state: GameState): Decimal {
   }
   mult *= 1 + meritSum(state, 'clickPct') / 100;
   mult *= customerClickMult(state);
+  mult *= seasonClickMult(state);
   const base = new Decimal(add).mul(mult).add(kpPerSecond(state).mul(kpsShare));
   return base.mul(buffMult(state, 'clickMult'));
 }
