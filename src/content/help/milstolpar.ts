@@ -1,0 +1,1 @@
+import { BALANCE } from '../balance'; export default { id: 'milstolpar', order: 3, title: 'Milstolpar', body: [`När du äger ${BALANCE.milestones.join(', ').replace(/, (\d+)$/, ' och $1')} av samma integration blir dess produktion ×${BALANCE.milestoneMult} varje gång. Det lönar sig att bygga på det man redan har.`] } satisfies import('../types').HelpSectionDef;

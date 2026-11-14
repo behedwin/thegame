@@ -1,0 +1,1 @@
+export default { id: 'integrationer', order: 2, title: 'Integrationer och uppgraderingar', body: ['Integrationer synkar automatiskt och tjänar KP varje sekund, även när du bara tittar på. Uppgraderingar gör klick och integrationer starkare. Ingen kod krävs, bara KP.'] } satisfies import('../types').HelpSectionDef;

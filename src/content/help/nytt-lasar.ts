@@ -1,0 +1,1 @@
+export default { id: 'nytt-lasar', order: 7, title: 'Nytt läsår och Meriter', body: ['När läsåret har gått bra kan du starta ett nytt. KP, integrationer, uppgraderingar och kunder nollställs, men du får Meriter. Meriter, troféer och statistik behåller du, och Meriter köper bonusar som gör varje läsår snabbare.'] } satisfies import('../types').HelpSectionDef;

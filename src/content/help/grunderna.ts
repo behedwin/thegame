@@ -1,0 +1,1 @@
+export default { id: 'grunderna', order: 1, title: 'Grunderna', body: ['Tryck på SYNKA för att flytta data mellan skolans system och tjäna KP (Kunskapspoäng). Håll inne knappen så synkar den åt dig, utan att du behöver nöta skärmen.'] } satisfies import('../types').HelpSectionDef;

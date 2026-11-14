@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
-import { CUSTOMERS, SYSTEMS } from '../src/content/registry';
+import { CUSTOMERS, HELP, SYSTEMS } from '../src/content/registry';
 import { nodeTip } from '../src/ui/network';
 
 /** Normalise before hashing: case-insensitive, punctuation and spaces ignored. */
@@ -105,6 +105,7 @@ describe('parody names (task 023)', () => {
     const texts = [
       ...SYSTEMS.flatMap((s) => [s.name, s.tagline ?? '']),
       ...CUSTOMERS.map((c) => c.name),
+      ...HELP.flatMap((s) => [s.title, ...s.body]), // help page (task 029)
     ].filter(Boolean);
     for (const t of texts) for (const f of fragments(t)) expect(FORBIDDEN.has(sha(f)), `${t} (${f})`).toBe(false);
   });
