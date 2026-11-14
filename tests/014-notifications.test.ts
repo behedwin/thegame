@@ -35,14 +35,14 @@ describe('014 local notifications: settings and save', () => {
   });
 
   it('bumps the save version and migrates v3 saves with notifications off', () => {
-    expect(SAVE_VERSION).toBe(4);
+    expect(SAVE_VERSION).toBeGreaterThanOrEqual(4);
     const v3 = { version: 3, settings: { sound: false, vibration: true, volume: 0.5 } };
     expect(migrate(v3, MIGRATIONS, 4)).toEqual({
       version: 4,
       settings: { sound: false, vibration: true, volume: 0.5, notifyOfflineCap: false, notifySeason: false },
     });
     const old = deserialize(JSON.stringify(v3), 0).settings;
-    expect(old).toEqual({ sound: false, vibration: true, volume: 0.5, notifyOfflineCap: false, notifySeason: false });
+    expect(old).toEqual({ sound: false, vibration: true, volume: 0.5, notifyOfflineCap: false, notifySeason: false, tips: true });
   });
 
   it('v1 saves migrate all the way and get notifications off', () => {

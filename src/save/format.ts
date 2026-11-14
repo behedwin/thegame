@@ -1,7 +1,7 @@
 // Versioned save format. Pure functions: no storage access here.
 import { createInitialState, Decimal, DEFAULT_VOLUME, type GameState } from '../core/state';
 
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5;
 
 /** Raw JSON shape. Unknown on purpose: anything may come out of storage. */
 export type RawSave = { version: number; [key: string]: unknown };
@@ -18,6 +18,17 @@ export const MIGRATIONS: Record<number, Migration> = {
   2: (s) => ({ ...s, version: 3, settings: { ...obj(s.settings), volume: DEFAULT_VOLUME } }),
   // v4 (task 014): opt-in local notifications, off for everyone who already plays.
   3: (s) => ({ ...s, version: 4, settings: { ...obj(s.settings), notifyOfflineCap: false, notifySeason: false } }),
+  // v5 (task 018): onboarding tips. Tips stay on, but steps the player already did count as seen.
+  4: (s) => ({
+    ...s,
+    version: 5,
+    tipsSeen: [
+      ...(typeof s.clicks === 'number' && s.clicks > 0 ? ['sync'] : []),
+      ...(Object.keys(levels(s.automations)).length > 0 ? ['buy'] : []),
+      ...(typeof s.eventsClaimed === 'number' && s.eventsClaimed > 0 ? ['event'] : []),
+    ],
+    settings: { ...obj(s.settings), tips: true },
+  }),
 };
 
 export class SaveError extends Error {}
@@ -88,6 +99,7 @@ export function serialize(state: GameState): string {
     buffs: state.buffs,
     eventsClaimed: state.eventsClaimed,
     achievements: state.achievements,
+    tipsSeen: state.tipsSeen,
     settings: state.settings,
   };
   return JSON.stringify(save);
@@ -139,12 +151,16 @@ export function deserialize(text: string, nowMs: number): GameState {
     achievements: Array.isArray(s.achievements)
       ? [...new Set(s.achievements.filter((a): a is string => typeof a === 'string'))]
       : [],
+    tipsSeen: Array.isArray(s.tipsSeen)
+      ? [...new Set(s.tipsSeen.filter((a): a is string => typeof a === 'string'))]
+      : [],
     settings: {
       sound: typeof settings.sound === 'boolean' ? settings.sound : d.settings.sound,
       vibration: typeof settings.vibration === 'boolean' ? settings.vibration : d.settings.vibration,
       volume: Math.min(1, Math.max(0, num(settings.volume, d.settings.volume))),
       notifyOfflineCap: settings.notifyOfflineCap === true,
       notifySeason: settings.notifySeason === true,
+      tips: settings.tips !== false,
     },
   };
 }

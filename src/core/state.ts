@@ -25,6 +25,8 @@ export interface Settings {
   notifyOfflineCap: boolean;
   /** Local notification when a new season starts. Off by default; the player opts in. */
   notifySeason: boolean;
+  /** Onboarding tips for new players. On by default; the player can turn them off. */
+  tips: boolean;
 }
 
 export const DEFAULT_VOLUME = 0.7;
@@ -59,6 +61,8 @@ export interface GameState {
   eventsClaimed: number;
   /** Unlocked achievement ids, in unlock order. Kept across school years. */
   achievements: string[];
+  /** Onboarding tip ids already shown and finished. A tip is never shown again once here. */
+  tipsSeen: string[];
   settings: Settings;
   /**
    * Today's calendar day, injected by the UI via setCalendar(). Drives seasons. Not saved: it is
@@ -86,7 +90,8 @@ export function createInitialState(nowMs: number): GameState {
     buffs: [],
     eventsClaimed: 0,
     achievements: [],
-    settings: { sound: true, vibration: true, volume: DEFAULT_VOLUME, notifyOfflineCap: false, notifySeason: false },
+    tipsSeen: [],
+    settings: { sound: true, vibration: true, volume: DEFAULT_VOLUME, notifyOfflineCap: false, notifySeason: false, tips: true },
   };
 }
 
