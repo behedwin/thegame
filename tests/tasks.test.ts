@@ -1,7 +1,7 @@
 // Tests for the task-queue helpers used by parallel workers (scripts/tasks-lib.mjs).
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error plain .mjs helper without type declarations
-import { eligibleTasks, parseFrontmatter, pathsOverlap } from '../scripts/tasks-lib.mjs';
+import { eligibleTasks, parseFrontmatter, pathsOverlap, queueOrder, validateTasks } from '../scripts/tasks-lib.mjs';
 
 type Meta = { id: string; status: string; touches: string[]; depends: string[] };
 const task = (meta: Meta) => ({ file: `${meta.id}-x.md`, path: `tasks/${meta.id}-x.md`, location: 'queue', meta });
@@ -84,5 +84,65 @@ describe('refactor barriers', () => {
 
   it('a refactor task still waits for dependencies that are only ready', () => {
     expect(ids(mk('ready', 'refactor'))).toEqual(['002']);
+  });
+});
+
+describe('priority', () => {
+  type P = Meta & { priority?: string };
+  const t = (meta: P) => ({ file: `${meta.id}-x.md`, path: `tasks/${meta.id}-x.md`, location: 'queue', meta });
+  const tasks = {
+    queue: [
+      t({ id: '003', status: 'ready', touches: ['a/'], depends: [] }),
+      t({ id: '007', status: 'ready', touches: ['b/'], depends: [], priority: 'high' }),
+      t({ id: '005', status: 'ready', touches: ['c/'], depends: [], priority: 'normal' }),
+      t({ id: '004', status: 'ready', touches: ['d/'], depends: [], priority: 'high' }),
+      t({ id: '009', status: 'ready', touches: ['e/'], depends: ['001'], priority: 'high' }),
+    ],
+    done: [],
+    proposed: [],
+    claims: [],
+  };
+  const ids = (claimed: string[] = []) => eligibleTasks(tasks, claimed).map((x: { meta: Meta }) => x.meta.id);
+
+  it('picks high before normal, then lowest id; missing priority means normal', () => {
+    expect(ids()).toEqual(['004', '007', '003', '005']);
+  });
+
+  it('high priority never bypasses depends or claims', () => {
+    expect(ids()).not.toContain('009');
+    expect(ids(['004'])).toEqual(['007', '003', '005']);
+  });
+
+  it('queueOrder lists ready and blocked tasks in pick order with positions', () => {
+    const order = queueOrder(tasks).map((x: { meta: Meta }) => x.meta.id);
+    expect(order).toEqual(['004', '007', '009', '003', '005']);
+  });
+});
+
+describe('validateTasks', () => {
+  const ok = (id: string, extra: Record<string, unknown> = {}) => ({
+    file: `${id}-x.md`,
+    path: `tasks/${id}-x.md`,
+    location: 'queue',
+    meta: { id, size: 'S', status: 'ready', touches: ['a/'], depends: [], ...extra },
+  });
+  const wrap = (queue: unknown[]) => ({ queue, done: [], proposed: [], claims: [] });
+
+  it('accepts priority high/normal and a missing priority', () => {
+    expect(validateTasks(wrap([ok('001'), ok('002', { priority: 'high' }), ok('003', { priority: 'normal' })]))).toEqual([]);
+  });
+
+  it('rejects an unknown priority', () => {
+    expect(validateTasks(wrap([ok('001', { priority: 'urgent' })])).join()).toMatch(/priority must be one of high\/normal/);
+  });
+
+  it('rejects ids that are not three digits', () => {
+    expect(validateTasks(wrap([{ ...ok('12'), file: '12-x.md' }])).join()).toMatch(/three digits/);
+  });
+
+  it('still rejects duplicate ids and unknown depends', () => {
+    const errs = validateTasks(wrap([ok('001'), ok('001'), ok('002', { depends: ['404'] })])).join('\n');
+    expect(errs).toMatch(/duplicate id 001/);
+    expect(errs).toMatch(/unknown id 404/);
   });
 });

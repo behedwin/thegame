@@ -10,9 +10,9 @@ Du är en autonom worker. Följ CLAUDE.md strikt, inklusive HÅRDA STOPP.
 
 1. `git fetch --prune`. Kör `scripts/stale-claims.sh --release` och frigör döda lås. Utan inloggad `gh` listas
    gamla grenar bara som "PR-status okänd" och raderas inte. Låt dem då vara.
-2. Välj den första uppgiften i tasks/ med status `ready` vars `depends` är klara och vars `touches` inte
-   överlappar någon öppen `claude/task-*`-gren. `node scripts/next-task.mjs` gör urvalet, och första raden är
-   valet.
+2. Välj den första uppgiften i tasks/ (`priority: high` före `normal`, sedan lägsta id) med status `ready`
+   vars `depends` är klara och vars `touches` inte överlappar någon öppen `claude/task-*`-gren.
+   `node scripts/next-task.mjs` gör urvalet, och första raden är valet.
 3. Kör `scripts/claim.sh <id> <run-id>` (run-id t.ex. `$(date -u +%Y%m%dT%H%M%SZ)-<slump>`). Om det
    misslyckas, välj nästa uppgift. Max 3 försök, annars avsluta.
 4. Implementera med tester först. Rör bara filer inom `touches`, utom tester och journal (se "Alltid
@@ -54,6 +54,31 @@ Gör högst en uppgift per körning.
   ersätter BLOCKED.md. Refaktoreringsuppgifter (`kind: refactor`) räknar blockerade beroenden som klara, så
   kön stannar inte vid nästa spärr.
 - **HÅRT STOPP** under arbetet: gör samma sak som ovan, men skriv "HÅRT STOPP: <vad>" som orsak och stoppa.
+
+## Idéintag (interaktiv session, inte workers)
+
+När ägaren skriver **"Ny idé: <text>"** eller **"Ny idé (prio): <text>"**:
+
+1. **Stäm av** idén mot VISION.md (målgrupp, ton, icke-mål) och HÅRDA STOPP. Krockar den: säg till vad som
+   krockar och varför, och **skapa ingenting**.
+2. **Annars:** skapa 1–3 uppgifter i `tasks/` med `status: ready`, `size`, `touches`, `depends` och `priority`.
+   - `priority: high` om ägaren skrev "Ny idé (prio)", annars `priority: normal`.
+   - Är idén större än L ska den delas upp i flera uppgifter. Ryms den inte i tre uppgifter läggs resten som
+     förslag i `tasks/proposed/`, och det ska sägas i svaret.
+   - Id: nästa lediga efter `git fetch` (högsta id i `tasks/` och `tasks/done/` på origin/main, plus 1). Landar
+     ett id på en multipel av 5 läggs en refaktoreringsuppgift där (`kind: refactor`, `depends`: de fyra
+     närmast föregående id:na), och numreringen fortsätter på nästa id. Den räknas inte in i 1–3.
+   - `depends` får bara innehålla verkliga beroenden, inga spärrar, så att `high` faktiskt kan gå före.
+     `touches` sätts hellre för brett än för smalt.
+   - Beskriv vad som ska göras och varför (med en motivering mot VISION.md), och vilka tester som behövs.
+3. **Implementera ingenting själv.**
+4. Skapa grenen `claude/idea-<slug>` från origin/main och kör `npm run tasks:check`. Committa med `[ready]`
+   i meddelandet och pusha. `auto-pr.yml` skapar PR:en; öppna ingen PR själv. Den får `automerge` bara om
+   diffen enbart rör `tasks/`, annars `needs-review`.
+5. **Svara ägaren** med de nya id:na och deras plats i kön (`node scripts/next-task.mjs --queue` på grenen),
+   t.ex. "021 (high): plats 1 av 21".
+
+Kön väljs i ordningen `priority: high` före `normal`, och därefter lägsta id. `depends` och lås gäller alltid.
 
 ## Regler
 - Arbeta självständigt. Fatta egna beslut och dokumentera dem i `decisions/` i stället för att fråga.
