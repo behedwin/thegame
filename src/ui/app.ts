@@ -47,7 +47,7 @@ import { showCustomers } from './customers';
 import { showStats } from './stats';
 import { NetworkView } from './network';
 import { cancelNotifications, notificationsSupported, requestNotifyPermission, scheduleNotifications } from './notifications';
-import { ShopList } from './shop';
+import { milestoneName, ShopList } from './shop';
 
 const GEAR =
   '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3h-4l-.4 2.9a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.4 7.4 0 0 0 1.7 1L11 21h4l.4-2.9a7.4 7.4 0 0 0 1.7-1l2.5 1 2-3.5zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg>';
@@ -204,7 +204,9 @@ export async function startApp(root: HTMLElement): Promise<void> {
     setTimeout(() => card?.classList.remove('flash'), 300);
     const def = getAutomation(id);
     if (def && milestonesReached(level(state.automations, id)) > milestonesReached(level(before.automations, id))) {
-      toast(T.toastMilestone(def.name, level(state.automations, id)), 'good');
+      const count = level(state.automations, id);
+      const named = milestoneName(def, count);
+      toast(named ? `${T.toastMilestone(def.name, count)}. ${named}!` : T.toastMilestone(def.name, count), 'good');
       sfx.milestone();
     }
     persist();

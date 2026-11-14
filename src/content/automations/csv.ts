@@ -9,4 +9,10 @@ export default {
   kps: 0.4,
   from: 'skolmjuk',
   to: 'fklass',
+  milestoneNames: [
+    'CSV-importen har lärt sig UTF-8',
+    'Semikolon och komma är nu vänner',
+    'Kalkylarket öppnas utan att gråta',
+    'Ingen rad heter längre "Kopia av Kopia"',
+  ],
 } satisfies AutomationDef;

@@ -9,4 +9,10 @@ export default {
   kps: 1_600,
   from: 'novaskamt',
   to: 'filgrottan',
+  milestoneNames: [
+    'Nyckeln har flyttats från "nya_nycklar_FINAL2"',
+    'Överföringen tål ett nätverksavbrott',
+    'Filerna kommer fram i rätt ordning',
+    'Ingen behöver längre ringa och fråga om filen kommit',
+  ],
 } satisfies AutomationDef;

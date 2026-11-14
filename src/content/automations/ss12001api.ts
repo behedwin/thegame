@@ -9,4 +9,10 @@ export default {
   kps: 100_000,
   from: 'ss12001',
   to: 'skoloff',
+  milestoneNames: [
+    'Två leverantörer följer standarden likadant',
+    'Fältet "övrigt" används inte längre till allt',
+    'Schemadata stämmer med verkligheten',
+    'Standarden följs på samma sätt av alla. Nästan.',
+  ],
 } satisfies AutomationDef;

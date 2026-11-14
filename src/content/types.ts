@@ -13,6 +13,8 @@ export interface AutomationDef {
   /** System ids (src/content/systems/) data flows from and to. */
   from: string;
   to: string;
+  /** Optional flavour name per milestone (same order as BALANCE.milestones), shown in toast and card. */
+  milestoneNames?: readonly string[];
 }
 
 export type UpgradeEffect =
