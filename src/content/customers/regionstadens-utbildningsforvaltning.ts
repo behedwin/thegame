@@ -5,5 +5,5 @@ export default {
   name: 'Regionstadens utbildningsförvaltning',
   kind: 'kommun',
   atRunKp: 60_000_000,
-  effect: { kind: 'prodPct', pct: 5 },
+  effect: { kind: 'prodPct', pct: 3 },
 } satisfies CustomerDef;
