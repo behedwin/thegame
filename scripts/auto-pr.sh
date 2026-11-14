@@ -8,6 +8,9 @@
 #
 # Title: "<id>: <first heading of the task file>"; body: the journal file for the task.
 # Label: blocked (task status blocked) > conflict ([conflict] in HEAD_MSG) > needs-review (size L) > automerge.
+# If the branch is behind BASE (BASE is not an ancestor of HEAD), the PR branch is updated right
+# away with `gh pr update-branch`, so a PR opened after main moved does not wait for the next push
+# to main. If the update fails (conflict), the PR is labelled conflict, which disables auto-merge.
 set -euo pipefail
 
 : "${BRANCH:?BRANCH is required}"
@@ -59,6 +62,12 @@ fi
 echo "auto-pr: id=$id size=$size status=$status label=$label journal=${journal:-none}"
 echo "auto-pr: title=$title"
 
+behind=0
+if git rev-parse --verify --quiet "origin/$BASE" >/dev/null && ! git merge-base --is-ancestor "origin/$BASE" HEAD; then
+  behind=1
+fi
+echo "auto-pr: behind_$BASE=$behind"
+
 if [[ "${DRY_RUN:-0}" == "1" ]]; then
   echo "--- body ---"
   cat "$body_file"
@@ -74,4 +83,13 @@ if [[ -n "$existing" ]]; then
   done
 else
   gh pr create -R "$REPO" --base "$BASE" --head "$BRANCH" --title "$title" --body-file "$body_file" --label "$label"
+fi
+
+if (( behind )) && [[ "$label" != "conflict" ]]; then
+  pr="$(gh pr list -R "$REPO" --head "$BRANCH" --state open --json number --jq '.[0].number // empty')"
+  echo "auto-pr: $BRANCH is behind $BASE; updating PR #$pr"
+  if ! gh pr update-branch "$pr" -R "$REPO"; then
+    echo "auto-pr: could not update PR #$pr automatically; labelling conflict"
+    gh pr edit "$pr" -R "$REPO" --add-label conflict || true
+  fi
 fi
