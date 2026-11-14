@@ -1,7 +1,7 @@
 ---
 id: 008
 size: M
-status: ready
+status: done
 touches: [android/app/src/main/AndroidManifest.xml, android/app/src/main/java/, android/app/capacitor.build.gradle, android/capacitor.settings.gradle, android/variables.gradle, capacitor.config.ts, package.json, package-lock.json, src/ui/app.ts, src/ui/dialogs.ts, src/ui/style.css]
 depends: [005]
 ---
