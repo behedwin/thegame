@@ -2,7 +2,6 @@
 // target systems on the right. Data packets flow along the lines.
 import { AUTOMATIONS, SYSTEMS, systemName, type SystemDef } from '../content/registry';
 import { flashClass } from './celebrate';
-import { reducedMotion } from './fx';
 
 const NS = 'http://www.w3.org/2000/svg';
 const W = 360;
@@ -116,6 +115,8 @@ export class NetworkView {
   private booted = false;
   private tier = -1;
   private frameAcc = 0;
+  /** Queried once; with reduced motion no packets travel at all. */
+  private readonly calm = typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)') : null;
   private tip: SVGTextElement;
   private tipTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -244,9 +245,8 @@ export class NetworkView {
     if (this.frameAcc < 1 / 31) return;
     dt = this.frameAcc;
     this.frameAcc = 0;
-    const still = reducedMotion(); // with reduced motion no packets travel at all
     for (const row of this.rows) {
-      if (row.rate <= 0 || still) continue;
+      if (row.rate <= 0 || this.calm?.matches) continue;
       row.acc = Math.min(1, row.acc + row.rate * dt);
       if (row.acc < 1) continue;
       row.acc = 0;
