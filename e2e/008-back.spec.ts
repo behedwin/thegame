@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-test('back (Escape) closes only the top dialog and leaves the game running', async ({ page }) => {
+test('back (Escape) closes the open dialog and leaves the game running', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (err) => errors.push(err.message));
   page.on('console', (msg) => {
