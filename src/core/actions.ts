@@ -8,10 +8,10 @@ import {
   eventCooldownMs,
   kpPerClick,
   kpPerSecond,
-  meritCost,
   offlineCapMs,
   offlineEfficiency,
   pendingMerits,
+  withMeritLevel,
 } from './rules';
 import { createInitialState, Decimal, earn, level, type GameState } from './state';
 
@@ -44,12 +44,7 @@ export function buy(state: GameState, id: string): GameState {
 }
 
 export function buyMerit(state: GameState, id: string): GameState {
-  if (!canBuyMerit(state, id)) return state;
-  return {
-    ...state,
-    merits: state.merits.sub(meritCost(state, id)),
-    meritUpgrades: { ...state.meritUpgrades, [id]: level(state.meritUpgrades, id) + 1 },
-  };
+  return canBuyMerit(state, id) ? withMeritLevel(state, id) : state;
 }
 
 export function canPrestige(state: GameState): boolean {

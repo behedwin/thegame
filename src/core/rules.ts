@@ -203,6 +203,15 @@ export function runKpForMerits(merits: number): Decimal {
   return new Decimal(merits).pow(1 / exponent).mul(divisor);
 }
 
+/** Pay for and add one level of a merit upgrade. No affordability check: callers check canBuyMerit. */
+export function withMeritLevel(state: GameState, id: string): GameState {
+  return {
+    ...state,
+    merits: state.merits.sub(meritCost(state, id)),
+    meritUpgrades: { ...state.meritUpgrades, [id]: level(state.meritUpgrades, id) + 1 },
+  };
+}
+
 /**
  * Preview for the prestige card: roughly how much faster production runs next school year, in percent,
  * if all Meriter (owned + pending) go to production merits, cheapest first. 0 when nothing is pending.
@@ -216,12 +225,7 @@ export function nextYearSpeedupPct(state: GameState): number {
     const buyable = prod.filter((m) => canBuyMerit(sim, m.id));
     if (buyable.length === 0) break;
     buyable.sort((a, b) => meritCost(sim, a.id).cmp(meritCost(sim, b.id)));
-    const id = buyable[0]!.id;
-    sim = {
-      ...sim,
-      merits: sim.merits.sub(meritCost(sim, id)),
-      meritUpgrades: { ...sim.meritUpgrades, [id]: level(sim.meritUpgrades, id) + 1 },
-    };
+    sim = withMeritLevel(sim, buyable[0]!.id);
   }
   return Math.max(0, Math.round((meritProdMult(sim) / meritProdMult(state) - 1) * 100));
 }
