@@ -4,4 +4,5 @@ export default {
   id: 'ostamd',
   name: 'Ostämd',
   kind: 'Enhetshantering',
+  tagline: 'Policy pushad. Kanske.',
 } satisfies SystemDef;
