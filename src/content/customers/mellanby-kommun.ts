@@ -5,4 +5,5 @@ export default {
   name: 'Mellanby kommun',
   kind: 'kommun',
   atRunKp: 1000,
+  effect: { kind: 'prodPct', pct: 3 },
 } satisfies CustomerDef;

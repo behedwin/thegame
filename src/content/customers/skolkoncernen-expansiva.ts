@@ -5,4 +5,5 @@ export default {
   name: 'Skolkoncernen Expansiva',
   kind: 'koncern',
   atRunKp: 10_000_000,
+  effect: { kind: 'prodMult', mult: 1.05 },
 } satisfies CustomerDef;

@@ -5,4 +5,5 @@ export default {
   name: 'Friskolan Lärandets Lustgård',
   kind: 'friskola',
   atRunKp: 50,
+  effect: { kind: 'clickPct', pct: 10 },
 } satisfies CustomerDef;

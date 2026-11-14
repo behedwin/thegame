@@ -5,4 +5,5 @@ export default {
   name: 'Framtidsgymnasiet Framåt AB',
   kind: 'friskola',
   atRunKp: 400_000,
+  effect: { kind: 'clickPct', pct: 25 },
 } satisfies CustomerDef;

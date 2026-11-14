@@ -1,4 +1,9 @@
 // All player-facing UI strings (Swedish). Game data texts live next to their data.
+import type { CustomerDef, CustomerEffect } from './types';
+
+const num = (n: number) => String(Math.round(n * 100) / 100).replace('.', ',');
+const pctText = (n: number) => `${num(n)}\u00a0%`;
+
 export const T = {
   title: 'Skolintegratören',
   currency: 'KP',
@@ -25,6 +30,22 @@ export const T = {
   customers: (n: number) => (n === 1 ? '1 kund' : `${n} kunder`),
   noCustomers: 'Inga kunder än. Synka lite data!',
   toastCustomer: (name: string) => `Ny kund: ${name}!`,
+  customerEffect: (e: CustomerEffect): string =>
+    e.kind === 'prodPct'
+      ? `+${pctText(e.pct)} produktion`
+      : e.kind === 'clickPct'
+        ? `+${pctText(e.pct)} KP/klick`
+        : `×${num(e.mult)} produktion`,
+  customerKind: { kommun: 'Kommun', friskola: 'Friskola', koncern: 'Koncern' } satisfies Record<CustomerDef['kind'], string>,
+  customerList: {
+    title: 'Kundkontrakt',
+    intro: 'Kunder skriver på när du tjänat tillräckligt med KP i år. Kommuner ger stabil produktion, friskolor bättre klick och koncerner multiplikatorer. Vid nytt läsår säger alla upp avtalen.',
+    open: 'Visa kundkontrakt',
+    next: (kp: string) => `Nästa kund vid ${kp} KP intjänat i år`,
+    allSigned: 'Alla kunder har skrivit på i år!',
+    total: (prod: number, click: number) => `Totalt: ×${num(prod)} produktion · ×${num(click)} KP/klick`,
+    close: 'Stäng',
+  },
   toastMilestone: (name: string, count: number) => `Milstolpe! ${count} st ${name}: produktionen ×2`,
   eventTap: 'Tryck för att lösa!',
   buffActive: (mult: number, sec: number) => `×${mult} produktion · ${sec} s`,
