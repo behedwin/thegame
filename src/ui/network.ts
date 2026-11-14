@@ -47,8 +47,10 @@ export function rowYs(n: number, height: number): number[] {
   return Array.from({ length: n }, (_, i) => top + (i * span) / (n - 1));
 }
 
-/** How long a tapped system's tip stays on the map. */
-const TIP_MS = 4000;
+/** How long a tapped system's tip stays: 6 s, longer for long texts, at most 12 s. */
+export function tipDurationMs(text: string): number {
+  return Math.min(12000, Math.max(6000, 2500 + 60 * text.length));
+}
 
 /** Text shown when a system is tapped: its parody tagline, or its kind if it has none. */
 export function nodeTip(id: string, systems: readonly SystemDef[] = SYSTEMS): string {
@@ -117,7 +119,9 @@ export class NetworkView {
   private frameAcc = 0;
   /** Queried once; with reduced motion no packets travel at all. */
   private readonly calm = typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)') : null;
-  private tip: SVGTextElement;
+  /** HTML line below the map (placed by the app), so it never covers nodes; see decisions/. */
+  readonly tip: HTMLDivElement = document.createElement('div');
+  private tipId = '';
   private tipTimer: ReturnType<typeof setTimeout> | undefined;
 
   constructor() {
@@ -136,15 +140,19 @@ export class NetworkView {
     const lineLayer = el('g', {});
     const nodeLayer = el('g', {});
     this.packetLayer = el('g', {});
-    this.tip = el('text', {
-      x: W / 2, y: 14, 'text-anchor': 'middle', class: 'net-tip',
-      style: 'fill: var(--muted); font-size: 10px; font-style: italic; opacity: 0; transition: opacity 0.3s; pointer-events: none',
-    });
-    this.svg.append(lineLayer, this.packetLayer, nodeLayer, this.tip);
+    this.tip.className = 'net-tip';
+    this.tip.setAttribute('aria-live', 'polite');
+    this.tip.addEventListener('pointerenter', () => clearTimeout(this.tipTimer)); // no fading while touched
+    this.tip.addEventListener('pointerleave', () => this.tipId && this.showTip(this.tipId));
+    this.svg.append(lineLayer, this.packetLayer, nodeLayer);
     nodeLayer.addEventListener('click', (e) => {
       const g = (e.target as Element).closest<SVGGElement>('.net-node');
       const row = g && this.rows.find((r) => r.group.contains(g));
-      if (g?.dataset.system && row?.visible) this.showTip(nodeTip(g.dataset.system));
+      if (g?.dataset.system && row?.visible) this.showTip(g.dataset.system === this.tipId ? '' : g.dataset.system);
+    });
+    document.addEventListener('click', (e) => {
+      const t = e.target as Node;
+      if (!this.svg.contains(t) && !this.tip.contains(t)) this.showTip('');
     });
 
     for (const a of AUTOMATIONS) {
@@ -160,12 +168,14 @@ export class NetworkView {
     this.layout(pickRows(this.rows.map(() => false), MAX_ROWS));
   }
 
-  /** Show a short, discreet line about a tapped system at the top of the map. */
-  private showTip(text: string): void {
-    this.tip.textContent = text;
-    this.tip.style.opacity = '1';
+  /** Show the tip for a system (restarting its timer), or hide it for ''. */
+  private showTip(id: string): void {
     clearTimeout(this.tipTimer);
-    this.tipTimer = setTimeout(() => { this.tip.style.opacity = '0'; }, TIP_MS);
+    this.tipId = id;
+    this.tip.classList.toggle('on', id !== '');
+    if (!id) return;
+    this.tip.textContent = nodeTip(id);
+    this.tipTimer = setTimeout(() => this.showTip(''), tipDurationMs(this.tip.textContent));
   }
 
   /** Show exactly the given rows, evenly spaced; hide the rest. */
