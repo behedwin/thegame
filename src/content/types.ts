@@ -91,3 +91,25 @@ export interface CustomerDef {
   atRunKp: number;
   effect: CustomerEffect;
 }
+
+/** What must be true for an achievement to unlock. Checked after every tick. */
+export type AchievementCondition =
+  | { kind: 'clicks'; n: number }
+  | { kind: 'totalEarned'; kp: number }
+  | { kind: 'kps'; kp: number }
+  | { kind: 'automation'; id: string; n: number }
+  | { kind: 'automationsTotal'; n: number }
+  | { kind: 'upgradesTotal'; n: number }
+  | { kind: 'eventsClaimed'; n: number }
+  | { kind: 'customers'; n: number }
+  | { kind: 'prestiges'; n: number };
+
+/** A permanent achievement, kept across school years. Each unlocked one gives +1 % production. */
+export interface AchievementDef {
+  id: string;
+  order: number;
+  name: string;
+  /** How to unlock it (shown in the list, also while locked). */
+  desc: string;
+  condition: AchievementCondition;
+}

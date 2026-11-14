@@ -1,7 +1,7 @@
 // Versioned save format. Pure functions: no storage access here.
 import { createInitialState, Decimal, type GameState } from '../core/state';
 
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
 /** Raw JSON shape. Unknown on purpose: anything may come out of storage. */
 export type RawSave = { version: number; [key: string]: unknown };
@@ -11,7 +11,10 @@ export type Migration = (save: RawSave) => RawSave;
  * MIGRATIONS[n] upgrades a save from version n to n + 1.
  * Never edit an existing migration once released; add a new one and bump SAVE_VERSION.
  */
-export const MIGRATIONS: Record<number, Migration> = {};
+export const MIGRATIONS: Record<number, Migration> = {
+  // v2 (task 006): achievements. Older saves start with none; tick() unlocks what already holds.
+  1: (s) => ({ ...s, version: 2, achievements: [] }),
+};
 
 export class SaveError extends Error {}
 
@@ -80,6 +83,7 @@ export function serialize(state: GameState): string {
     nextEventAtMs: state.nextEventAtMs,
     buffs: state.buffs,
     eventsClaimed: state.eventsClaimed,
+    achievements: state.achievements,
     settings: state.settings,
   };
   return JSON.stringify(save);
@@ -128,6 +132,9 @@ export function deserialize(text: string, nowMs: number): GameState {
         untilMs: num(b.untilMs, 0),
       })),
     eventsClaimed: num(s.eventsClaimed, 0),
+    achievements: Array.isArray(s.achievements)
+      ? [...new Set(s.achievements.filter((a): a is string => typeof a === 'string'))]
+      : [],
     settings: {
       sound: typeof settings.sound === 'boolean' ? settings.sound : d.settings.sound,
       vibration: typeof settings.vibration === 'boolean' ? settings.vibration : d.settings.vibration,

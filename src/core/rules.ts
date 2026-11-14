@@ -1,6 +1,6 @@
 // Pure formulas: production, costs, prestige. No side effects.
 import { BALANCE } from '../content/balance';
-import { AUTOMATIONS, MERITS, UPGRADES, type AutomationDef, type UpgradeDef } from '../content/registry';
+import { ACHIEVEMENTS, AUTOMATIONS, MERITS, UPGRADES, type AutomationDef, type UpgradeDef } from '../content/registry';
 import { customerClickMult, customerProdMult, signedCustomers } from './customers';
 import { Decimal, level, type GameState } from './state';
 
@@ -9,6 +9,10 @@ export { customerClickMult, customerProdMult, nextCustomer, signedCustomers } fr
 const upgradeById = new Map(UPGRADES.map((u) => [u.id, u]));
 const automationById = new Map(AUTOMATIONS.map((a) => [a.id, a]));
 const meritById = new Map(MERITS.map((m) => [m.id, m]));
+const achievementIds = new Set(ACHIEVEMENTS.map((a) => a.id));
+
+/** Production bonus per unlocked achievement, in percent. */
+export const ACHIEVEMENT_PROD_PCT = 1;
 
 export function getUpgrade(id: string): UpgradeDef | undefined {
   return upgradeById.get(id);
@@ -60,6 +64,13 @@ export function meritProdMult(state: GameState): number {
   return 1 + meritSum(state, 'prodPct') / 100;
 }
 
+/** Permanent production multiplier from unlocked achievements (unknown ids are ignored). */
+export function achievementProdMult(state: GameState): number {
+  let n = 0;
+  for (const id of state.achievements) if (achievementIds.has(id)) n++;
+  return 1 + (n * ACHIEVEMENT_PROD_PCT) / 100;
+}
+
 /** KP/s of one automation type, excluding temporary buffs. */
 export function automationKps(state: GameState, def: AutomationDef): Decimal {
   const count = level(state.automations, def.id);
@@ -68,6 +79,7 @@ export function automationKps(state: GameState, def: AutomationDef): Decimal {
     .mul(count)
     .mul(automationMult(state, def.id))
     .mul(meritProdMult(state))
+    .mul(achievementProdMult(state))
     .mul(customerProdMult(state));
 }
 

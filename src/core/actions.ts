@@ -1,11 +1,12 @@
 // State transitions. All functions are pure: they return a new state and never mutate the input.
 import { BALANCE } from '../content/balance';
 import { MERITS } from '../content/registry';
+import { checkAchievements } from './achievements';
 import { buyMany } from './bulk';
 import { baseKps, canBuyMerit, kpPerClick, kpPerSecond, meritCost, offlineCapMs, pendingMerits } from './rules';
 import { createInitialState, Decimal, earn, level, type GameState } from './state';
 
-/** Advance game time by dtMs: production, buff and event expiry. */
+/** Advance game time by dtMs: production, buff and event expiry, achievement unlocks. */
 export function tick(state: GameState, dtMs: number): GameState {
   if (!(dtMs > 0) || !Number.isFinite(dtMs)) return state;
   const produced = kpPerSecond(state).mul(dtMs / 1000);
@@ -18,7 +19,7 @@ export function tick(state: GameState, dtMs: number): GameState {
     activeEvent = null;
     nextEventAtMs = timeMs + BALANCE.events.cooldownMs;
   }
-  return { ...next, timeMs, buffs, activeEvent, nextEventAtMs };
+  return checkAchievements({ ...next, timeMs, buffs, activeEvent, nextEventAtMs });
 }
 
 /** One manual sync (tap). */
@@ -70,6 +71,7 @@ export function prestige(state: GameState): GameState {
     timeMs: state.timeMs,
     nextEventAtMs: state.nextEventAtMs,
     eventsClaimed: state.eventsClaimed,
+    achievements: state.achievements,
     settings: state.settings,
   };
 }
