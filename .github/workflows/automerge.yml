@@ -35,12 +35,21 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.AUTOMERGE_TOKEN || github.token }}
           PR: ${{ github.event.pull_request.html_url }}
-          WANTED: ${{ contains(github.event.pull_request.labels.*.name, 'automerge') && !contains(github.event.pull_request.labels.*.name, 'conflict') && !contains(github.event.pull_request.labels.*.name, 'blocked') }}
+          ACTION: ${{ github.event.action }}
+          CHANGED_LABEL: ${{ github.event.label.name }}
+          HAS_AUTOMERGE: ${{ contains(github.event.pull_request.labels.*.name, 'automerge') }}
+          HAS_STOP: ${{ contains(github.event.pull_request.labels.*.name, 'conflict') || contains(github.event.pull_request.labels.*.name, 'blocked') }}
         run: |
-          if [ "$WANTED" = "true" ]; then
-            gh pr merge --auto --squash "$PR"
-          else
+          # Only touch auto-merge for PRs managed by labels. PRs without the label are left
+          # alone, so an owner can still enable auto-merge by hand.
+          if [ "$HAS_STOP" = "true" ]; then
             gh pr merge --disable-auto "$PR" 2>/dev/null || true
+          elif [ "$HAS_AUTOMERGE" = "true" ]; then
+            gh pr merge --auto --squash "$PR"
+          elif [ "$ACTION" = "unlabeled" ] && [ "$CHANGED_LABEL" = "automerge" ]; then
+            gh pr merge --disable-auto "$PR" 2>/dev/null || true
+          else
+            echo "No automerge label: leaving auto-merge as it is."
           fi
 
   update-behind:
