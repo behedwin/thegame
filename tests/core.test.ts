@@ -237,9 +237,10 @@ describe('events', () => {
 
   it('claiming applies a timed production buff', () => {
     let s: GameState = { ...fresh(), automations: { nightly: 1 } };
-    s = spawnEvent(s, EVENTS[0]!);
+    const passwords = EVENTS.find((e) => e.id === 'passwords')!;
+    s = spawnEvent(s, passwords);
     const { state, event } = claimEvent(s);
-    expect(event?.id).toBe(EVENTS[0]!.id);
+    expect(event?.id).toBe('passwords');
     expect(state.activeEvent).toBeNull();
     expect(state.eventsClaimed).toBe(1);
     expect(kpPerSecond(state).toNumber()).toBeCloseTo(9, 9);
