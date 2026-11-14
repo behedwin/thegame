@@ -26,10 +26,13 @@ Du är en autonom worker. Följ CLAUDE.md strikt, inklusive HÅRDA STOPP.
    meddelande innehåller `[ready]`. Då skapar `auto-pr.yml` PR:en: titeln tas från uppgiftsfilen,
    beskrivningen från journalfilen och etiketten blir `automerge` (S/M) eller `needs-review` (L).
    Gröna `automerge`-PR:er squash-mergas automatiskt.
-8. **Verifiera din PR.** Vänta tills PR:en finns (högst 10 min) och kontrollera att den har rätt etikett och
-   att auto-merge är på för `automerge`. Ligger den efter main: lossa den enligt nedan. Blir CI röd av din
-   ändring: rätta, kör grindarna och pusha igen med `[ready]` (räknas mot regeln om 3 fel). Skriv i
-   slutrapporten om PR:en är mergad, väntar på CI eller behöver ägaren.
+8. **Verifiera din PR, och avsluta sedan.** Vänta tills PR:en finns (högst 10 min, kontrollera ungefär varje
+   minut) och kontrollera att den har rätt etikett och att auto-merge är på för `automerge`. Ligger den efter
+   main: lossa den enligt nedan. Är CI redan röd av din ändring: rätta, kör grindarna och pusha igen med
+   `[ready]` (räknas mot regeln om 3 fel). **Vänta inte in CI eller mergen.** Ingen `Monitor`, inga
+   bakgrundstimers och ingen väntan på att grenen raderas: `automerge.yml` och `unstick-prs.mjs` tar PR:en
+   hela vägen till main, och städaren följer upp röd CI. Hela steg 8 tar högst 10 min. Skriv i
+   slutrapporten om PR:en är mergad, väntar på CI eller behöver ägaren, och avsluta körningen.
 
 Gör högst en uppgift per körning.
 
