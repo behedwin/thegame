@@ -79,6 +79,14 @@ export const T = {
   welcomeAway: (away: string, capped: boolean, cap: string) =>
     capped ? `Du var borta ${away}. Systemen orkade jobba i ${cap}.` : `Du var borta ${away}.`,
   welcomeOk: 'Hämta',
+  welcomeTickets: (n: number) => (n === 1 ? 'Ett ärende väntar i inkorgen.' : `${n} ärenden väntar i inkorgen.`),
+  inbox: {
+    label: (n: number) => (n > 0 ? `Inkorg ${n}` : 'Inkorg'),
+    aria: (n: number) => `Inkorg, ${n} obesvarade ärenden`,
+    from: (name: string) => `Från: ${name}`,
+    later: 'Senare',
+    empty: 'Inga ärenden just nu. Alla är nöjda, för stunden.',
+  },
   prestige: {
     title: 'Nytt läsår',
     intro:

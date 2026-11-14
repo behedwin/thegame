@@ -7,6 +7,7 @@ import { AUTOMATIONS, CUSTOMERS, systemName } from '../content/registry';
 import { T } from '../content/texts';
 import {
   activeBuffs,
+  answerTicket,
   activeSeason,
   applyOffline,
   automationKps,
@@ -29,6 +30,8 @@ import {
   nextYearSpeedupPct,
   pendingMerits,
   prestige,
+  receiveTicket,
+  refillInboxOffline,
   rollEvent,
   runKpForMerits,
   setCalendar,
@@ -49,6 +52,7 @@ import { showStats } from './stats';
 import { NetworkView } from './network';
 import { cancelNotifications, notificationsSupported, requestNotifyPermission, scheduleNotifications } from './notifications';
 import { ShopList } from './shop';
+import { showTicket } from './inbox';
 import { markTipSeen, nextTip, settleTips, TipBar } from './onboarding';
 
 const GEAR =
@@ -82,6 +86,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
   const seasonEl = h('div', { class: 'buff season', testId: 'season', attrs: { hidden: '', role: 'status', 'aria-label': T.season.aria } });
   const settingsBtn = h('button', { class: 'icon-btn', testId: 'settings', attrs: { 'aria-label': T.settings.title } });
   settingsBtn.innerHTML = GEAR;
+  const inboxBtn = h('button', { class: 'inbox-btn', testId: 'inbox', attrs: { hidden: '' } });
 
   const net = new NetworkView();
   const hub = h('button', { class: 'hub', testId: 'hub', attrs: { 'aria-label': T.hubAria } });
@@ -162,7 +167,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
     h(
       'div',
       { class: 'app' },
-      h('header', { class: 'top' }, h('div', { class: 'brand', text: T.title }), settingsBtn),
+      h('header', { class: 'top' }, h('div', { class: 'brand', text: T.title }), inboxBtn, settingsBtn),
       h(
         'section',
         { class: 'stats' },
@@ -260,6 +265,20 @@ export async function startApp(root: HTMLElement): Promise<void> {
     ]);
   }
 
+  function openInbox(): void {
+    const shown = showTicket(state, (id, choice) => {
+      const r = answerTicket(state, id, choice);
+      if (!r.choice) return;
+      state = r.state;
+      toast(r.choice.outcome, 'event');
+      sfx.buy();
+      haptic('medium');
+      persist();
+      render();
+    });
+    if (!shown) toast(T.inbox.empty);
+  }
+
   function openSettings(): void {
     let armed = false;
     const toggle = (label: string, key: 'sound' | 'vibration' | 'tips') => {
@@ -339,6 +358,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
       [
         h('p', { class: 'big-line', text: T.welcomeBody(system, fmt(earned)) }),
         h('p', { class: 'muted', text: T.welcomeAway(fmtDuration(awayMs), awayMs > creditedMs, fmtDuration(creditedMs)) }),
+        ...(state.inbox.length ? [h('p', { testId: 'welcome-tickets', text: T.welcomeTickets(state.inbox.length) })] : []),
       ],
       [{ label: T.welcomeOk, primary: true, testId: 'welcome-ok' }],
       'welcome-dialog',
@@ -348,7 +368,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
 
   function resume(nowMs: number): void {
     const r = applyOffline(state, nowMs);
-    state = r.state;
+    state = refillInboxOffline(r.state, r.awayMs, Math.random);
     if (r.creditedMs >= BALANCE.offline.dialogMinMs && r.earned.gt(0)) showWelcome(r.earned, r.awayMs, r.creditedMs);
   }
 
@@ -421,9 +441,18 @@ export async function startApp(root: HTMLElement): Promise<void> {
     seasonEl.hidden = !season;
   }
 
+  function renderInbox(): void {
+    const n = state.inbox.length;
+    inboxBtn.hidden = n === 0 && state.ticketsAnswered === 0;
+    inboxBtn.textContent = T.inbox.label(n);
+    inboxBtn.setAttribute('aria-label', T.inbox.aria(n));
+    inboxBtn.classList.toggle('has', n > 0);
+  }
+
   function render(): void {
     renderSeason();
     renderTop();
+    renderInbox();
     const buffs = activeBuffs(state);
     if (buffs.length) {
       const b = buffs[0]!;
@@ -534,6 +563,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
   });
   hub.addEventListener('animationend', () => hub.classList.remove('pop'));
   settingsBtn.addEventListener('click', openSettings);
+  inboxBtn.addEventListener('click', openInbox);
   for (const [k, b] of Object.entries(tabButtons)) {
     b.addEventListener('click', () => {
       tab = k as Tab;
@@ -606,6 +636,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
       rollAcc -= BALANCE.events.rollIntervalMs;
       const ev = rollEvent(state, Math.random);
       if (ev) state = spawnEvent(state, ev);
+      state = receiveTicket(state, Math.random);
     }
     net.frame(dt / 1000);
     renderAcc += dt;

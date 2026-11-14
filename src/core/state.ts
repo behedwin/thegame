@@ -1,4 +1,5 @@
 import Decimal from 'break_infinity.js';
+import { BALANCE } from '../content/balance';
 
 export { Decimal };
 
@@ -61,6 +62,11 @@ export interface GameState {
   eventsClaimed: number;
   /** Unlocked achievement ids, in unlock order. Kept across school years. */
   achievements: string[];
+  /** Unanswered ticket ids, oldest first (at most BALANCE.tickets.cap). Kept across school years. */
+  inbox: string[];
+  /** Game time when the next ticket may arrive. */
+  nextTicketAtMs: number;
+  ticketsAnswered: number;
   /** Onboarding tip ids already shown and finished. A tip is never shown again once here. */
   tipsSeen: string[];
   settings: Settings;
@@ -90,6 +96,9 @@ export function createInitialState(nowMs: number): GameState {
     buffs: [],
     eventsClaimed: 0,
     achievements: [],
+    inbox: [],
+    nextTicketAtMs: BALANCE.tickets.firstAtMs,
+    ticketsAnswered: 0,
     tipsSeen: [],
     settings: { sound: true, vibration: true, volume: DEFAULT_VOLUME, notifyOfflineCap: false, notifySeason: false, tips: true },
   };

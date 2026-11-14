@@ -1,7 +1,9 @@
 // Versioned save format. Pure functions: no storage access here.
+import { BALANCE } from '../content/balance';
+import { getTicket } from '../core/tickets';
 import { createInitialState, Decimal, DEFAULT_VOLUME, type GameState } from '../core/state';
 
-export const SAVE_VERSION = 5;
+export const SAVE_VERSION = 6;
 
 /** Raw JSON shape. Unknown on purpose: anything may come out of storage. */
 export type RawSave = { version: number; [key: string]: unknown };
@@ -29,6 +31,8 @@ export const MIGRATIONS: Record<number, Migration> = {
     ],
     settings: { ...obj(s.settings), tips: true },
   }),
+  // v6 (task 021): ticket inbox. Existing players get their first ticket right away.
+  5: (s) => ({ ...s, version: 6, inbox: [], nextTicketAtMs: num(s.timeMs, 0), ticketsAnswered: 0 }),
 };
 
 export class SaveError extends Error {}
@@ -104,6 +108,9 @@ export function serialize(state: GameState): string {
     buffs: state.buffs,
     eventsClaimed: state.eventsClaimed,
     achievements: state.achievements,
+    inbox: state.inbox,
+    nextTicketAtMs: state.nextTicketAtMs,
+    ticketsAnswered: state.ticketsAnswered,
     tipsSeen: state.tipsSeen,
     settings: state.settings,
   };
@@ -154,6 +161,11 @@ export function deserialize(text: string, nowMs: number): GameState {
       })),
     eventsClaimed: num(s.eventsClaimed, 0),
     achievements: uniqueStrings(s.achievements),
+    inbox: uniqueStrings(s.inbox)
+      .filter((id) => getTicket(id))
+      .slice(0, BALANCE.tickets.cap),
+    nextTicketAtMs: num(s.nextTicketAtMs, d.nextTicketAtMs),
+    ticketsAnswered: num(s.ticketsAnswered, 0),
     tipsSeen: uniqueStrings(s.tipsSeen),
     settings: {
       sound: typeof settings.sound === 'boolean' ? settings.sound : d.settings.sound,

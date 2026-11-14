@@ -76,6 +76,9 @@ export function prestige(state: GameState): GameState {
     nextEventAtMs: state.nextEventAtMs,
     eventsClaimed: state.eventsClaimed,
     achievements: state.achievements,
+    inbox: state.inbox,
+    nextTicketAtMs: state.nextTicketAtMs,
+    ticketsAnswered: state.ticketsAnswered,
     settings: state.settings,
     calendar: state.calendar ?? null,
   };

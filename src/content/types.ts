@@ -148,3 +148,22 @@ export interface SeasonDef {
   end: MonthDay;
   effect: SeasonEffect;
 }
+
+/** One answer to a ticket. Choices are trade-offs, never right or wrong. */
+export interface TicketChoice {
+  label: string;
+  /** Shown as a toast after answering. */
+  outcome: string;
+  effect: EventEffect;
+}
+
+/** A support ticket in the inbox. Never expires and is never punished if ignored. */
+export interface TicketDef {
+  id: string;
+  /** A system or customer id (src/content/systems/ or customers/). */
+  from: string;
+  title: string;
+  text: string;
+  /** 2-3 choices. */
+  choices: readonly TicketChoice[];
+}

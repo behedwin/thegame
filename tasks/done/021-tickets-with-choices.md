@@ -1,7 +1,7 @@
 ---
 id: 021
 size: L
-status: ready
+status: done
 touches: [src/content/tickets/, src/content/types.ts, src/content/registry.ts, src/content/balance.ts, src/content/texts.ts, src/core/, src/save/, src/ui/, sim/]
 depends: []
 priority: normal

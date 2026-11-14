@@ -3,6 +3,7 @@ import { AUTOMATIONS } from '../src/content/registry';
 import { MERITS } from '../src/content/registry';
 import { UPGRADES } from '../src/content/registry';
 import {
+  answerTicket,
   buy,
   buyMerit,
   canBuy,
@@ -11,12 +12,14 @@ import {
   click,
   costOf,
   createInitialState,
+  getTicket,
   kpPerClick,
   kpPerSecond,
   meritCost,
   mulberry32,
   pendingMerits,
   prestige,
+  receiveTicket,
   rollEvent,
   spawnEvent,
   tick,
@@ -41,6 +44,12 @@ export interface SeedResult {
   prestiges: number;
   eventsSpawned: number;
   eventsClaimed: number;
+  ticketsReceived: number;
+  ticketsAnswered: number;
+  /** How often each choice was picked, keyed "<ticket id>#<choice index>". */
+  ticketChoices: Record<string, number>;
+  /** Longest stretch over the whole run with nothing to do: nothing affordable and no unanswered ticket. */
+  maxIdleGapSec: number;
   finalLog10TotalEarned: number;
   finalLog10Kps: number;
   merits: number;
@@ -70,6 +79,9 @@ export function simulateSeed(seed: number, durationSec: number): SeedResult {
   const reactionSec = 1 + Math.floor(rng() * 4); // how often the player looks at the shop
   const eventSkill = 0.5 + rng() * 0.45; // chance to notice and tap an event
   const eventRng = mulberry32(seed ^ 0x9e3779b9);
+  // Separate streams so tickets do not shift the rest of the simulation's randomness.
+  const ticketRng = mulberry32(seed ^ 0x51ed270b);
+  const answerRng = mulberry32(seed ^ 0x2545f491);
 
   const r: SeedResult = {
     seed,
@@ -84,6 +96,10 @@ export function simulateSeed(seed: number, durationSec: number): SeedResult {
     prestiges: 0,
     eventsSpawned: 0,
     eventsClaimed: 0,
+    ticketsReceived: 0,
+    ticketsAnswered: 0,
+    ticketChoices: {},
+    maxIdleGapSec: 0,
     finalLog10TotalEarned: 0,
     finalLog10Kps: 0,
     merits: 0,
@@ -91,6 +107,7 @@ export function simulateSeed(seed: number, durationSec: number): SeedResult {
 
   let s = createInitialState(0);
   let gap = 0;
+  let idle = 0;
   let purchasesFirst10 = 0;
   try {
     for (let t = 1; t <= durationSec; t++) {
@@ -111,13 +128,27 @@ export function simulateSeed(seed: number, durationSec: number): SeedResult {
         }
       }
 
+      const inboxBefore = s.inbox.length;
+      s = receiveTicket(s, ticketRng);
+      if (s.inbox.length > inboxBefore) r.ticketsReceived++;
+
+      const any = ITEM_IDS.some((id) => canBuy(s, id));
       if (t <= 3600) {
-        const any = ITEM_IDS.some((id) => canBuy(s, id));
         gap = any ? 0 : gap + 1;
         r.maxNoAffordableGapSecFirstHour = Math.max(r.maxNoAffordableGapSecFirstHour, gap);
       }
+      idle = any || s.inbox.length > 0 ? 0 : idle + 1;
+      r.maxIdleGapSec = Math.max(r.maxIdleGapSec, idle);
 
       if (t % reactionSec === 0) {
+        // Answer every open ticket with a random choice.
+        for (const id of s.inbox) {
+          const choices = getTicket(id)?.choices.length ?? 0;
+          const pick = Math.floor(answerRng() * choices);
+          s = answerTicket(s, id, pick).state;
+          r.ticketsAnswered++;
+          r.ticketChoices[`${id}#${pick}`] = (r.ticketChoices[`${id}#${pick}`] ?? 0) + 1;
+        }
         for (let n = 0; n < 100; n++) {
           let best: string | null = null;
           let bestValue = -1;
