@@ -1,7 +1,7 @@
 ---
 id: 007
 size: M
-status: ready
+status: done
 touches: [android/app/src/main/res/, public/, index.html]
 depends: [005]
 ---
