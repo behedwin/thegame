@@ -6,42 +6,11 @@ import { BALANCE } from '../content/balance';
 import { AUTOMATIONS, CUSTOMERS, systemName } from '../content/registry';
 import { T } from '../content/texts';
 import {
-  activeBuffs,
-  answerTicket,
-  activeSeason,
-  applyOffline,
-  buy,
-  type CalendarDay,
-  buyMerit,
-  canPrestige,
-  claimEvent,
-  click,
-  createInitialState,
-  customersSigned,
-  getAutomation,
-  getEvent,
-  kpPerClick,
-  kpPerSecond,
-  level,
-  milestoneName,
-  milestonesReached,
-  newAchievements,
-  networkFlow,
-  nextYearSpeedupPct,
-  pendingMerits,
-  prestige,
-  prestigeUnlocked,
-  receiveTicket,
-  refillInboxOffline,
-  rollEvent,
-  runKpForMerits,
-  setCalendar,
-  setSettings,
-  type Settings,
-  spawnEvent,
-  tick,
-  touch,
-  type GameState,
+  activeBuffs, answerTicket, activeSeason, applyOffline, buy, type CalendarDay, buyMerit, canPrestige, claimEvent,
+  click, createInitialState, customersSigned, getAutomation, getEvent, kpPerClick, kpPerSecond, level, milestoneName,
+  milestonesReached, newAchievements, networkFlow, nextYearSpeedupPct, pendingMerits, prestige, prestigeUnlocked,
+  receiveTicket, refillInboxOffline, rollEvent, runKpForMerits, setCalendar, setSettings, type Settings, spawnEvent,
+  tick, touch, type GameState,
 } from '../core';
 import { buyMany, BULK_MODES, resolveBulk, type BulkMode } from '../core/bulk';
 import { loadGame, saveGame, wipeGame } from '../save/storage';
@@ -59,7 +28,8 @@ import { cancelNotifications, scheduleNotifications } from './notifications';
 import { openSettings } from './settings';
 import { ShopList } from './shop';
 import { renderInboxButton, showTicket } from './inbox';
-import { markTipSeen, nextTip, settleTips, TipBar } from './onboarding';
+import { helpHooks } from './help';
+import { markTipSeen, nextTip, settleTips, TipBar, tourNext, TOUR, type TourStep } from './onboarding';
 
 const GEAR =
   '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3h-4l-.4 2.9a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.4 7.4 0 0 0 1.7 1L11 21h4l.4-2.9a7.4 7.4 0 0 0 1.7-1l2.5 1 2-3.5zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg>';
@@ -110,14 +80,19 @@ export async function startApp(root: HTMLElement): Promise<void> {
     floatLayer,
     eventSlot,
   );
+  // The intro tour (031) is in memory only, so a reload ends it.
+  let tour: TourStep | null = null;
   const tips = new TipBar(
     (id) => {
-      state = markTipSeen(state, id);
+      if (tour) tour = null;
+      else if (id) state = markTipSeen(state, id);
       persist();
       render();
     },
     () => applySettings({ tips: false }, true),
+    () => ((tour = tour && tourNext(tour)), render()),
   );
+  helpHooks.replay = () => ((tour = TOUR[0]), render());
   const customersEl = h('div', {
     class: 'customers',
     testId: 'customers',
@@ -182,6 +157,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
       panel,
     ),
   );
+  tips.marks = { sync: hub, buy: panel, event: eventSlot, help: settingsBtn };
 
   // ---------- Actions ----------
   let saveQueued = false;
@@ -425,6 +401,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
   }
 
   function renderTips(): void {
+    if (tour) return tips.render(null, tour);
     const settled = settleTips(state, tips.shown);
     if (settled !== state) {
       state = settled;

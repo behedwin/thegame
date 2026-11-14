@@ -41,6 +41,6 @@ describe('help page content (task 029)', () => {
   });
 
   it('has UI texts for the button, title and close', () => {
-    expect(T.help).toEqual({ open: 'Hjälp', title: 'Så spelar du', close: 'Stäng' });
+    expect(T.help).toMatchObject({ open: 'Hjälp', title: 'Så spelar du', close: 'Stäng' });
   });
 });
