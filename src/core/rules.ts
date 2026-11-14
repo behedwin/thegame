@@ -132,6 +132,17 @@ export function baseKps(state: GameState): Decimal {
   return total;
 }
 
+/** Per-automation owned counts and share of total KP/s (buffs included), for the network map. */
+export type NetworkFlow = { counts: Record<string, number>; shares: Record<string, number>; total: number };
+export function networkFlow(state: GameState): NetworkFlow {
+  const [counts, shares, total]: [Record<string, number>, Record<string, number>, Decimal] = [{}, {}, kpPerSecond(state)];
+  for (const a of AUTOMATIONS) {
+    counts[a.id] = level(state.automations, a.id);
+    shares[a.id] = total.gt(0) ? automationKps(state, a).div(total).toNumber() : 0;
+  }
+  return { counts, shares, total: total.toNumber() };
+}
+
 /** KP per second including active buffs. */
 export function kpPerSecond(state: GameState): Decimal {
   return baseKps(state).mul(buffMult(state, 'prodMult'));

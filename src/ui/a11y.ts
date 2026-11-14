@@ -24,3 +24,6 @@ export function cssColorVars(css: string): Record<string, string> {
   for (const m of css.matchAll(/--([\w-]+):\s*(#[0-9a-f]{6})\s*;/gi)) out[m[1]!] = m[2]!;
   return out;
 }
+
+/** Enter and Space activate a focused control (buttons and role="button" elements). */
+export const isActivateKey = (e: { key: string }): boolean => e.key === 'Enter' || e.key === ' ';

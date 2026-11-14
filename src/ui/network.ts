@@ -1,6 +1,7 @@
 // The hero visual: source systems on the left, your integration hub in the middle,
 // target systems on the right. Data packets flow along the lines.
 import { AUTOMATIONS, SYSTEMS, systemName, type SystemDef } from '../content/registry';
+import type { NetworkFlow } from '../core';
 import { flashClass } from './celebrate';
 
 const NS = 'http://www.w3.org/2000/svg';
@@ -98,13 +99,9 @@ function el<K extends keyof SVGElementTagNameMap>(tag: K, attrs: Record<string, 
 /** A node drawn around y = 0; the row group is translated to its place. */
 function node(x: number, systemId: string, side: 'src' | 'dst'): SVGGElement {
   const g = el('g', { class: `net-node net-${side}`, 'data-system': systemId, style: 'cursor: pointer' });
-  const label = systemName(systemId);
-  g.append(
-    el('rect', { x, y: -NODE_H / 2, width: NODE_W, height: NODE_H, rx: 10 }),
-  );
   const text = el('text', { x: x + NODE_W / 2, y: 4, 'text-anchor': 'middle' });
-  text.textContent = label;
-  g.append(text);
+  text.textContent = systemName(systemId);
+  g.append(el('rect', { x, y: -NODE_H / 2, width: NODE_W, height: NODE_H, rx: 10 }), text);
   return g;
 }
 
@@ -196,11 +193,7 @@ export class NetworkView {
     });
     const keep = new Set(shown);
     this.rows.forEach((row, i) => this.setRowVisible(row, keep.has(i)));
-    this.packets = this.packets.filter((p) => {
-      if (p.row.visible) return true;
-      p.el.remove();
-      return false;
-    });
+    this.packets = this.packets.filter((p) => p.row.visible || (p.el.remove(), false));
   }
 
   private setRowVisible(row: Row, visible: boolean): void {
@@ -212,8 +205,8 @@ export class NetworkView {
     if (visible && this.booted) for (const e of [row.group, row.lines]) flashClass(e, 'boot', 1000);
   }
 
-  /** Update rows (counts and KP/s shares per automation id) and the hub tier; returns a tier gained in play. */
-  update(counts: Record<string, number>, shares: Record<string, number>, kps: number): number | null {
+  /** Update rows (counts and KP/s shares per automation id, see core networkFlow) and the hub tier; returns a tier gained in play. */
+  update({ counts, shares, total: kps }: NetworkFlow): number | null {
     const owned = this.rows.map((row) => (counts[row.id] ?? 0) > 0);
     this.layout(pickRows(owned, MAX_ROWS));
     this.rows.forEach((row, i) => {
@@ -239,10 +232,7 @@ export class NetworkView {
   }
 
   private spawn(row: Row, manual: boolean): void {
-    if (this.packets.length >= MAX_PACKETS) {
-      const old = this.packets.shift();
-      old?.el.remove();
-    }
+    if (this.packets.length >= MAX_PACKETS) this.packets.shift()?.el.remove();
     const c = el('circle', { r: manual ? 5 : 3.2, class: manual ? 'packet manual' : 'packet' });
     this.packetLayer.append(c);
     const speed = manual ? 1.2 : 0.25 + row.rate * 0.05 + Math.random() * 0.1; // busy lines run faster

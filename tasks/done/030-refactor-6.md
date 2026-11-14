@@ -1,7 +1,7 @@
 ---
 id: 030
 size: M
-status: ready
+status: done
 kind: refactor
 touches: [src/, sim/, tests/, e2e/]
 depends: [026, 027, 028, 029]
