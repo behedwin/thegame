@@ -1,21 +1,17 @@
 // State transitions. All functions are pure: they return a new state and never mutate the input.
-import { MERITS } from '../content/registry';
 import { checkAchievements } from './achievements';
 import { buyMany } from './bulk';
 import {
   baseKps,
-  bestYearEarned,
   canBuyMerit,
   eventCooldownMs,
   kpPerClick,
   kpPerSecond,
   offlineCapMs,
   offlineEfficiency,
-  pendingMerits,
-  runKpForMerits,
   withMeritLevel,
 } from './rules';
-import { Decimal, earn, level, type GameState } from './state';
+import { Decimal, earn, type GameState } from './state';
 
 /** Advance game time by dtMs: production, buff and event expiry, achievement unlocks. */
 export function tick(state: GameState, dtMs: number): GameState {
@@ -47,43 +43,6 @@ export function buy(state: GameState, id: string): GameState {
 
 export function buyMerit(state: GameState, id: string): GameState {
   return canBuyMerit(state, id) ? withMeritLevel(state, id) : state;
-}
-
-export function canPrestige(state: GameState): boolean {
-  return pendingMerits(state).gte(1);
-}
-
-/** The prestige tab shows after the first prestige, or once a quarter of the first merit's KP is earned. */
-export function prestigeUnlocked(state: GameState): boolean {
-  return state.prestiges > 0 || state.runEarned.gte(runKpForMerits(1).mul(0.25));
-}
-
-/** "Nytt läsår": reset the run; keep merits, lifetime totals, events, tickets and settings. */
-export function prestige(state: GameState): GameState {
-  if (!canPrestige(state)) return state;
-  const gained = pendingMerits(state);
-  const automations: Record<string, number> = {};
-  for (const m of MERITS) {
-    const lvl = level(state.meritUpgrades, m.id);
-    if (lvl > 0 && m.effect.kind === 'startAutomation') {
-      automations[m.effect.id] = (automations[m.effect.id] ?? 0) + m.effect.count * lvl;
-    }
-  }
-  return {
-    ...state,
-    kp: new Decimal(0),
-    runEarned: new Decimal(0),
-    upgrades: {},
-    automations,
-    activeEvent: null,
-    buffs: [],
-    tipsSeen: [], // tips only show in the first school year, so this changes nothing visible
-    bestRunEarned: bestYearEarned(state),
-    merits: state.merits.add(gained),
-    meritsEarned: state.meritsEarned.add(gained),
-    prestiges: state.prestiges + 1,
-    calendar: state.calendar ?? null,
-  };
 }
 
 export interface OfflineResult {

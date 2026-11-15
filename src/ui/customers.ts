@@ -29,7 +29,7 @@ function customerListBody(state: GameState): HTMLElement[] {
   ];
 }
 
-export function showCustomers(state: GameState): void {
+function showCustomers(state: GameState): void {
   showDialog(T.customerList.title, customerListBody(state), [{ label: T.customerList.close, primary: true }], 'customers-dialog');
 }
 
