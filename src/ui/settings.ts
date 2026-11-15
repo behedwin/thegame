@@ -1,9 +1,11 @@
-// Settings dialog: sound, volume, vibration, tips, number notation, opt-in notifications, help, stats, save export/import and wipe.
+// Settings dialog: sound, volume, vibration, tips, number notation, opt-in notifications, help, stats, save export/import, wipe, version and changelog.
 import { T } from '../content/texts';
 import type { GameState, Settings } from '../core';
 import { exportSave, importSave } from '../save/format';
 import { h, showDialog } from './dialogs';
 import { sfx, toast } from './feedback';
+import { version } from 'virtual:changelog';
+import { showChangelog } from './changelog';
 import { showHelp } from './help';
 import { notificationsSupported, requestNotifyPermission } from './notifications';
 import { showStats } from './stats';
@@ -57,6 +59,8 @@ export function openSettings(host: SettingsHost): void {
   slider.addEventListener('change', () => (sfx.buy(), host.apply({}, true)));
   const [help, stats, wipe] = [button(T.help.open, 'open-help'), button(T.stats.open, 'open-stats'), button(T.settings.wipe, 'wipe', 'btn danger wide')];
   help.addEventListener('click', showHelp);
+  const news = button(T.changelog.open, 'open-changelog');
+  news.addEventListener('click', showChangelog);
   stats.addEventListener('click', () => showStats(host.state()));
   // Export and import share one text field. Import validates first and then needs a second press.
   const field = h('textarea', { class: 'save-text', testId: 'save-text', attrs: { rows: '3', placeholder: T.settings.saveText, 'aria-label': T.settings.saveText } });
@@ -85,7 +89,7 @@ export function openSettings(host: SettingsHost): void {
   });
   showDialog(
     T.settings.title,
-    [toggle(T.settings.sound, 'sound'), h('label', { class: 'muted', text: T.settings.volume }, slider), toggle(T.settings.vibration, 'vibration'), toggle(T.settings.tips, 'tips'), notation, ...notify, help, stats, exp, field, imp, wipe, h('p', { class: 'muted', text: T.settings.about })],
+    [toggle(T.settings.sound, 'sound'), h('label', { class: 'muted', text: T.settings.volume }, slider), toggle(T.settings.vibration, 'vibration'), toggle(T.settings.tips, 'tips'), notation, ...notify, help, stats, exp, field, imp, wipe, h('p', { class: 'muted', text: T.settings.about }), h('p', { class: 'muted version', testId: 'app-version', text: T.changelog.version(version) }), news],
     [{ label: T.settings.close, primary: true }],
     'settings-dialog',
   );

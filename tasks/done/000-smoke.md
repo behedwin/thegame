@@ -4,6 +4,7 @@ size: S
 status: done
 touches: [journal/]
 depends: []
+changelog: false
 ---
 
 # Smoke-test av worker-flödet

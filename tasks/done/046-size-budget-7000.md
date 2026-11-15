@@ -5,6 +5,7 @@ status: done
 touches: [scripts/size-check.mjs, CLAUDE.md]
 depends: []
 priority: normal
+changelog: false
 ---
 
 # Höj storleksbudgeten för src/ till 7 000 rader

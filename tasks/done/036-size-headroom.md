@@ -5,6 +5,7 @@ status: done
 priority: normal
 touches: [src/]
 depends: [035]
+changelog: false
 ---
 
 # Skapa utrymme i storleksbudgeten
