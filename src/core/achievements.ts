@@ -31,6 +31,8 @@ export function isMet(state: GameState, c: AchievementCondition): boolean {
       return customersSigned(state) >= c.n;
     case 'prestiges':
       return state.prestiges >= c.n;
+    case 'ticketsAnswered':
+      return state.ticketsAnswered >= c.n;
   }
 }
 

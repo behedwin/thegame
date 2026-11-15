@@ -20,9 +20,9 @@ import { deserialize, migrate, MIGRATIONS, SAVE_VERSION, serialize } from '../sr
 const fresh = () => createInitialState(1_000);
 
 describe('achievement content', () => {
-  it('has exactly 20 achievements with unique order and Swedish texts', () => {
-    expect(ACHIEVEMENTS).toHaveLength(20);
-    expect(new Set(ACHIEVEMENTS.map((a) => a.order)).size).toBe(20);
+  it('has exactly 22 achievements with unique order and Swedish texts', () => {
+    expect(ACHIEVEMENTS).toHaveLength(22);
+    expect(new Set(ACHIEVEMENTS.map((a) => a.order)).size).toBe(22);
     for (const a of ACHIEVEMENTS) {
       expect(a.name.trim(), a.id).not.toBe('');
       expect(a.desc.trim(), a.id).not.toBe('');
@@ -62,6 +62,7 @@ describe('conditions', () => {
       automations: Object.fromEntries(AUTOMATIONS.map((a) => [a.id, 300])),
       upgrades: Object.fromEntries(UPGRADES.map((u) => [u.id, u.maxLevel])),
       eventsClaimed: 1000,
+      ticketsAnswered: 1000,
       prestiges: 10,
     };
     for (const a of ACHIEVEMENTS) expect(isMet(big, a.condition), a.id).toBe(true);
@@ -134,7 +135,7 @@ describe('production bonus', () => {
     const s: GameState = { ...fresh(), achievements: ['forsta-csv', 'motet-mejl', 'from-the-future'] };
     expect(achievementProdMult(s)).toBeCloseTo(1.02, 10);
     const all: GameState = { ...fresh(), achievements: ACHIEVEMENTS.map((a) => a.id) };
-    expect(achievementProdMult(all)).toBeCloseTo(1.2, 10);
+    expect(achievementProdMult(all)).toBeCloseTo(1 + ACHIEVEMENTS.length / 100, 10);
   });
 
   it('multiplies automation output', () => {
