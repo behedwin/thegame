@@ -1,7 +1,7 @@
 ---
 id: 038
 size: S
-status: ready
+status: done
 priority: normal
 touches: [src/ui/style.css, src/ui/settings.ts]
 depends: [032]

@@ -52,7 +52,7 @@ export function openSettings(host: SettingsHost): void {
   help.addEventListener('click', showHelp);
   stats.addEventListener('click', () => showStats(host.state()));
   // Export and import share one text field. Import validates first and then needs a second press.
-  const field = h('textarea', { testId: 'save-text', attrs: { rows: '3', placeholder: T.settings.saveText, 'aria-label': T.settings.saveText, style: 'width:100%' } });
+  const field = h('textarea', { class: 'save-text', testId: 'save-text', attrs: { rows: '3', placeholder: T.settings.saveText, 'aria-label': T.settings.saveText } });
   const [exp, imp] = [button(T.settings.export, 'export-save'), button(T.settings.import, 'import-save')];
   exp.addEventListener('click', () => {
     field.value = exportSave(host.state());
