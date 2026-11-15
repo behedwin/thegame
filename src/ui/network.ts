@@ -53,6 +53,14 @@ export function tipDurationMs(text: string): number {
   return Math.min(12000, Math.max(6000, 2500 + 60 * text.length));
 }
 
+/** 30 fps gate: adds dt to the accumulator and returns the step to animate (0 = skip this frame).
+ * Off screen nothing is stored, so the map resumes calmly instead of catching up in one burst. */
+export function frameStep(acc: number, dt: number, onScreen: boolean): { acc: number; step: number } {
+  if (!onScreen) return { acc: 0, step: 0 };
+  const sum = acc + dt;
+  return sum < 1 / 31 ? { acc: sum, step: 0 } : { acc: 0, step: sum };
+}
+
 /** Text shown when a system is tapped: its parody tagline, or its kind if it has none. */
 export function nodeTip(id: string, systems: readonly SystemDef[] = SYSTEMS): string {
   const s = systems.find((x) => x.id === id);
@@ -114,6 +122,8 @@ export class NetworkView {
   private booted = false;
   private tier = -1;
   private frameAcc = 0;
+  /** False while the map is scrolled out of view (IntersectionObserver); without one it is always true. */
+  onScreen = true;
   /** Queried once; with reduced motion no packets travel at all. */
   private readonly calm = typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)') : null;
   /** HTML line below the map (placed by the app), so it never covers nodes; see decisions/. */
@@ -163,6 +173,12 @@ export class NetworkView {
       this.rows.push({ id: a.id, y: H / 2, outer, group, lines, visible: false, rate: 0, budget: 0, acc: 0, len: 0 });
     }
     this.layout(pickRows(this.rows.map(() => false), MAX_ROWS));
+    // Battery saver (049): nobody sees packets on a map that is out of view, so frame() then does nothing.
+    if (typeof IntersectionObserver === 'function') {
+      new IntersectionObserver((entries) => {
+        for (const e of entries) this.onScreen = e.isIntersecting;
+      }).observe(this.svg);
+    }
   }
 
   /** Show the tip for a system (restarting its timer), or hide it for ''. */
@@ -241,10 +257,11 @@ export class NetworkView {
 
   /** Advance animation by dt seconds. */
   frame(dt: number): void {
-    this.frameAcc += dt; // 30 fps is plenty; rAF already pauses while the app is hidden
-    if (this.frameAcc < 1 / 31) return;
-    dt = this.frameAcc;
-    this.frameAcc = 0;
+    // 30 fps is plenty; rAF already pauses while the app is hidden, and off screen nothing moves.
+    const { acc, step } = frameStep(this.frameAcc, dt, this.onScreen);
+    this.frameAcc = acc;
+    if (step <= 0) return;
+    dt = step;
     for (const row of this.rows) {
       if (row.rate <= 0 || this.calm?.matches) continue;
       row.acc = Math.min(1, row.acc + row.rate * dt);
