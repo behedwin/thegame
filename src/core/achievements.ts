@@ -30,6 +30,35 @@ export function isMet(state: GameState, c: AchievementCondition): boolean {
   }
 }
 
+/** Progress towards a countable condition, capped at `need`; null for value thresholds (KP, KP/s). */
+export function progress(state: GameState, c: AchievementCondition): { have: number; need: number } | null {
+  const have = count(state, c);
+  return have === null || !('n' in c) ? null : { have: Math.min(have, c.n), need: c.n };
+}
+
+function count(state: GameState, c: AchievementCondition): number | null {
+  switch (c.kind) {
+    case 'clicks':
+      return state.clicks;
+    case 'automation':
+      return level(state.automations, c.id);
+    case 'automationsTotal':
+      return totalLevels(state.automations);
+    case 'upgradesTotal':
+      return totalLevels(state.upgrades);
+    case 'eventsClaimed':
+      return state.eventsClaimed;
+    case 'customers':
+      return customersSigned(state);
+    case 'prestiges':
+      return state.prestiges;
+    case 'ticketsAnswered':
+      return state.ticketsAnswered;
+    default:
+      return null;
+  }
+}
+
 export function hasAchievement(state: GameState, id: string): boolean {
   return state.achievements.includes(id);
 }
