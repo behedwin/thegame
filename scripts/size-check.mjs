@@ -2,7 +2,8 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
-const LIMIT = 5000;
+// Raised from 5000 by owner decision 2026-11-15 (task 046, decisions/20261115T120000Z-046-size-budget.md).
+const LIMIT = 7000;
 const root = 'src';
 let total = 0;
 const perFile = [];
