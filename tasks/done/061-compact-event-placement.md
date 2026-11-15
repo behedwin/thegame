@@ -1,7 +1,7 @@
 ---
 id: 061
 size: S
-status: ready
+status: done
 touches: [src/ui/app.ts, src/ui/event-card.ts, src/ui/style.css, src/content/texts.ts]
 depends: [059]
 priority: normal
