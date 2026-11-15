@@ -1,7 +1,9 @@
 ---
-id: p-streak-record
+id: 071
 size: S
-status: proposed
+status: ready
+priority: normal
+changelog: "Statistiken visar nu din längsta eventsvit någonsin."
 touches: [src/core/events.ts, src/core/state.ts, src/save/, src/ui/stats.ts, src/content/texts.ts]
 depends: [069]
 ---
@@ -15,3 +17,5 @@ eventsvit: 7". Ger sviten ett eget litet mål även efter att bonusen har nått 
 inget event är aktivt.
 
 Tester: rekordet följer med sviten och sjunker aldrig, migrering (0), statistikraden visas.
+
+Från förslaget `p-streak-record`.
