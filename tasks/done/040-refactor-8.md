@@ -1,7 +1,7 @@
 ---
 id: 040
 size: M
-status: ready
+status: done
 priority: normal
 kind: refactor
 touches: [src/, sim/, tests/, e2e/]
