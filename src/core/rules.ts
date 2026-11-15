@@ -186,6 +186,14 @@ export function isMaxed(state: GameState, id: string): boolean {
   return up !== undefined && level(state.upgrades, id) >= up.maxLevel;
 }
 
+/** Split ids into buyable ones and maxed ones, keeping the original order in each (073). */
+export function splitMaxed(state: GameState, ids: readonly string[]): { open: string[]; done: string[] } {
+  const open: string[] = [];
+  const done: string[] = [];
+  for (const id of ids) (isMaxed(state, id) ? done : open).push(id);
+  return { open, done };
+}
+
 export function canBuy(state: GameState, id: string): boolean {
   const auto = getAutomation(id);
   if (!auto && !getUpgrade(id)) return false;

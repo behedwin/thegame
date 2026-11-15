@@ -14,6 +14,9 @@ export const currentFocus = (state: Focused): FocusDef => getFocus(state.focus ?
 /** Focuses the player may pick for the given school year, in display order. */
 export const focusesForYear = (year: number): FocusDef[] => FOCUSES.filter((f) => f.unlockYear <= year);
 
+/** A focus the player has not played a whole school year yet; never the default (072). */
+export const isUntriedFocus = (id: string, played: readonly string[]): boolean => id !== DEFAULT_FOCUS && !played.includes(id);
+
 /** Pick the focus for the running school year. Same state if unknown, not yet unlocked, or in school year 1. */
 export function chooseFocus(state: GameState, id: string): GameState {
   const year = schoolYear(state);

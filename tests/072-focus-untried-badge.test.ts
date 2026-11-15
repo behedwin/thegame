@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { FOCUSES } from '../src/content/registry';
 import { T } from '../src/content/texts';
-import { DEFAULT_FOCUS } from '../src/core';
-import { isUntriedFocus } from '../src/ui/prestige';
+import { DEFAULT_FOCUS, isUntriedFocus } from '../src/core';
 
 describe('072 untried focus badge', () => {
   it('never marks the default focus', () => {

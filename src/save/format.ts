@@ -172,7 +172,7 @@ export function deserialize(text: string, nowMs: number): GameState {
     tipsSeen: uniqueStrings(s.tipsSeen),
     focus: typeof s.focus === 'string' && getFocus(s.focus) ? s.focus : DEFAULT_FOCUS,
     focusesPlayed: uniqueStrings(s.focusesPlayed).filter((id) => id !== DEFAULT_FOCUS && getFocus(id)),
-    lastSeenVersion: Number.isInteger(s.lastSeenVersion) && (s.lastSeenVersion as number) > 0 ? (s.lastSeenVersion as number) : 0,
+    lastSeenVersion: count(s.lastSeenVersion),
     settings: {
       sound: bool(settings.sound, d.settings.sound),
       vibration: bool(settings.vibration, d.settings.vibration),
