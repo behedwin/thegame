@@ -116,6 +116,9 @@ export const T = {
     shopTitle: 'Meritbutik',
     done: (n: string) => `Nytt läsår! +${n} Meriter`,
     locked: 'Låses upp senare under läsåret.',
+    unlockNext: (names: string) => `Nästa läsår låser upp: ${names}`,
+    unlockLater: (year: number, names: string) => `Läsår ${year}: ${names}`,
+    unlocked: (names: string) => `Ny integrationstyp: ${names}`,
   },
   help: { open: 'Hjälp', title: 'Så spelar du', close: 'Stäng', replay: 'Visa introduktionen igen' },
   settings: {

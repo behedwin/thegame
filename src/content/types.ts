@@ -16,6 +16,8 @@ export interface AutomationDef extends Listed {
   to: string;
   /** Optional flavour name per milestone (same order as BALANCE.milestones), shown in toast and card. */
   milestoneNames?: readonly string[];
+  /** School year (1-based; läsår 1 = 0 prestiges) from which it shows and can be bought. Absent = always. */
+  unlockYear?: number;
 }
 
 export type UpgradeEffect =

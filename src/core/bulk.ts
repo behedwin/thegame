@@ -2,6 +2,7 @@
 import { BALANCE } from '../content/balance';
 import { automationBaseCost, getAutomation, getUpgrade } from './rules';
 import { Decimal, level, type GameState } from './state';
+import { isUnlocked } from './unlocks';
 
 export type BulkMode = 1 | 10 | 'max';
 export const BULK_MODES: readonly BulkMode[] = [1, 10, 'max'];
@@ -13,6 +14,12 @@ interface Curve {
   /** Units that may still be bought (Infinity for automations). */
   remaining: number;
 }
+
+/** A locked automation (051) cannot be bought, so it has no buyable units. */
+const locked = (state: GameState, id: string): boolean => {
+  const auto = getAutomation(id);
+  return auto !== undefined && !isUnlocked(state, auto);
+};
 
 function curve(state: GameState, id: string): Curve | null {
   const auto = getAutomation(id);
@@ -49,7 +56,7 @@ export function costOfMany(state: GameState, id: string, n: number): Decimal {
 /** Largest n such that costOfMany(state, id, n) ≤ kp, capped by max level. */
 export function maxAffordable(state: GameState, id: string): number {
   const c = curve(state, id);
-  if (!c || c.remaining === 0) return 0;
+  if (!c || c.remaining === 0 || locked(state, id)) return 0;
   const first = new Decimal(c.base).mul(Decimal.pow(c.growth, c.owned));
   if (state.kp.lt(first.ceil())) return 0;
   let n: number;
@@ -77,7 +84,7 @@ export function resolveBulk(state: GameState, id: string, mode: BulkMode): numbe
 /** Buy exactly n units/levels, or nothing (same state) if not possible. */
 export function buyMany(state: GameState, id: string, n: number): GameState {
   const c = curve(state, id);
-  if (!c || !(n >= 1) || !Number.isInteger(n) || n > c.remaining) return state;
+  if (!c || !(n >= 1) || !Number.isInteger(n) || n > c.remaining || locked(state, id)) return state;
   const cost = costOfMany(state, id, n);
   if (state.kp.lt(cost)) return state;
   const kp = state.kp.sub(cost);

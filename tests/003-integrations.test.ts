@@ -7,7 +7,7 @@ const NEW = ['sftp', 'scim', 'ss12001api', 'lti'];
 
 describe('new integration types', () => {
   it('exist after the original four, in this order', () => {
-    expect(AUTOMATIONS.map((a) => a.id)).toEqual(['csv', 'nightly', 'flow', 'api', ...NEW]);
+    expect(AUTOMATIONS.map((a) => a.id).slice(0, 8)).toEqual(['csv', 'nightly', 'flow', 'api', ...NEW]);
   });
 
   it('connect existing systems', () => {

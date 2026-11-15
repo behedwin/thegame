@@ -1,7 +1,7 @@
 ---
 id: 051
 size: M
-status: ready
+status: done
 touches: [src/content/automations/, src/content/systems/, src/content/types.ts, src/content/balance.ts, src/content/texts.ts, src/core/, src/ui/shop.ts, src/ui/network.ts, src/ui/prestige.ts, sim/]
 depends: []
 priority: normal
