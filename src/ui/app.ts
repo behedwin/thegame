@@ -26,7 +26,8 @@ import { cancelNotifications, scheduleNotifications } from './notifications';
 import { PrestigeView } from './prestige';
 import { openSettings } from './settings';
 import { ShopList } from './shop';
-import { receiptText, renderInboxButton, showTicket } from './inbox';
+import { receiptText } from './effects';
+import { renderInboxButton, showTicket } from './inbox';
 import { helpHooks } from './help';
 import { markTipSeen, nextTip, settleTips, TipBar, tourNext, TOUR, type TourStep } from './onboarding';
 import { showWelcome } from './welcome';
@@ -186,7 +187,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
     const res = claimEvent(state);
     state = res.state;
     if (res.event) {
-      toast(res.event.claimText, 'event');
+      toast(receiptText(res.event.claimText, res.event.effect, res.state, res.granted), 'event');
       sfx.event();
       haptic('medium');
       persist();
@@ -199,7 +200,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
       const r = answerTicket(state, id, choice);
       if (!r.choice) return;
       state = r.state;
-      toast(receiptText(r), 'event');
+      toast(receiptText(r.choice.outcome, r.choice.effect, r.state, r.granted), 'event');
       reward();
       commit();
     });
