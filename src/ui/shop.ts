@@ -25,6 +25,17 @@ import { fmt } from './format';
 
 export type ShopKind = 'automations' | 'upgrades' | 'merits';
 
+/** Show the milestone quote from this far (percent) towards the next milestone (058). */
+export const QUOTE_NEAR_PCT = 80;
+/** How long the quote stays visible after a purchase, in ms. */
+const QUOTE_AFTER_BUY_MS = 2500;
+
+/** The latest milestone's quote is shown only near the next milestone or just after a buy, never when maxed. */
+export function showMilestoneQuote(count: number, justBought: boolean): boolean {
+  if (nextMilestone(count) === null) return false;
+  return justBought || milestoneProgressPct(count) >= QUOTE_NEAR_PCT;
+}
+
 interface Card {
   id: string;
   /** Display name, also used in the buy button's screen reader label. */
@@ -43,6 +54,8 @@ export class ShopList {
   private signature = '';
   /** Bulk mode for automations and upgrades (×1 / ×10 / MAX). */
   bulk: BulkMode = 1;
+  /** Wall-clock time of the latest purchase per card, for the quote flash. */
+  private boughtAt = new Map<string, number>();
 
   constructor(
     readonly host: HTMLElement,
@@ -66,18 +79,33 @@ export class ShopList {
       const sub = h('div', { class: 'card-sub' });
       const btn = h('button', { class: 'buy', testId: `buy-${id}` });
       const bar = this.kind === 'automations' ? h('div', { class: 'bar-fill' }) : null;
-      const named = this.kind === 'automations' ? h('div', { class: 'card-desc card-milestone', testId: `milestone-${id}` }) : null;
+      const named = this.kind === 'automations' ? h('span', { class: 'card-milestone', testId: `milestone-${id}` }) : null;
+      const subRow = h('div', { class: 'card-sub-row' }, sub);
+      if (named) subRow.append(named);
+      // Tapping the text toggles the full description; the buy button is separate (058).
       const info = h(
         'div',
-        { class: 'card-info' },
+        { class: 'card-info', testId: `info-${id}`, attrs: { role: 'button', tabindex: '0', 'aria-expanded': 'false' } },
         h('div', { class: 'card-title' }, h('span', { text: def.name }), lvl),
         h('div', { class: 'card-desc', text: def.desc }),
-        sub,
+        subRow,
       );
-      if (named) info.append(named);
       if (bar) info.append(h('div', { class: 'bar' }, bar));
-      const root = h('div', { class: 'card', testId: `card-${id}` }, info, btn);
-      btn.addEventListener('click', () => this.onBuy(id, btn));
+      const root = h('div', { class: 'card shop-card', testId: `card-${id}` }, info, btn);
+      const toggle = (): void => {
+        const open = root.classList.toggle('expanded');
+        info.setAttribute('aria-expanded', String(open));
+      };
+      info.addEventListener('click', toggle);
+      info.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        e.preventDefault();
+        toggle();
+      });
+      btn.addEventListener('click', () => {
+        this.boughtAt.set(id, performance.now());
+        this.onBuy(id, btn);
+      });
       this.host.append(root);
       return { id, name: def.name, root, level: lvl, sub, btn, bar, named };
     });
@@ -106,7 +134,12 @@ export class ShopList {
         c.sub.textContent = count
           ? `${fmt(automationKps(s, def))} ${T.perSecond} · ${next ? T.milestoneProgress(next) : T.allMilestones}`
           : T.perEach(fmt(def.kps));
-        if (c.named) c.named.textContent = named ? `“${named}”` : '';
+        const justBought = performance.now() - (this.boughtAt.get(c.id) ?? -Infinity) < QUOTE_AFTER_BUY_MS;
+        if (c.named) {
+          const text = named && showMilestoneQuote(count, justBought) ? `“${named}”` : '';
+          if (c.named.textContent !== text) c.named.textContent = text;
+          c.named.hidden = !text;
+        }
         if (c.bar) c.bar.style.width = `${milestoneProgressPct(count)}%`;
         this.setPriceButton(c, s);
       } else if (this.kind === 'upgrades') {
