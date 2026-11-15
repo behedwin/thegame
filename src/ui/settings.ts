@@ -1,6 +1,7 @@
-// Settings dialog: sound, volume, vibration, tips, opt-in notifications, help, stats and wipe.
+// Settings dialog: sound, volume, vibration, tips, opt-in notifications, help, stats, save export/import and wipe.
 import { T } from '../content/texts';
 import type { GameState, Settings } from '../core';
+import { exportSave, importSave } from '../save/format';
 import { h, showDialog } from './dialogs';
 import { sfx, toast } from './feedback';
 import { showHelp } from './help';
@@ -12,6 +13,8 @@ export interface SettingsHost {
   /** Apply a settings patch; with `save` the app persists and re-renders. */
   apply: (patch: Partial<Settings>, save: boolean) => void;
   wipe: () => void;
+  /** Replace the game with an imported state: the app persists it and reloads. */
+  load: (state: GameState) => void;
 }
 
 type Flag = 'sound' | 'vibration' | 'tips' | 'notifyOfflineCap' | 'notifySeason';
@@ -51,6 +54,25 @@ export function openSettings(host: SettingsHost): void {
   const [help, stats, wipe] = [button(T.help.open, 'open-help'), button(T.stats.open, 'open-stats'), button(T.settings.wipe, 'wipe', 'btn danger wide')];
   help.addEventListener('click', showHelp);
   stats.addEventListener('click', () => showStats(host.state()));
+  // Export and import share one text field. Import validates first and then needs a second press.
+  const field = h('textarea', { testId: 'save-text', attrs: { rows: '3', placeholder: T.settings.saveText, 'aria-label': T.settings.saveText, style: 'width:100%' } });
+  const [exp, imp] = [button(T.settings.export, 'export-save'), button(T.settings.import, 'import-save')];
+  exp.addEventListener('click', () => {
+    field.value = exportSave(host.state());
+    field.select();
+    void navigator.clipboard?.writeText(field.value).then(() => toast(T.settings.copied), () => undefined);
+  });
+  imp.addEventListener('click', () => {
+    let next: GameState;
+    try {
+      next = importSave(field.value, Date.now());
+    } catch {
+      return toast(T.settings.importError);
+    }
+    if (imp.dataset.armed) return host.load(next);
+    imp.dataset.armed = '1';
+    imp.textContent = T.settings.importConfirm;
+  });
   let armed = false;
   wipe.addEventListener('click', () => {
     if (armed) return host.wipe();
@@ -59,7 +81,7 @@ export function openSettings(host: SettingsHost): void {
   });
   showDialog(
     T.settings.title,
-    [toggle(T.settings.sound, 'sound'), h('label', { class: 'muted', text: T.settings.volume }, slider), toggle(T.settings.vibration, 'vibration'), toggle(T.settings.tips, 'tips'), ...notify, help, stats, wipe, h('p', { class: 'muted', text: T.settings.about })],
+    [toggle(T.settings.sound, 'sound'), h('label', { class: 'muted', text: T.settings.volume }, slider), toggle(T.settings.vibration, 'vibration'), toggle(T.settings.tips, 'tips'), ...notify, help, stats, exp, field, imp, wipe, h('p', { class: 'muted', text: T.settings.about })],
     [{ label: T.settings.close, primary: true }],
     'settings-dialog',
   );
