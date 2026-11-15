@@ -1,7 +1,7 @@
 ---
 id: 071
 size: S
-status: ready
+status: done
 priority: normal
 changelog: "Statistiken visar nu din längsta eventsvit någonsin."
 touches: [src/core/events.ts, src/core/state.ts, src/save/, src/ui/stats.ts, src/content/texts.ts]

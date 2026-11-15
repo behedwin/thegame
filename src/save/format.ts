@@ -4,7 +4,7 @@ import { getFocus } from '../core/focus';
 import { getTicket } from '../core/tickets';
 import { type Buff, createInitialState, Decimal, DEFAULT_FOCUS, DEFAULT_VOLUME, type GameState } from '../core/state';
 
-export const SAVE_VERSION = 12;
+export const SAVE_VERSION = 13;
 
 /** Raw JSON shape. Unknown on purpose: anything may come out of storage. */
 export type RawSave = { version: number; [key: string]: unknown };
@@ -46,6 +46,8 @@ export const MIGRATIONS: Record<number, Migration> = {
   10: (s) => ({ ...s, version: 11, focusesPlayed: [] }),
   // v12 (task 069): event streak. Everyone starts without one.
   11: (s) => ({ ...s, version: 12, eventStreak: 0, eventOpen: false }),
+  // v13 (task 071): best event streak. The running streak is the best one known so far.
+  12: (s) => ({ ...s, version: 13, bestEventStreak: count(s.eventStreak) }),
 };
 
 export class SaveError extends Error {}
@@ -78,6 +80,9 @@ function dec(v: unknown, fallback: Decimal): Decimal {
     return fallback;
   }
 }
+
+/** A non-negative integer count, or 0. */
+const count = (v: unknown): number => (Number.isInteger(v) && (v as number) > 0 ? (v as number) : 0);
 
 const num = (v: unknown, fallback: number): number => (typeof v === 'number' && Number.isFinite(v) ? v : fallback);
 
@@ -157,7 +162,8 @@ export function deserialize(text: string, nowMs: number): GameState {
       .filter((b) => typeof b.source === 'string' && (b.kind === 'prodMult' || b.kind === 'clickMult'))
       .map((b) => ({ source: b.source as string, kind: b.kind as Buff['kind'], mult: num(b.mult, 1), untilMs: num(b.untilMs, 0) })),
     eventsClaimed: num(s.eventsClaimed, 0),
-    eventStreak: Number.isInteger(s.eventStreak) && (s.eventStreak as number) > 0 ? (s.eventStreak as number) : 0,
+    eventStreak: count(s.eventStreak),
+    bestEventStreak: Math.max(count(s.bestEventStreak), count(s.eventStreak)),
     eventOpen: s.eventOpen === true,
     achievements: uniqueStrings(s.achievements),
     inbox: uniqueStrings(s.inbox).filter((id) => getTicket(id)).slice(0, BALANCE.tickets.cap),

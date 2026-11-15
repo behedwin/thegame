@@ -202,6 +202,7 @@ export const T = {
     purchases: 'Köp totalt',
     clicks: 'Manuella synkningar',
     events: 'Lösta händelser',
+    bestEventStreak: 'Längsta eventsvit',
     tickets: 'Besvarade ärenden',
     schoolYears: 'Läsår',
     meritsEarned: 'Meriter totalt',

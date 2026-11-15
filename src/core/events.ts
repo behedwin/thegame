@@ -93,6 +93,7 @@ export function claimEvent(state: GameState): ClaimResult {
     nextEventAtMs: state.timeMs + eventCooldownMs(state),
     eventsClaimed: state.eventsClaimed + 1,
     eventStreak: state.eventStreak + 1,
+    bestEventStreak: Math.max(state.bestEventStreak, state.eventStreak + 1),
     eventOpen: false,
   };
   const r = applyEffect(next, event.id, given.effect);
