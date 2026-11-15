@@ -2,7 +2,7 @@
 import { MERITS, type AutomationDef, type ChapterDef, type FocusDef } from '../content/registry';
 import { focusesForYear } from './focus';
 import { chapterFor } from './goal';
-import { bestYearEarned, pendingMerits, runKpForMerits } from './rules';
+import { bestYearEarned, customersSigned, pendingMerits, runKpForMerits } from './rules';
 import { Decimal, DEFAULT_FOCUS, level, type GameState } from './state';
 import { unlocksInYear } from './unlocks';
 
@@ -48,6 +48,25 @@ export function prestige(state: GameState): GameState {
     calendar: state.calendar ?? null,
   };
 }
+
+/** A look back at the school year that ends with "Nytt läsår" (063). */
+export interface YearSummary {
+  kpEarned: Decimal;
+  customers: number;
+  integrations: number;
+  merits: Decimal;
+  /** True when this year beat every earlier one. */
+  bestYear: boolean;
+}
+
+/** Summarise the running school year, from the state before prestige. */
+export const yearSummary = (state: GameState): YearSummary => ({
+  kpEarned: state.runEarned,
+  customers: customersSigned(state),
+  integrations: Object.values(state.automations).reduce((sum, n) => sum + n, 0),
+  merits: pendingMerits(state),
+  bestYear: state.runEarned.gt(state.bestRunEarned),
+});
 
 /** What a school year brings when it starts (051-053): its chapter, new integration types and focus options. */
 export interface YearStart {
