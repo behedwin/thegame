@@ -15,6 +15,7 @@ export function statRows(state: GameState): StatRow[] {
     { label: T.stats.totalEarned, value: kp(state.totalEarned) },
     { label: T.stats.thisYear, value: kp(state.runEarned) },
     { label: T.stats.bestYear, value: kp(bestYearEarned(state)) },
+    { label: T.stats.bestEventStreak, value: fmt(state.bestEventStreak) },
     { label: T.stats.purchases, value: fmt(state.purchases) },
     { label: T.stats.clicks, value: fmt(state.clicks) },
     { label: T.stats.events, value: fmt(state.eventsClaimed) },

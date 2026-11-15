@@ -60,6 +60,8 @@ export interface GameState {
   eventsClaimed: number;
   /** Events solved in a row (069). Reset when an event runs out; kept across school years. */
   eventStreak: number;
+  /** Longest event streak ever (071). Never drops. */
+  bestEventStreak: number;
   /** True from an event's spawn until it is solved, so the next spawn can tell a miss (069). */
   eventOpen: boolean;
   /** Unlocked achievement ids, in unlock order. Kept across school years. */
@@ -105,6 +107,7 @@ export function createInitialState(nowMs: number): GameState {
     buffs: [],
     eventsClaimed: 0,
     eventStreak: 0,
+    bestEventStreak: 0,
     eventOpen: false,
     achievements: [],
     inbox: [],
