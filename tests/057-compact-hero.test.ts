@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { COMPACT_AT, heroMode } from '../src/ui/fx';
+import { COMPACT_AT, heroMode } from '../src/ui/hero';
 
 const ROOM = 1000; // plenty of list to scroll
 const SHRINK = 150;

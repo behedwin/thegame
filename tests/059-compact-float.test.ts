@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { compactFloatSpot, MAX_COMPACT_FLOATS } from '../src/ui/fx';
+import { compactFloatSpot, MAX_COMPACT_FLOATS } from '../src/ui/hero';
 
 const seq = (...v: number[]) => { let i = 0; return () => v[i++ % v.length]!; };
 

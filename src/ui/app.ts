@@ -13,7 +13,8 @@ import { buyMany, BULK_MODES, resolveBulk, type BulkMode } from '../core/bulk';
 import { loadGame, saveGame, wipeGame } from '../save/storage';
 import { closeTopDialog, h, showDialog } from './dialogs';
 import { configureFeedback, floatText, haptic, setBackground, sfx, toast } from './feedback';
-import { burst, heroMode, type HeroMode, motionOk, reducedMotion, ripple } from './fx';
+import { burst, motionOk, reducedMotion, ripple } from './fx';
+import { HeroSize } from './hero';
 import { confetti, effectsFor, flashClass, stamp, yearTransition } from './celebrate';
 import { fmt, setNotation } from './format';
 import { AchievementList } from './achievements';
@@ -45,8 +46,6 @@ type Tab = (typeof TABS)[number];
 const AUTOSAVE_MS = 10_000;
 /** Hold-to-sync repeat interval: about 8 clicks per second (see hold.ts). */
 const HOLD_REPEAT_MS = 125;
-/** Height of the compact map strip (057); keep in sync with `.hero.compact` in style.css. */
-const HERO_COMPACT_PX = 96;
 
 export async function startApp(root: HTMLElement): Promise<void> {
   const loaded = await loadGame(Date.now());
@@ -115,6 +114,8 @@ export async function startApp(root: HTMLElement): Promise<void> {
   const top = h('header', { class: 'top' }, h('div', { class: 'brand', text: T.title }), inboxBtn, settingsBtn);
   root.replaceChildren(h('div', { class: 'app' }, top, newsBar.host, hud.host, hero, tips.host, customers.host, tabsNav, panel));
   tips.marks = { sync: hub, buy: panel, event: eventSlot, help: settingsBtn };
+  // Compact map (057): scrolling the shop shrinks the map to a strip so more cards fit.
+  const heroSize = new HeroSize(hero, panel, [hub, eventSlot]);
 
   // ---------- Actions ----------
   /** Stop saving (wipe or import replaces the save), then reload once `done` has written storage. */
@@ -141,12 +142,10 @@ export async function startApp(root: HTMLElement): Promise<void> {
     const rect = hero.getBoundingClientRect();
     const [lx, ly] = [x - rect.left, y - rect.top];
     // The compact strip (059) gets smaller effects that start beside SYNKA instead of on top of it.
-    const compact = hero.classList.contains('compact');
-    const hr = hub.getBoundingClientRect();
-    floatText(floatLayer, lx, ly, `+${fmt(gained)}`, compact ? { right: hr.right - rect.left, cy: hr.top - rect.top + hr.height / 2 } : undefined);
+    floatText(floatLayer, lx, ly, `+${fmt(gained)}`, heroSize.hubAnchor(hub));
     flashClass(hub, 'pop', 300);
-    ripple(hub, floatLayer, compact ? 1.3 : 1.7);
-    burst(floatLayer, lx, ly, { spread: compact ? 0.6 : 1 });
+    ripple(hub, floatLayer, heroSize.fx.ripple);
+    burst(floatLayer, lx, ly, { spread: heroSize.fx.spread });
     if (motionOk()) net.pulse();
     sfx.click();
     haptic('light');
@@ -288,29 +287,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
     openSettings({ state: () => state, apply: applySettings, wipe: () => leaveFor(wipeGame()), load: (next) => leaveFor(saveGame(next)) }),
   );
   inboxBtn.addEventListener('click', openInbox);
-  for (const t of TABS) tabButtons[t].addEventListener('click', () => ((tab = t), render(), syncHero()));
-
-  // Compact map (057): scrolling the shop shrinks the map to a strip so more cards fit.
-  let heroState: HeroMode = 'big';
-  function setHero(mode: HeroMode): void {
-    if (mode === heroState) return;
-    heroState = mode;
-    const compact = mode === 'compact';
-    hero.classList.toggle('compact', compact);
-    if (compact) hero.setAttribute('title', T.heroExpand);
-    else hero.removeAttribute('title');
-  }
-  function syncHero(): void {
-    setHero(heroMode(panel.scrollTop, heroState, panel.scrollHeight - panel.clientHeight, hero.offsetHeight - HERO_COMPACT_PX));
-  }
-  panel.addEventListener('scroll', syncHero, { passive: true });
-  // Tapping the strip (not SYNKA or the event card) brings the whole map back and the list to its top.
-  hero.addEventListener('click', (e) => {
-    const t = e.target as Node;
-    if (heroState !== 'compact' || hub.contains(t) || eventSlot.contains(t)) return;
-    panel.scrollTop = 0;
-    setHero('big');
-  });
+  for (const t of TABS) tabButtons[t].addEventListener('click', () => ((tab = t), render(), heroSize.sync()));
 
   // Back: close the top dialog, otherwise save and minimize (never quit, so nothing is lost).
   function handleBack(): void {
