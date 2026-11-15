@@ -90,6 +90,11 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .card.affordable { border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
 .card.flash { background: var(--surface2); }
 .card.maxed { opacity: 0.6; }
+.card.fold { width: 100%; min-height: 48px; justify-content: center; color: var(--muted); font: inherit; font-weight: 700; font-size: 0.875rem; border: 1px dashed var(--line); background: transparent; cursor: pointer; }
+.card.fold::after { content: '▾'; transition: transform 0.2s; }
+.card.fold[aria-expanded='true']::after { transform: rotate(180deg); }
+.fold-body { display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr); }
+.fold-body[hidden] { display: none; }
 .card.teaser { color: var(--muted); justify-content: center; border: 1px dashed var(--line); background: transparent; font-size: 0.8125rem; padding: 10px 12px; }
 .card-info { flex: 1; min-width: 0; }
 .card-title { display: flex; justify-content: space-between; gap: 8px; font-weight: 700; font-size: 0.9375rem; }
