@@ -133,6 +133,8 @@ export const T = {
     summaryKp: (kp: string) => `${kp} KP intjänat`,
     summaryCustomers: (n: number) => (n === 1 ? '1 kund skrev på' : `${n} kunder skrev på`),
     summaryIntegrations: (n: number) => (n === 1 ? '1 integration i drift' : `${n} integrationer i drift`),
+    summaryEvents: (n: number) => (n === 1 ? '1 event löst' : `${n} event lösta`),
+    summaryTickets: (n: number) => (n === 1 ? '1 ärende stängt' : `${n} ärenden stängda`),
     summaryMerits: (n: string) => `${n} Meriter att hämta ut`,
     summaryBest: 'Ditt bästa läsår hittills!',
   },

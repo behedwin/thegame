@@ -4,7 +4,7 @@ import { getFocus } from '../core/focus';
 import { getTicket } from '../core/tickets';
 import { type Buff, createInitialState, Decimal, DEFAULT_FOCUS, DEFAULT_VOLUME, type GameState } from '../core/state';
 
-export const SAVE_VERSION = 13;
+export const SAVE_VERSION = 14;
 
 /** Raw JSON shape. Unknown on purpose: anything may come out of storage. */
 export type RawSave = { version: number; [key: string]: unknown };
@@ -48,6 +48,8 @@ export const MIGRATIONS: Record<number, Migration> = {
   11: (s) => ({ ...s, version: 12, eventStreak: 0, eventOpen: false }),
   // v13 (task 071): best event streak. The running streak is the best one known so far.
   12: (s) => ({ ...s, version: 13, bestEventStreak: count(s.eventStreak) }),
+  // v14 (task 076): per-year event and ticket counters. The running year starts counting now.
+  13: (s) => ({ ...s, version: 14, yearEvents: 0, yearTickets: 0 }),
 };
 
 export class SaveError extends Error {}
@@ -169,6 +171,8 @@ export function deserialize(text: string, nowMs: number): GameState {
     inbox: uniqueStrings(s.inbox).filter((id) => getTicket(id)).slice(0, BALANCE.tickets.cap),
     nextTicketAtMs: num(s.nextTicketAtMs, d.nextTicketAtMs),
     ticketsAnswered: num(s.ticketsAnswered, 0),
+    yearEvents: count(s.yearEvents),
+    yearTickets: count(s.yearTickets),
     tipsSeen: uniqueStrings(s.tipsSeen),
     focus: typeof s.focus === 'string' && getFocus(s.focus) ? s.focus : DEFAULT_FOCUS,
     focusesPlayed: uniqueStrings(s.focusesPlayed).filter((id) => id !== DEFAULT_FOCUS && getFocus(id)),

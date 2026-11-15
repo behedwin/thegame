@@ -46,6 +46,7 @@ export function answerTicket(state: GameState, ticketId: string, choiceIndex: nu
     ...state,
     inbox: state.inbox.filter((id) => id !== ticketId),
     ticketsAnswered: state.ticketsAnswered + 1,
+    yearTickets: state.yearTickets + 1,
     nextTicketAtMs: wasFull ? state.timeMs + BALANCE.tickets.intervalMs : state.nextTicketAtMs,
   };
   const r = applyEffect(next, `ticket:${ticketId}`, choice.effect);

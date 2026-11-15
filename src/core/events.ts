@@ -93,6 +93,7 @@ export function claimEvent(state: GameState): ClaimResult {
     activeEvent: null,
     nextEventAtMs: state.timeMs + eventCooldownMs(state),
     eventsClaimed: state.eventsClaimed + 1,
+    yearEvents: state.yearEvents + 1,
     eventStreak: streak,
     bestEventStreak: Math.max(state.bestEventStreak, streak),
     eventOpen: false,
