@@ -21,7 +21,9 @@ export class Hud {
   private readonly goal = h('div', { class: 'goal-chip', testId: 'goal-hud', attrs: { hidden: '', 'aria-label': T.goal.aria, title: T.goal.title } });
   private readonly focus = h('button', { class: 'focus-chip', testId: 'focus-hud', attrs: { hidden: '' } });
   readonly host = h('section', { class: 'stats' }, h('div', { class: 'kp' }, this.kp, h('span', { class: 'unit', text: ` ${T.currency}` })),
-    h('div', { class: 'rates' }, this.kps, h('span', { class: 'dot', text: '·' }), this.kpc), this.goal, this.focus, this.buffs, this.season);
+    h('div', { class: 'rates' }, this.kps, h('span', { class: 'dot', text: '·' }), this.kpc),
+    // Goal, focus, buffs and season share one wrapping row, so the HUD stays short (057).
+    h('div', { class: 'chips' }, this.goal, this.focus, this.buffs, this.season));
   private focusDef = currentFocus({});
 
   constructor() {

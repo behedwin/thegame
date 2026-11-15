@@ -15,6 +15,7 @@ export const T = {
   perClick: 'KP/klick',
   hubLabel: 'SYNKA',
   hubAria: 'Synka data manuellt',
+  heroExpand: 'Tryck för att visa hela kartan',
   hubTiers: ['Skolnav', 'Kommunnav', 'Regionnav', 'Nationellt nav', 'Datahjärta'],
   hubTierUp: (name: string) => `Navet har uppgraderats till ${name}`,
   sourceSystems: 'Källsystem',

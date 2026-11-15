@@ -104,3 +104,15 @@ export function countUp(el: HTMLElement, from: Decimal, to: Decimal, ms: number)
   };
   roll.raf = requestAnimationFrame(step);
 }
+
+export type HeroMode = 'big' | 'compact';
+/** The list must be scrolled past this many px before the map shrinks (057). */
+export const COMPACT_AT = 24;
+
+/** Map size from the shop list's scroll (057). Compact past COMPACT_AT, big again only at the very top,
+ * so it never flickers around the threshold. `room` is how far the list can scroll and `shrink` how much
+ * taller it gets when the map shrinks: without room to stay scrolled it would snap back, so it stays big. */
+export function heroMode(scrollTop: number, mode: HeroMode, room: number, shrink: number): HeroMode {
+  if (mode === 'compact') return scrollTop <= 0 ? 'big' : 'compact';
+  return scrollTop > COMPACT_AT && room - shrink > COMPACT_AT ? 'compact' : 'big';
+}
