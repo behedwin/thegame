@@ -1,7 +1,7 @@
 ---
 id: 044
 size: S
-status: ready
+status: done
 touches: [src/ui/inbox.ts, src/ui/app.ts, src/ui/onboarding.ts, src/content/help/, src/content/texts.ts]
 depends: []
 priority: normal

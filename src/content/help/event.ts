@@ -1,1 +1,1 @@
-export default { id: 'event', order: 5, title: 'Event och ärenden', body: ['Ibland dyker ett event upp. Tryck på det innan tiden tar slut för en tillfällig bonus. Ärenden hamnar i inkorgen och väntar snällt på dig. Inget svar är fel, bara olika avvägningar.'] } satisfies import('../types').HelpSectionDef;
+export default { id: 'event', order: 5, title: 'Event', body: ['Ibland dyker ett event upp. Tryck på det innan tiden tar slut för en tillfällig bonus.'] } satisfies import('../types').HelpSectionDef;

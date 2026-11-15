@@ -38,7 +38,7 @@ export function showTicket(state: GameState, onAnswer: (ticketId: string, choice
   if (!id || !ticket) return false;
   showDialog(
     ticket.title,
-    [h('p', { class: 'muted', text: T.inbox.from(senderName(ticket.from)) }), h('p', { text: ticket.text })],
+    [h('p', { class: 'muted', text: T.inbox.from(senderName(ticket.from)) }), h('p', { text: ticket.text }), h('p', { class: 'muted', testId: 'ticket-note', text: T.inbox.note })],
     [
       ...ticket.choices.map((c, i) => ({ label: c.label, testId: `ticket-choice-${i}`, onClick: () => onAnswer(id, i) })),
       { label: T.inbox.later, testId: 'ticket-later' },
