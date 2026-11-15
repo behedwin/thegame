@@ -110,6 +110,7 @@ export function validateTasks(tasks) {
       err(t, `status "${m.status}" not allowed in ${t.location} (expected ${expected[t.location].join('/')})`);
     if (m.kind !== undefined && !KINDS.includes(m.kind)) err(t, `kind must be one of ${KINDS.join('/')}`);
     if (m.priority !== undefined && !PRIORITIES.includes(m.priority)) err(t, `priority must be one of ${PRIORITIES.join('/')}`);
+    if (m.changelog !== undefined && !validChangelog(m.changelog)) err(t, 'changelog must be false or a non-empty sentence');
     if (!Array.isArray(m.touches)) err(t, 'touches must be a list');
     if (!Array.isArray(m.depends)) err(t, 'depends must be a list');
     if (t.location === 'proposed') {
@@ -128,4 +129,57 @@ export function validateTasks(tasks) {
   }
   for (const c of tasks.claims) err(c, 'claim files must never reach main or a PR (remove before opening the PR)');
   return errors;
+}
+
+/** `changelog:` is either false (hide the task) or a player-facing sentence (not empty, a number or true). */
+export function validChangelog(value) {
+  if (value === 'false') return true;
+  const v = String(value).trim();
+  return v !== '' && v !== 'true' && !/^-?\d+(\.\d+)?$/.test(v);
+}
+
+/** "1.<build>", plus a short commit sha when known. */
+export function formatVersion(build, sha = '') {
+  return `1.${build}` + (sha ? ` (${sha.slice(0, 7)})` : '');
+}
+
+/**
+ * Build the in-game changelog from done task files ({ file, text }) and journal file names.
+ * Pure, so it can be tested; the Vite plugin feeds it from disk. Refactors and `changelog: false`
+ * are skipped, `changelog: "<text>"` replaces the heading, and the date comes from the latest
+ * journal named <YYYYMMDD>T...-<id>.md. Newest first; undated entries last.
+ */
+export function buildChangelog(doneFiles, journalNames) {
+  const dates = new Map();
+  for (const name of journalNames) {
+    const j = /^(\d{4})(\d{2})(\d{2})T\d{6}Z-(\d{3})\.md$/.exec(name);
+    if (!j) continue;
+    const date = `${j[1]}-${j[2]}-${j[3]}`;
+    if (!(dates.get(j[4]) > date)) dates.set(j[4], date);
+  }
+  let build = 0;
+  const entries = [];
+  for (const { file, text } of doneFiles) {
+    if (file === 'README.md' || !file.endsWith('.md')) continue;
+    const m = parseFrontmatter(text);
+    if (!m || !/^\d{3}$/.test(m.id ?? '')) continue;
+    build = Math.max(build, Number(m.id));
+    if (m.kind === 'refactor' || m.changelog === 'false') continue;
+    const heading = /^#\s+(.+)$/m.exec(text.replace(/^---[\s\S]*?\r?\n---/, ''))?.[1]?.trim();
+    const title = m.changelog && validChangelog(m.changelog) ? m.changelog : heading;
+    if (!title) continue;
+    const date = dates.get(m.id);
+    entries.push(date ? { id: m.id, title, date } : { id: m.id, title });
+  }
+  entries.sort((a, b) => (b.date ?? '').localeCompare(a.date ?? '') || b.id.localeCompare(a.id));
+  return { build, entries };
+}
+
+/** Read tasks/done/ and journal/ from disk; missing directories just give fewer entries. */
+export function readChangelog(root = '.') {
+  const list = (dir) => (existsSync(join(root, dir)) ? readdirSync(join(root, dir)) : []);
+  const done = list('tasks/done')
+    .filter((f) => f.endsWith('.md'))
+    .map((file) => ({ file, text: readFileSync(join(root, 'tasks/done', file), 'utf8') }));
+  return buildChangelog(done, list('journal'));
 }

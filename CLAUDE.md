@@ -124,6 +124,7 @@ När ägaren skriver **"Ny idé: <text>"** eller **"Ny idé (prio): <text>"**:
    - `depends` får bara innehålla verkliga beroenden, inga spärrar, så att `high` faktiskt kan gå före.
      `touches` sätts hellre för brett än för smalt.
    - Beskriv vad som ska göras och varför (med en motivering mot VISION.md), och vilka tester som behövs.
+   - Sätt `changelog:` med en kort spelarvänlig mening, eller `false` för interna uppgifter.
 3. **Implementera ingenting själv.**
 4. Skapa grenen `claude/idea-<slug>` från origin/main och kör `npm run tasks:check`. Committa med `[ready]`
    i meddelandet och pusha. `auto-pr.yml` skapar PR:en; öppna ingen PR själv. Den får `automerge` bara om

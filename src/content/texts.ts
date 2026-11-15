@@ -170,6 +170,14 @@ export const T = {
     offlineTitle: 'Systemen har jobbat klart', seasonTitle: (name: string) => `${name} har börjat`,
     offlineBody: (cap: string) => `Integrationerna har synkat i ${cap} och tar en paus tills du tittar in.`,
   },
+  changelog: {
+    title: 'Nyheter i spelet', open: 'Nyheter i spelet', version: (v: string) => `Version ${v}`, close: 'Stäng', earlier: 'Tidigare',
+    day: (iso: string) => {
+      const [y, m, d] = iso.split('-').map(Number);
+      const months = ['januari', 'februari', 'mars', 'april', 'maj', 'juni', 'juli', 'augusti', 'september', 'oktober', 'november', 'december'];
+      return `${d} ${months[(m ?? 1) - 1]} ${y}`;
+    },
+  },
   stats: {
     title: 'Statistik',
     open: 'Statistik',

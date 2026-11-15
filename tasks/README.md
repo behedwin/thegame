@@ -19,6 +19,7 @@ touches: [src/ui/app.ts, src/content/events/]   # filer, eller kataloger som slu
 depends: [005]          # id:n som måste ligga i tasks/done/
 kind: refactor          # valfri: feature (standard) | refactor
 priority: normal        # valfri: high | normal (standard). high väljs före normal
+changelog: "Nu kan du …"  # valfri: spelarvänlig mening i "Nyheter i spelet", eller false för interna uppgifter
 ---
 # Rubrik
 
@@ -32,6 +33,10 @@ Beskrivning och motivering.
 - Var femte uppgift är en refaktoreringsuppgift (005, 010, 015 …) med `kind: refactor`. Med `depends`
   fungerar den som en spärr: den väntar in de fyra uppgifterna före sig, och de fyra efter väntar in den. En
   refaktoreringsuppgift räknar `blocked` beroenden som klara, så att en blockerad uppgift inte stoppar kön.
+- `changelog` styr loggen "Nyheter i spelet" som byggs in i appen från `tasks/done/` (se `vite.config.ts`).
+  Utan fältet visas rubriken. `false` döljer uppgiften, och refaktoreringsuppgifter visas aldrig. Texten
+  sätts gärna inom citattecken. Tom text, siffror och `true` avvisas av `tasks:check`. Versionen i appen är
+  `1.<högsta klara id>` och räknas fram automatiskt.
 - `blocked`: lägg till en sektion `## Blockerad` med orsak (grindfel ×3, HÅRT STOPP osv.).
 
 ## Verktyg

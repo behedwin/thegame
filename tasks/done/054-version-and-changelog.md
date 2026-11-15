@@ -1,10 +1,11 @@
 ---
 id: 054
 size: M
-status: ready
+status: done
 touches: [vite.config.ts, src/vite-env.d.ts, src/ui/settings.ts, src/ui/changelog.ts, src/ui/style.css, src/content/texts.ts, scripts/check-tasks.mjs, scripts/tasks-lib.mjs, tasks/README.md, tasks/done/, CLAUDE.md]
 depends: []
 priority: normal
+changelog: "Inställningar visar nu vilken version du kör och vad som är nytt i spelet"
 ---
 
 # Version och "Nyheter i spelet" i inställningarna
