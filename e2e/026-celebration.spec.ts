@@ -77,7 +77,8 @@ test.describe('reduced motion', () => {
     await page.getByTestId('prestige').click();
     await page.getByTestId('confirm-prestige').click();
     await expect(page.getByTestId('year-transition')).toBeVisible();
-    await expect(page.getByTestId('year-transition')).toHaveCount(0, { timeout: 3000 });
+    // With a story chapter (052) the transition stays ~7 s so the chapter can be read.
+    await expect(page.getByTestId('year-transition')).toHaveCount(0, { timeout: 9000 });
     await expect(page.locator('.hero.reset')).toHaveCount(0);
     expect(errors).toEqual([]);
   });

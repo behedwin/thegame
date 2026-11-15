@@ -7,3 +7,4 @@ export * from './achievements';
 export * from './seasons';
 export * from './tickets';
 export * from './unlocks';
+export * from './goal';

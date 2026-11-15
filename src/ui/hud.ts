@@ -1,6 +1,7 @@
 // Top stats: KP counter, rates, the active buffs and the current season.
+import { BALANCE } from '../content/balance';
 import { T } from '../content/texts';
-import { activeBuffs, activeSeason, kpPerClick, kpPerSecond, type GameState } from '../core';
+import { activeBuffs, activeSeason, connectedMunicipalities, kpPerClick, kpPerSecond, type GameState } from '../core';
 import { h } from './dialogs';
 import { countUp, shownValue } from './fx';
 import { fmt } from './format';
@@ -16,8 +17,9 @@ export class Hud {
   private readonly kpc = h('span', {});
   private readonly buffs = h('div', { class: 'buffs', testId: 'buffs', attrs: { hidden: '' } });
   private readonly season = h('div', { class: 'buff season', testId: 'season', attrs: { hidden: '', role: 'status', 'aria-label': T.season.aria } });
+  private readonly goal = h('div', { class: 'goal-chip', testId: 'goal-hud', attrs: { hidden: '', 'aria-label': T.goal.aria, title: T.goal.title } });
   readonly host = h('section', { class: 'stats' }, h('div', { class: 'kp' }, this.kp, h('span', { class: 'unit', text: ` ${T.currency}` })),
-    h('div', { class: 'rates' }, this.kps, h('span', { class: 'dot', text: '·' }), this.kpc), this.buffs, this.season);
+    h('div', { class: 'rates' }, this.kps, h('span', { class: 'dot', text: '·' }), this.kpc), this.goal, this.buffs, this.season);
 
   /** KP and rates only: cheap enough for every click. */
   renderCounters(state: GameState): void {
@@ -39,5 +41,8 @@ export class Hud {
       this.season.dataset.season = season.id;
     }
     this.season.hidden = !season;
+    const towns = connectedMunicipalities(state);
+    this.goal.textContent = T.goal.short(towns, BALANCE.goal.municipalities);
+    this.goal.hidden = towns === 0;
   }
 }

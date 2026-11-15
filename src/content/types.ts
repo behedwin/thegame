@@ -139,3 +139,6 @@ export interface TicketDef {
 }
 
 export interface HelpSectionDef { id: string; order: number; title: string; body: readonly string[] }
+
+/** One chapter of the story, shown when school year `order` begins (052). Short, dry and warm. */
+export interface ChapterDef { id: string; order: number; title: string; text: string }

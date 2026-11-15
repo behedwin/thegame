@@ -31,5 +31,15 @@ export const BALANCE = {
     intervalMs: 180_000,
     jitter: 0.25,
   },
+  /** The national goal (052): connected municipalities, derived from school years and lifetime KP. Display only. */
+  goal: {
+    municipalities: 290,
+    /** Share of the goal earned by lifetime KP: perDecade per factor 10 of totalEarned, at most earnedShare. */
+    earnedShare: 30,
+    perDecade: 1.5,
+    /** The rest comes from finished school years: (prestiges / yearsToGoal) ^ yearExponent, full at yearsToGoal. */
+    yearsToGoal: 14,
+    yearExponent: 0.6,
+  },
   morning: { coffeeMult: 1.2, standupMult: 2, standupMs: 120_000 }, // welcome-back choices (034)
 } as const;
