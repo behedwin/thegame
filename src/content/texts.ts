@@ -2,6 +2,9 @@
 import { BALANCE } from './balance';
 import type { CustomerDef, CustomerEffect, FocusEffect, SeasonDef } from './types';
 
+/** 25000 -> "25\u00a0000" (Swedish digit grouping, no locale dependency). */
+const groupDigits = (n: number): string => String(Math.floor(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '\u00a0');
+
 const num = (n: number) => String(Math.round(n * 100) / 100).replace('.', ',');
 const buffName = (mult: number, click: boolean) => `${click ? 'KP/klick' : 'Produktion'} ×${num(mult)}`;
 const pctText = (n: number) => `${num(n)}\u00a0%`;
@@ -54,6 +57,7 @@ export const T = {
   achievements: {
     summary: (n: number, total: number, pct: number) => `${n} av ${total} troféer · +${pctText(pct)} produktion`,
     done: 'Klar',
+    progress: (have: number, need: number) => `${groupDigits(have)} av ${groupDigits(need)}`,
     toast: (name: string) => `Trofé: ${name}! +1\u00a0% produktion`,
     toastMany: (n: number) => `${n} nya troféer! +${n}\u00a0% produktion`,
   },
