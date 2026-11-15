@@ -1,6 +1,6 @@
 // Effect texts shared by random events and inbox tickets: the same preview, the same receipt.
 import { T } from '../content/texts';
-import type { EventEffect } from '../content/types';
+import type { EventDef, EventEffect } from '../content/types';
 import { kpPerClick, kpPerSecond, previewEffect, type Decimal, type EffectPreview, type GameState } from '../core';
 import { fmt } from './format';
 
@@ -19,6 +19,12 @@ export function effectLine(state: GameState, e: EventEffect): string {
   const worth = perSec.mul(p.mult - 1).mul(p.durationMs / 1000);
   // Nothing to multiply yet (no production): an estimate of +0 would only mislead.
   return worth.gte(1) ? T.effect.worth(effectText(p), fmt(worth), click ? T.effect.clicksPerSec : undefined) : effectText(p);
+}
+
+/** The event card's effect line and its accessible label (title, effect, call to action). */
+export function eventCardText(state: GameState, def: EventDef): { line: string; label: string } {
+  const line = effectLine(state, def.effect);
+  return { line, label: `${def.title}. ${line}. ${T.eventTap}` };
 }
 
 /** Toast after a claimed event or an answered ticket: the fun text, then what actually happened. */

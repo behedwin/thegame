@@ -2,6 +2,7 @@
 import { T } from '../content/texts';
 import { getEvent, type GameState } from '../core';
 import { h } from './dialogs';
+import { eventCardText } from './effects';
 import { sfx } from './feedback';
 
 export class EventCard {
@@ -20,10 +21,12 @@ export class EventCard {
     if (!active || !def) return;
     const timer = h('div', { class: 'event-timer' });
     timer.style.animationDuration = `${Math.max(0, active.expiresAtMs - state.timeMs)}ms`;
+    const { line, label } = eventCardText(state, def);
     this.el = h(
       'button',
-      { class: 'event-card', testId: 'event', attrs: { 'aria-label': `${def.title}. ${T.eventTap}` } },
+      { class: 'event-card', testId: 'event', attrs: { 'aria-label': label } },
       h('strong', { text: def.title }),
+      h('small', { class: 'event-effect', testId: 'event-effect', text: line }),
       h('span', { text: T.eventTap }),
       timer,
     );
