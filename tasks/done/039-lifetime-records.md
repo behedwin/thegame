@@ -1,7 +1,7 @@
 ---
 id: 039
 size: S
-status: ready
+status: done
 priority: normal
 touches: [src/core/state.ts, src/core/actions.ts, src/core/bulk.ts, src/save/, src/ui/stats.ts, src/content/texts.ts]
 depends: []

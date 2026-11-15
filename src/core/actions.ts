@@ -73,6 +73,8 @@ export function prestige(state: GameState): GameState {
     ...fresh,
     automations,
     totalEarned: state.totalEarned,
+    bestRunEarned: Decimal.max(state.bestRunEarned, state.runEarned),
+    purchases: state.purchases,
     merits: state.merits.add(gained),
     meritsEarned: state.meritsEarned.add(gained),
     meritUpgrades: state.meritUpgrades,

@@ -3,7 +3,7 @@ import { BALANCE } from '../content/balance';
 import { getTicket } from '../core/tickets';
 import { type Buff, createInitialState, Decimal, DEFAULT_VOLUME, type GameState } from '../core/state';
 
-export const SAVE_VERSION = 6;
+export const SAVE_VERSION = 7;
 
 /** Raw JSON shape. Unknown on purpose: anything may come out of storage. */
 export type RawSave = { version: number; [key: string]: unknown };
@@ -33,6 +33,8 @@ export const MIGRATIONS: Record<number, Migration> = {
   }),
   // v6 (task 021): ticket inbox. Existing players get their first ticket right away.
   5: (s) => ({ ...s, version: 6, inbox: [], nextTicketAtMs: num(s.timeMs, 0), ticketsAnswered: 0 }),
+  // v7 (task 039): lifetime records. The running year is the best one known so far.
+  6: (s) => ({ ...s, version: 7, bestRunEarned: dec(s.runEarned, new Decimal(0)).toString(), purchases: 0 }),
 };
 
 export class SaveError extends Error {}
@@ -81,7 +83,7 @@ function levels(v: unknown): Record<string, number> {
 const obj = (v: unknown): Record<string, unknown> => (v && typeof v === 'object' ? (v as Record<string, unknown>) : {});
 
 /** The Decimal fields, saved as strings. */
-const BIG = ['kp', 'runEarned', 'totalEarned', 'merits', 'meritsEarned'] as const;
+const BIG = ['kp', 'runEarned', 'totalEarned', 'merits', 'meritsEarned', 'bestRunEarned'] as const;
 
 export function serialize(state: GameState): string {
   // Every GameState field is saved except the calendar, which the UI re-injects on start.
@@ -129,6 +131,7 @@ export function deserialize(text: string, nowMs: number): GameState {
   const bool = (v: unknown, fallback: boolean) => (typeof v === 'boolean' ? v : fallback);
   return {
     ...(Object.fromEntries(BIG.map((k) => [k, dec(s[k], d[k])])) as Pick<GameState, (typeof BIG)[number]>),
+    purchases: num(s.purchases, 0),
     upgrades: levels(s.upgrades),
     automations: levels(s.automations),
     meritUpgrades: levels(s.meritUpgrades),
