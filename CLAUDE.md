@@ -20,7 +20,8 @@ Du är en autonom worker. Följ CLAUDE.md strikt, inklusive HÅRDA STOPP.
    misslyckas, välj nästa uppgift. Max 3 försök, annars avsluta.
 4. Implementera med tester först. Rör bara filer inom `touches`, utom tester och journal (se "Alltid
    tillåtet" nedan).
-5. Skriv `journal/<tid>-<id>.md` (den blir PR-beskrivningen). Lägg högst 1 förslag i `tasks/proposed/`.
+5. Skriv `journal/<tid>-<id>.md` (den blir PR-beskrivningen). Lägg högst 1 förslag i `tasks/proposed/`
+   (gärna ett: förslagen är det som håller kön vid liv).
    Flytta uppgiftsfilen till `tasks/done/` med `status: done` och ta bort låsfilen `tasks/claims/<id>.md`.
 6. Rebasa på origin/main och kör alla grindar (`npm run gates`).
    Lös rebase-konflikter bara i egna filer. Annars: avbryt rebasen och gå till "Konflikt" nedan.
@@ -45,7 +46,7 @@ Kön får inte stå tom bara för att ägaren inte har hunnit godkänna förslag
    göra något.
 2. Skapa grenen `claude/idea-queue-refill` från origin/main.
 3. Välj **upp till 3** förslag som:
-   - är `size: S` eller `M` (L-förslag lämnas åt ägaren);
+   - är `size: S` eller `M` (för L-förslag, se steg 6);
    - inte rör något under HÅRDA STOPP (t.ex. `android/`, `capacitor.config.ts`, publicering, nätverk eller
      data) och inte kräver något som bara ägaren kan göra (t.ex. test på en riktig enhet);
    - har sina `depends` i `tasks/done/` och fortfarande stämmer med koden. Är ett förslag inaktuellt (redan
@@ -57,7 +58,16 @@ Kön får inte stå tom bara för att ägaren inte har hunnit godkänna förslag
    och tester. Skriv "Från förslaget `p-<slug>`" i texten. Ta bort förslagsfilen.
 5. Kör `npm run tasks:check`, committa med `[ready]` i meddelandet och pusha (vanlig push; misslyckas den
    har någon annan hunnit före, och då avslutar du). PR:en rör bara `tasks/`, så den får `automerge`.
-6. Finns inget förslag som uppfyller kraven: skicka en notis till ägaren om att kön är tom och avsluta.
+6. **Räcker förslagen inte till 3 uppgifter**, fyll på i den här ordningen i samma påfyllning:
+   a. **Dela ett L-förslag** (högst ett per påfyllning): gör dess första fristående del till en S/M-uppgift
+      som ger spelaren något synligt, och uppdatera förslaget med det som återstår. Ta stora speldesignval
+      (t.ex. slutet i berättelsen) i små steg, och följ VISION.md ordagrant.
+   b. **Skriv nya förslag** (högst 3 per påfyllning) i `tasks/proposed/` utifrån VISION.md (retentions-
+      principerna, lång loop och slutmålet), `docs/RESEARCH.md` och vad som saknas i spelet nu. Spela gärna
+      igenom simmen eller läs `sim-report.json` och leta efter tomma partier. Inget får krocka med
+      icke-målen eller HÅRDA STOPP. Nya förslag som uppfyller kraven i steg 3 får flyttas in i samma
+      påfyllning.
+   c. Bara om inget alls gick att lägga in: skicka en notis till ägaren om att kön är tom och avsluta.
 
 ### Fastnade PR:er
 `automerge.yml` kör `scripts/unstick-prs.mjs` efter varje push till main, var 15:e minut och vid behov. Skriptet
