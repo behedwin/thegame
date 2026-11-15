@@ -1,7 +1,7 @@
 // Versioned save format. Pure functions: no storage access here.
 import { BALANCE } from '../content/balance';
 import { getTicket } from '../core/tickets';
-import { createInitialState, Decimal, DEFAULT_VOLUME, type GameState } from '../core/state';
+import { type Buff, createInitialState, Decimal, DEFAULT_VOLUME, type GameState } from '../core/state';
 
 export const SAVE_VERSION = 6;
 
@@ -37,11 +37,7 @@ export const MIGRATIONS: Record<number, Migration> = {
 
 export class SaveError extends Error {}
 
-export function migrate(
-  save: RawSave,
-  migrations: Record<number, Migration> = MIGRATIONS,
-  target: number = SAVE_VERSION,
-): RawSave {
+export function migrate(save: RawSave, migrations: Record<number, Migration> = MIGRATIONS, target = SAVE_VERSION): RawSave {
   let current = save;
   if (!Number.isInteger(current.version) || current.version < 1) throw new SaveError('Invalid save version');
   if (current.version > target) throw new SaveError(`Save is from a newer version (${current.version})`);
@@ -133,7 +129,6 @@ export function deserialize(text: string, nowMs: number): GameState {
   const d = createInitialState(nowMs);
   const settings = obj(s.settings);
   const event = obj(s.activeEvent);
-  const buffs = Array.isArray(s.buffs) ? s.buffs : [];
   return {
     kp: dec(s.kp, d.kp),
     runEarned: dec(s.runEarned, d.runEarned),
@@ -147,25 +142,15 @@ export function deserialize(text: string, nowMs: number): GameState {
     clicks: num(s.clicks, 0),
     timeMs: num(s.timeMs, 0),
     lastSeenMs: num(s.lastSeenMs, nowMs),
-    activeEvent:
-      typeof event.id === 'string' && typeof event.expiresAtMs === 'number'
-        ? { id: event.id, expiresAtMs: event.expiresAtMs }
-        : null,
+    activeEvent: typeof event.id === 'string' && typeof event.expiresAtMs === 'number' ? { id: event.id, expiresAtMs: event.expiresAtMs } : null,
     nextEventAtMs: num(s.nextEventAtMs, 0),
-    buffs: buffs
+    buffs: (Array.isArray(s.buffs) ? s.buffs : [])
       .map(obj)
       .filter((b) => typeof b.source === 'string' && (b.kind === 'prodMult' || b.kind === 'clickMult'))
-      .map((b) => ({
-        source: b.source as string,
-        kind: b.kind as 'prodMult' | 'clickMult',
-        mult: num(b.mult, 1),
-        untilMs: num(b.untilMs, 0),
-      })),
+      .map((b) => ({ source: b.source as string, kind: b.kind as Buff['kind'], mult: num(b.mult, 1), untilMs: num(b.untilMs, 0) })),
     eventsClaimed: num(s.eventsClaimed, 0),
     achievements: uniqueStrings(s.achievements),
-    inbox: uniqueStrings(s.inbox)
-      .filter((id) => getTicket(id))
-      .slice(0, BALANCE.tickets.cap),
+    inbox: uniqueStrings(s.inbox).filter((id) => getTicket(id)).slice(0, BALANCE.tickets.cap),
     nextTicketAtMs: num(s.nextTicketAtMs, d.nextTicketAtMs),
     ticketsAnswered: num(s.ticketsAnswered, 0),
     tipsSeen: uniqueStrings(s.tipsSeen),

@@ -31,12 +31,7 @@ export function closeTopDialog(): boolean {
 }
 
 /** Show a modal. Returns a close function. */
-export function showDialog(
-  title: string,
-  body: (Node | string)[],
-  buttons: DialogButton[],
-  testId = 'dialog',
-): () => void {
+export function showDialog(title: string, body: (Node | string)[], buttons: DialogButton[], testId = 'dialog'): () => void {
   const overlay = h('div', { class: 'overlay', testId });
   const card = h('div', { class: 'dialog', attrs: { role: 'dialog', 'aria-modal': 'true', 'aria-label': title } });
   const close = () => {
@@ -49,10 +44,7 @@ export function showDialog(
   const actions = h('div', { class: 'dialog-actions' });
   for (const b of buttons) {
     const btn = h('button', { class: b.primary ? 'btn primary' : 'btn', text: b.label, ...(b.testId ? { testId: b.testId } : {}) });
-    btn.addEventListener('click', () => {
-      close();
-      b.onClick?.();
-    });
+    btn.addEventListener('click', () => (close(), b.onClick?.()));
     actions.append(btn);
   }
   card.append(h('h2', { text: title }), ...body.map((b) => (typeof b === 'string' ? h('p', { text: b }) : b)), actions);

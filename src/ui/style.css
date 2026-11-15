@@ -18,6 +18,15 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .rates { color: var(--muted); font-size: 0.875rem; display: flex; gap: 8px; justify-content: center; font-variant-numeric: tabular-nums; }
 .buff { display: inline-block; margin-top: 6px; padding: 4px 12px; border-radius: 999px; background: color-mix(in srgb, var(--event) 20%, transparent); color: var(--event); font-weight: 700; font-size: 0.8125rem; }
 .buff[hidden] { display: none; }
+/* Onboarding tip bubble (018, 031). */
+.tip { display: flex; align-items: center; gap: 8px; margin: 8px 0 0; padding: 8px 10px 8px 14px; border-radius: 12px; background: var(--surface2); color: var(--text); font-size: 0.8125rem; line-height: 1.35; }
+.tip[hidden] { display: none; }
+.stat-row { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--surface2); }
+.tip-text { flex: 1; }
+.tip button { border: 0; background: transparent; color: var(--muted); }
+.tip-off { font-size: 0.75rem; text-decoration: underline; padding: 6px 4px; }
+.tip-close { font-size: 1.25rem; line-height: 1; padding: 4px 8px; }
+.tip .tip-next { border-radius: 8px; background: var(--accent); color: var(--accent-ink); font-size: 0.8125rem; padding: 6px 12px; }
 /* ---------- Hero network ---------- */
 .hero { position: relative; flex: 0 0 auto; height: min(42vh, 300px); margin: 4px -8px 0; }
 .network { width: 100%; height: 100%; display: block; }
