@@ -1,6 +1,6 @@
 // All player-facing UI strings (Swedish). Game data texts live next to their data.
 import { BALANCE } from './balance';
-import type { CustomerDef, CustomerEffect, SeasonDef } from './types';
+import type { CustomerDef, CustomerEffect, FocusEffect, SeasonDef } from './types';
 
 const num = (n: number) => String(Math.round(n * 100) / 100).replace('.', ',');
 const buffName = (mult: number, click: boolean) => `${click ? 'KP/klick' : 'Produktion'} ×${num(mult)}`;
@@ -127,6 +127,21 @@ export const T = {
     aria: 'Anslutna kommuner',
     nextYear: (n: number) => `Nästa läsår: +${n} kommuner`,
     chapters: 'Berättelsen hittills',
+  },
+  focus: {
+    pickTitle: 'Läsårets inriktning',
+    pickIntro: `Vad satsar skolorna på i år? Allt utom Vanligt läsår ger +${num((BALANCE.focus.meritBonus - 1) * 100)} % Meriter vid nästa nytt läsår.`,
+    aria: (name: string) => `Läsårets inriktning: ${name}. Tryck för detaljer.`,
+    meritBonus: `+${num((BALANCE.focus.meritBonus - 1) * 100)} % Meriter vid nästa nytt läsår`,
+    none: 'Inga ändringar',
+    close: 'Stäng',
+    /** One rule change; `names` are the targeted integrations ('' for all). */
+    effect: (e: FocusEffect, names: string): string =>
+      e.kind === 'autoMult' ? `${names || 'Alla integrationer'} ×${num(e.mult)}`
+        : e.kind === 'prodMult' || e.kind === 'clickMult' ? buffName(e.mult, e.kind === 'clickMult')
+        : e.kind === 'costMult' ? `${e.targets === 'all' ? 'Alla priser' : 'Integrationernas priser'} ×${num(e.mult)}`
+        : e.kind === 'eventCooldownMult' ? `Händelser oftare (väntetid ×${num(e.mult)})`
+        : `Milstolpar ger ×${num(e.mult)} i stället för ×${BALANCE.milestoneMult}`,
   },
   help: { open: 'Hjälp', title: 'Så spelar du', close: 'Stäng', replay: 'Visa introduktionen igen' },
   settings: {

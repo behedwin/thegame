@@ -142,3 +142,17 @@ export interface HelpSectionDef { id: string; order: number; title: string; body
 
 /** One chapter of the story, shown when school year `order` begins (052). Short, dry and warm. */
 export interface ChapterDef { id: string; order: number; title: string; text: string }
+
+/** One rule change of a school-year focus (053). Multipliers apply for the whole school year. */
+export type FocusEffect =
+  | { kind: 'autoMult'; targets: readonly string[] | 'all'; mult: number }
+  | { kind: 'prodMult'; mult: number }
+  | { kind: 'clickMult'; mult: number }
+  /** Prices of every item ('all') or only automations. */
+  | { kind: 'costMult'; targets: 'all' | 'automations'; mult: number }
+  | { kind: 'eventCooldownMult'; mult: number }
+  /** Replaces BALANCE.milestoneMult. */
+  | { kind: 'milestoneMult'; mult: number };
+
+/** A focus chosen at "Nytt läsår" that changes the rules for one school year (053). Never a trap. */
+export interface FocusDef extends Listed { unlockYear: number; effects: readonly FocusEffect[] }

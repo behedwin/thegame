@@ -1,8 +1,9 @@
 // Top stats: KP counter, rates, the active buffs and the current season.
 import { BALANCE } from '../content/balance';
 import { T } from '../content/texts';
-import { activeBuffs, activeSeason, connectedMunicipalities, kpPerClick, kpPerSecond, type GameState } from '../core';
-import { h } from './dialogs';
+import { activeBuffs, activeSeason, connectedMunicipalities, currentFocus, DEFAULT_FOCUS, kpPerClick, kpPerSecond, type GameState } from '../core';
+import { h, showDialog } from './dialogs';
+import { focusLines } from './effects';
 import { countUp, shownValue } from './fx';
 import { fmt } from './format';
 
@@ -18,8 +19,15 @@ export class Hud {
   private readonly buffs = h('div', { class: 'buffs', testId: 'buffs', attrs: { hidden: '' } });
   private readonly season = h('div', { class: 'buff season', testId: 'season', attrs: { hidden: '', role: 'status', 'aria-label': T.season.aria } });
   private readonly goal = h('div', { class: 'goal-chip', testId: 'goal-hud', attrs: { hidden: '', 'aria-label': T.goal.aria, title: T.goal.title } });
+  private readonly focus = h('button', { class: 'focus-chip', testId: 'focus-hud', attrs: { hidden: '' } });
   readonly host = h('section', { class: 'stats' }, h('div', { class: 'kp' }, this.kp, h('span', { class: 'unit', text: ` ${T.currency}` })),
-    h('div', { class: 'rates' }, this.kps, h('span', { class: 'dot', text: '·' }), this.kpc), this.goal, this.buffs, this.season);
+    h('div', { class: 'rates' }, this.kps, h('span', { class: 'dot', text: '·' }), this.kpc), this.goal, this.focus, this.buffs, this.season);
+  private focusDef = currentFocus({});
+
+  constructor() {
+    // Tapping the focus label explains what this school year changes (053).
+    this.focus.addEventListener('click', () => showDialog(this.focusDef.name, [this.focusDef.desc, ...focusLines(this.focusDef)], [{ label: T.focus.close, primary: true }], 'focus-info'));
+  }
 
   /** KP and rates only: cheap enough for every click. */
   renderCounters(state: GameState): void {
@@ -44,5 +52,9 @@ export class Hud {
     const towns = connectedMunicipalities(state);
     this.goal.textContent = T.goal.short(towns, BALANCE.goal.municipalities);
     this.goal.hidden = towns === 0;
+    this.focusDef = currentFocus(state);
+    this.focus.textContent = this.focusDef.name;
+    this.focus.setAttribute('aria-label', T.focus.aria(this.focusDef.name));
+    this.focus.hidden = this.focusDef.id === DEFAULT_FOCUS;
   }
 }

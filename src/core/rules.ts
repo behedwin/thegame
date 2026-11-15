@@ -1,6 +1,7 @@
 // Pure formulas: production, costs, prestige. No side effects.
 import { BALANCE } from '../content/balance';
 import { ACHIEVEMENTS, AUTOMATIONS, byId, MERITS, UPGRADES, type AutomationDef, type MeritDef } from '../content/registry';
+import { focusAutoMult, focusClickMult, focusCooldownMult, focusCostMult, focusMeritMult, milestoneMultOf } from './focus';
 import { customerClickMult, customerProdMult, signedCustomers } from './customers';
 import { seasonClickMult, seasonProdMult } from './seasons';
 import { Decimal, level, type GameState } from './state';
@@ -69,7 +70,7 @@ export const automationBaseCost = (state: GameState, def: AutomationDef): number
 /** Time between a claimed/expired event and the next possible one. */
 export function eventCooldownMs(state: GameState): number {
   const cut = Math.min(MAX_EVENT_COOLDOWN_CUT_PCT, meritSum(state, 'eventCooldownPct'));
-  return BALANCE.events.cooldownMs * (1 - cut / 100);
+  return BALANCE.events.cooldownMs * (1 - cut / 100) * focusCooldownMult(state);
 }
 
 /** Share of base KP/s credited while away. */
@@ -85,7 +86,7 @@ function buffMult(state: GameState, kind: 'prodMult' | 'clickMult'): number {
 
 /** Multiplier on one automation from upgrades and milestones (not global/merit/buff). */
 export function automationMult(state: GameState, id: string): number {
-  let mult = Math.pow(BALANCE.milestoneMult, milestonesReached(level(state.automations, id)));
+  let mult = Math.pow(milestoneMultOf(state), milestonesReached(level(state.automations, id)));
   for (const u of UPGRADES) {
     const lvl = level(state.upgrades, u.id);
     if (lvl === 0 || u.effect.kind !== 'autoMult') continue;
@@ -117,7 +118,8 @@ export function automationKps(state: GameState, def: AutomationDef): Decimal {
     .mul(meritProdMult(state))
     .mul(achievementProdMult(state))
     .mul(customerProdMult(state))
-    .mul(seasonProdMult(state));
+    .mul(seasonProdMult(state))
+    .mul(focusAutoMult(state, def.id));
 }
 
 /** KP per second excluding buffs (used for offline progress). */
@@ -157,7 +159,7 @@ export function kpPerClick(state: GameState): Decimal {
   }
   mult *= 1 + meritSum(state, 'clickPct') / 100;
   mult *= customerClickMult(state);
-  mult *= seasonClickMult(state);
+  mult *= seasonClickMult(state) * focusClickMult(state);
   const base = new Decimal(add).mul(mult).add(kpPerSecond(state).mul(kpsShare));
   return base.mul(buffMult(state, 'clickMult'));
 }
@@ -167,10 +169,10 @@ export function costOf(state: GameState, id: string): Decimal {
   const auto = getAutomation(id);
   if (auto) {
     const owned = level(state.automations, id);
-    return new Decimal(automationBaseCost(state, auto)).mul(Decimal.pow(BALANCE.automationCostGrowth, owned)).ceil();
+    return new Decimal(automationBaseCost(state, auto) * focusCostMult(state, true)).mul(Decimal.pow(BALANCE.automationCostGrowth, owned)).ceil();
   }
   const up = getUpgrade(id);
-  if (up) return new Decimal(up.baseCost).mul(Decimal.pow(up.costGrowth, level(state.upgrades, id))).ceil();
+  if (up) return new Decimal(up.baseCost * focusCostMult(state, false)).mul(Decimal.pow(up.costGrowth, level(state.upgrades, id))).ceil();
   throw new Error(`Unknown item: ${id}`);
 }
 
@@ -208,19 +210,19 @@ export function canBuyMerit(state: GameState, id: string): boolean {
   return state.merits.gte(meritCost(state, id));
 }
 
-/** Meriter the player would receive by starting a new school year now. */
+/** Meriter the player would receive by starting a new school year now (with the focus bonus, 053). */
 export function pendingMerits(state: GameState): Decimal {
   const { divisor, exponent } = BALANCE.prestige;
-  return state.runEarned.div(divisor).pow(exponent).floor();
+  return state.runEarned.div(divisor).pow(exponent).mul(focusMeritMult(state)).floor();
 }
 
 /** Most KP earned in one school year, counting the running one. */
 export const bestYearEarned = (state: GameState): Decimal => Decimal.max(state.bestRunEarned, state.runEarned);
 
-/** KP this school year needed to reach `merits` pending Meriter. */
-export function runKpForMerits(merits: number): Decimal {
+/** KP this school year needed to reach `merits` pending Meriter, given the focus merit factor `mult`. */
+export function runKpForMerits(merits: number, mult = 1): Decimal {
   const { divisor, exponent } = BALANCE.prestige;
-  return new Decimal(merits).pow(1 / exponent).mul(divisor);
+  return new Decimal(merits / mult).pow(1 / exponent).mul(divisor);
 }
 
 /** Pay for and add one level of a merit upgrade. No affordability check: callers check canBuyMerit. */
