@@ -89,32 +89,34 @@ function obj(v: unknown): Record<string, unknown> {
 }
 
 export function serialize(state: GameState): string {
-  const save: RawSave = {
-    version: SAVE_VERSION,
-    kp: state.kp.toString(),
-    runEarned: state.runEarned.toString(),
-    totalEarned: state.totalEarned.toString(),
-    merits: state.merits.toString(),
-    meritsEarned: state.meritsEarned.toString(),
-    upgrades: state.upgrades,
-    automations: state.automations,
-    meritUpgrades: state.meritUpgrades,
-    prestiges: state.prestiges,
-    clicks: state.clicks,
-    timeMs: state.timeMs,
-    lastSeenMs: state.lastSeenMs,
-    activeEvent: state.activeEvent,
-    nextEventAtMs: state.nextEventAtMs,
-    buffs: state.buffs,
-    eventsClaimed: state.eventsClaimed,
-    achievements: state.achievements,
-    inbox: state.inbox,
-    nextTicketAtMs: state.nextTicketAtMs,
-    ticketsAnswered: state.ticketsAnswered,
-    tipsSeen: state.tipsSeen,
-    settings: state.settings,
-  };
+  // Every GameState field is saved except the calendar, which the UI re-injects on start.
+  const { calendar: _calendar, kp, runEarned, totalEarned, merits, meritsEarned, ...rest } = state;
+  const big = { kp, runEarned, totalEarned, merits, meritsEarned };
+  const save: RawSave = { version: SAVE_VERSION, ...rest, ...Object.fromEntries(Object.entries(big).map(([k, v]) => [k, v.toString()])) };
   return JSON.stringify(save);
+}
+
+const EXPORT_PREFIX = 'SKI1:';
+
+/** The save as pasteable text: a prefix plus base64 of the UTF-8 JSON. */
+export function exportSave(state: GameState): string {
+  let bin = '';
+  for (const b of new TextEncoder().encode(serialize(state))) bin += String.fromCharCode(b);
+  return EXPORT_PREFIX + btoa(bin);
+}
+
+/** Inverse of exportSave, through the normal migrations. Throws SaveError on anything unusable. */
+export function importSave(text: string, nowMs: number): GameState {
+  const t = text.trim();
+  if (!t.startsWith(EXPORT_PREFIX)) throw new SaveError('Not an exported save');
+  let json: string;
+  try {
+    const bytes = Uint8Array.from(atob(t.slice(EXPORT_PREFIX.length)), (c) => c.charCodeAt(0));
+    json = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+  } catch {
+    throw new SaveError('Corrupt export');
+  }
+  return deserialize(json, nowMs);
 }
 
 /** Parse, migrate and normalise a save. Throws SaveError on unusable data. */

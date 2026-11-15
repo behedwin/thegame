@@ -70,16 +70,8 @@ export async function startApp(root: HTMLElement): Promise<void> {
   hub.innerHTML = `${SYNC}<span>${T.hubLabel}</span>`;
   const floatLayer = h('div', { class: 'float-layer', attrs: { 'aria-hidden': 'true' } });
   const eventSlot = h('div', { class: 'event-slot' });
-  const hero = h(
-    'section',
-    { class: 'hero' },
-    net.svg,
-    h('div', { class: 'side-labels' }, h('span', { text: T.sourceSystems }), h('span', { text: T.targetSystems })),
-    net.tip,
-    hub,
-    floatLayer,
-    eventSlot,
-  );
+  const sideLabels = h('div', { class: 'side-labels' }, h('span', { text: T.sourceSystems }), h('span', { text: T.targetSystems }));
+  const hero = h('section', { class: 'hero' }, net.svg, sideLabels, net.tip, hub, floatLayer, eventSlot);
   // The intro tour (031) is in memory only, so a reload ends it.
   let tour: TourStep | null = null;
   const tips = new TipBar(
@@ -93,11 +85,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
     () => ((tour = tour && tourNext(tour)), render()),
   );
   helpHooks.replay = () => ((tour = TOUR[0]), render());
-  const customersEl = h('div', {
-    class: 'customers',
-    testId: 'customers',
-    attrs: { role: 'button', tabindex: '0', 'aria-label': T.customerList.open },
-  });
+  const customersEl = h('div', { class: 'customers', testId: 'customers', attrs: { role: 'button', tabindex: '0', 'aria-label': T.customerList.open } });
 
   const tabButtons = {} as Record<Tab, HTMLElement>;
   for (const t of TABS) tabButtons[t] = h('button', { class: 'tab', attrs: { role: 'tab' }, text: T.tabs[t], testId: `tab-${t}` });
@@ -123,13 +111,8 @@ export async function startApp(root: HTMLElement): Promise<void> {
   const bulkBar = h('div', { class: 'bulk', attrs: { role: 'group', 'aria-label': T.bulk.aria } }, ...bulkButtons);
   const prestigeInfo = h('div', { class: 'prestige-info' });
   const prestigeBtn = h('button', { class: 'btn primary wide', testId: 'prestige' });
-  const prestigeView = h(
-    'div',
-    {},
-    h('div', { class: 'prestige-card' }, h('h3', { text: T.prestige.title }), h('p', { text: T.prestige.intro }), prestigeInfo, prestigeBtn),
-    h('h3', { class: 'list-title', text: T.prestige.shopTitle }),
-    lists.merits.host,
-  );
+  const prestigeCard = h('div', { class: 'prestige-card' }, h('h3', { text: T.prestige.title }), h('p', { text: T.prestige.intro }), prestigeInfo, prestigeBtn);
+  const prestigeView = h('div', {}, prestigeCard, h('h3', { class: 'list-title', text: T.prestige.shopTitle }), lists.merits.host);
   const tabViews: Record<Tab, { host: HTMLElement; bulk: boolean; render: () => void }> = {
     automations: { host: lists.automations.host, bulk: true, render: () => lists.automations.render(state) },
     upgrades: { host: lists.upgrades.host, bulk: true, render: () => lists.upgrades.render(state) },
@@ -137,29 +120,16 @@ export async function startApp(root: HTMLElement): Promise<void> {
     achievements: { host: achievementList.host, bulk: false, render: () => achievementList.render(state) },
   };
 
-  root.replaceChildren(
-    h(
-      'div',
-      { class: 'app' },
-      h('header', { class: 'top' }, h('div', { class: 'brand', text: T.title }), inboxBtn, settingsBtn),
-      h(
-        'section',
-        { class: 'stats' },
-        h('div', { class: 'kp' }, kpEl, h('span', { class: 'unit', text: ` ${T.currency}` })),
-        h('div', { class: 'rates' }, kpsEl, h('span', { class: 'dot', text: '·' }), kpcEl),
-        buffEl,
-        seasonEl,
-      ),
-      hero,
-      tips.host,
-      customersEl,
-      h('nav', { class: 'tabs', attrs: { role: 'tablist', 'aria-label': T.a11y.tabsAria } }, ...Object.values(tabButtons)),
-      panel,
-    ),
-  );
+  const kpBox = h('div', { class: 'kp' }, kpEl, h('span', { class: 'unit', text: ` ${T.currency}` }));
+  const stats = h('section', { class: 'stats' }, kpBox, h('div', { class: 'rates' }, kpsEl, h('span', { class: 'dot', text: '·' }), kpcEl), buffEl, seasonEl);
+  const tabsNav = h('nav', { class: 'tabs', attrs: { role: 'tablist', 'aria-label': T.a11y.tabsAria } }, ...Object.values(tabButtons));
+  const top = h('header', { class: 'top' }, h('div', { class: 'brand', text: T.title }), inboxBtn, settingsBtn);
+  root.replaceChildren(h('div', { class: 'app' }, top, stats, hero, tips.host, customersEl, tabsNav, panel));
   tips.marks = { sync: hub, buy: panel, event: eventSlot, help: settingsBtn };
 
   // ---------- Actions ----------
+  /** Stop saving (wipe or import replaces the save), then reload once `done` has written storage. */
+  const leaveFor = (done: Promise<void>) => ((wiping = true), void done.then(() => location.reload()));
   let saveQueued = false;
   function persist(): void {
     if (wiping || saveQueued) return;
@@ -429,7 +399,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
   const stopHold = bindHold(hub, doClick, HOLD_REPEAT_MS);
   hub.addEventListener('animationend', () => hub.classList.remove('pop'));
   settingsBtn.addEventListener('click', () =>
-    openSettings({ state: () => state, apply: applySettings, wipe: () => ((wiping = true), void wipeGame().then(() => location.reload())) }),
+    openSettings({ state: () => state, apply: applySettings, wipe: () => leaveFor(wipeGame()), load: (next) => leaveFor(saveGame(next)) }),
   );
   inboxBtn.addEventListener('click', openInbox);
   for (const t of TABS) tabButtons[t].addEventListener('click', () => ((tab = t), render()));
