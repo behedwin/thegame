@@ -1,7 +1,7 @@
 ---
 id: 077
 size: S
-status: ready
+status: done
 priority: normal
 changelog: "Troféfliken lyfter fram den trofé du är närmast."
 touches: [src/ui/achievements.ts, src/ui/style.css, src/content/texts.ts]
