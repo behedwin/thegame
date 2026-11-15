@@ -14,6 +14,8 @@ Du är en autonom worker. Följ CLAUDE.md strikt, inklusive HÅRDA STOPP.
 2. Välj den första uppgiften i tasks/ (`priority: high` före `normal`, sedan lägsta id) med status `ready`
    vars `depends` är klara och vars `touches` inte överlappar någon öppen `claude/task-*`-gren.
    `node scripts/next-task.mjs` gör urvalet, och första raden är valet.
+   **Är kön tom** (`node scripts/next-task.mjs --queue` skriver ingenting): fyll på den enligt "Påfyllning
+   av kön" nedan och avsluta sedan körningen.
 3. Kör `scripts/claim.sh <id> <run-id>` (run-id t.ex. `$(date -u +%Y%m%dT%H%M%SZ)-<slump>`). Om det
    misslyckas, välj nästa uppgift. Max 3 försök, annars avsluta.
 4. Implementera med tester först. Rör bara filer inom `touches`, utom tester och journal (se "Alltid
@@ -35,6 +37,27 @@ Du är en autonom worker. Följ CLAUDE.md strikt, inklusive HÅRDA STOPP.
    slutrapporten om PR:en är mergad, väntar på CI eller behöver ägaren, och avsluta körningen.
 
 Gör högst en uppgift per körning.
+
+### Påfyllning av kön
+Kön får inte stå tom bara för att ägaren inte har hunnit godkänna förslag. En worker som hittar en tom kö
+(se steg 2) flyttar in förslag från `tasks/proposed/`:
+1. Finns en fjärrgren `origin/claude/idea-*` (en påfyllning eller ett idéintag pågår): avsluta utan att
+   göra något.
+2. Skapa grenen `claude/idea-queue-refill` från origin/main.
+3. Välj **upp till 3** förslag som:
+   - är `size: S` eller `M` (L-förslag lämnas åt ägaren);
+   - inte rör något under HÅRDA STOPP (t.ex. `android/`, `capacitor.config.ts`, publicering, nätverk eller
+     data) och inte kräver något som bara ägaren kan göra (t.ex. test på en riktig enhet);
+   - har sina `depends` i `tasks/done/` och fortfarande stämmer med koden. Är ett förslag inaktuellt (redan
+     gjort eller bygger på något som har tagits bort) raderas det i samma commit.
+   Välj först det som ger spelaren mest enligt VISION.md, och hellre en blandning (innehåll, UI, balans) än
+   tre av samma slag.
+4. Gör om varje förslag till en uppgift precis som i idéintaget: nästa lediga id, refaktoreringsuppgift på
+   multiplar av 5, `status: ready`, `priority: normal`, uppdaterade `touches`, beskrivning med motivering
+   och tester. Skriv "Från förslaget `p-<slug>`" i texten. Ta bort förslagsfilen.
+5. Kör `npm run tasks:check`, committa med `[ready]` i meddelandet och pusha (vanlig push; misslyckas den
+   har någon annan hunnit före, och då avslutar du). PR:en rör bara `tasks/`, så den får `automerge`.
+6. Finns inget förslag som uppfyller kraven: skicka en notis till ägaren om att kön är tom och avsluta.
 
 ### Fastnade PR:er
 `automerge.yml` kör `scripts/unstick-prs.mjs` efter varje push till main, var 15:e minut och vid behov. Skriptet
