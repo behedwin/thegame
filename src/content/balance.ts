@@ -1,7 +1,7 @@
 // All tuning numbers in one place. Change only with sim-report.json numbers as justification.
 export const BALANCE = {
   baseClick: 1,
-  automationCostGrowth: 1.15,
+  automationCostGrowth: 1.155,
   /** Owning this many of one automation doubles its output (cumulative). */
   milestones: [25, 50, 100, 250] as readonly number[],
   milestoneMult: 2,

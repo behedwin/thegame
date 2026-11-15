@@ -1,7 +1,7 @@
 ---
 id: 042
 size: S
-status: ready
+status: done
 priority: normal
 touches: [src/content/balance.ts]
 depends: [040]
