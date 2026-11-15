@@ -4,6 +4,7 @@ import { ACHIEVEMENTS, AUTOMATIONS, byId, MERITS, UPGRADES, type AutomationDef, 
 import { customerClickMult, customerProdMult, signedCustomers } from './customers';
 import { seasonClickMult, seasonProdMult } from './seasons';
 import { Decimal, level, type GameState } from './state';
+import { isUnlocked } from './unlocks';
 
 export { customerClickMult, customerProdMult, nextCustomer, signedCustomers } from './customers';
 
@@ -109,7 +110,7 @@ export function achievementProdMult(state: GameState): number {
 /** KP/s of one automation type, excluding temporary buffs. */
 export function automationKps(state: GameState, def: AutomationDef): Decimal {
   const count = level(state.automations, def.id);
-  if (count === 0) return new Decimal(0);
+  if (count === 0 || !isUnlocked(state, def)) return new Decimal(0);
   return new Decimal(def.kps)
     .mul(count)
     .mul(automationMult(state, def.id))
@@ -179,13 +180,17 @@ export function isMaxed(state: GameState, id: string): boolean {
 }
 
 export function canBuy(state: GameState, id: string): boolean {
-  if (!getAutomation(id) && !getUpgrade(id)) return false;
+  const auto = getAutomation(id);
+  if (!auto && !getUpgrade(id)) return false;
+  if (auto && !isUnlocked(state, auto)) return false;
   if (isMaxed(state, id)) return false;
   return state.kp.gte(costOf(state, id));
 }
 
 /** Items are revealed once the player has earned a fraction of their price (progressive disclosure). */
 export function isRevealed(state: GameState, id: string): boolean {
+  const auto = getAutomation(id);
+  if (auto && !isUnlocked(state, auto)) return false;
   const owned = level(state.automations, id) + level(state.upgrades, id);
   if (owned > 0) return true;
   return state.runEarned.gte(costOf(state, id).mul(0.4));

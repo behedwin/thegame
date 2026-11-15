@@ -129,7 +129,7 @@ describe('events', () => {
     const lump = EVENTS.find((e) => e.effect.kind === 'lump')!;
     if (lump.effect.kind !== 'lump') throw new Error('unreachable');
     expect(claimEvent(spawnEvent(fresh(), lump)).granted.eq(lump.effect.minKp)).toBe(true);
-    const big: GameState = { ...fresh(), automations: { [AUTOMATIONS.at(-1)!.id]: 100 } };
+    const big: GameState = { ...fresh(), automations: { [AUTOMATIONS.filter((a) => a.unlockYear === undefined).at(-1)!.id]: 100 } };
     const expected = Decimal.max(baseKps(big).mul(lump.effect.seconds), lump.effect.minKp);
     expect(claimEvent(spawnEvent(big, lump)).granted.eq(expected)).toBe(true);
   });

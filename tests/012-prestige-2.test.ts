@@ -46,7 +46,7 @@ describe('new merit content', () => {
 describe('automation discount (Ramavtal)', () => {
   const m = meritOf('autoDiscountPct');
   const pct = (m.effect as { pct: number }).pct;
-  const auto = AUTOMATIONS[AUTOMATIONS.length - 1]!;
+  const auto = AUTOMATIONS.filter((a) => a.unlockYear === undefined).at(-1)!; // always unlocked (051)
 
   it('is 1 without the merit', () => {
     expect(automationCostFactor(fresh())).toBe(1);
