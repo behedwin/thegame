@@ -51,12 +51,13 @@ export function fxNode(layer: HTMLElement, cls: string, x: number, y: number): H
 }
 
 /** 6–12 small "data packets" that fly out from (x, y) and fade. */
-export function burst(layer: HTMLElement, x: number, y: number, opts: { count?: number; rng?: () => number } = {}): void {
+export function burst(layer: HTMLElement, x: number, y: number, opts: { count?: number; rng?: () => number; spread?: number } = {}): void {
   if (!motionOk()) return;
   const n = Math.min(12, Math.max(6, opts.count ?? 8));
+  const k = opts.spread ?? 1;
   for (const p of burstGeometry(n, opts.rng ?? Math.random)) {
     const d = fxNode(layer, 'fx-p', x, y);
-    const end = `translate(calc(-50% + ${p.dx.toFixed(1)}px), calc(-50% + ${p.dy.toFixed(1)}px)) rotate(${p.rot.toFixed(0)}deg) scale(${p.scale.toFixed(2)})`;
+    const end = `translate(calc(-50% + ${(p.dx * k).toFixed(1)}px), calc(-50% + ${(p.dy * k).toFixed(1)}px)) rotate(${p.rot.toFixed(0)}deg) scale(${p.scale.toFixed(2)})`;
     d.animate([{ transform: 'translate(-50%, -50%)', opacity: 1 }, { transform: end, opacity: 0 }], {
       duration: p.ms, easing: 'cubic-bezier(0.2, 0.7, 0.3, 1)', fill: 'forwards',
     }).onfinish = () => d.remove();
@@ -65,16 +66,35 @@ export function burst(layer: HTMLElement, x: number, y: number, opts: { count?: 
 }
 
 /** A ring that grows out from the centre of `el` (drawn in `layer`) and fades. */
-export function ripple(el: HTMLElement, layer: HTMLElement): void {
+export function ripple(el: HTMLElement, layer: HTMLElement, scale = 1.7): void {
   if (!motionOk()) return;
   const r = el.getBoundingClientRect();
   const l = layer.getBoundingClientRect();
   const d = fxNode(layer, 'fx-ring', r.left - l.left + r.width / 2, r.top - l.top + r.height / 2);
   d.style.width = d.style.height = `${r.width}px`;
-  d.animate([{ transform: 'translate(-50%, -50%) scale(0.9)', opacity: 0.6 }, { transform: 'translate(-50%, -50%) scale(1.7)', opacity: 0 }], {
+  d.animate([{ transform: 'translate(-50%, -50%) scale(0.9)', opacity: 0.6 }, { transform: `translate(-50%, -50%) scale(${scale})`, opacity: 0 }], {
     duration: 500, easing: 'ease-out', fill: 'forwards',
   }).onfinish = () => d.remove();
   trimLayer(layer);
+}
+
+/** In the compact strip (059) at most this many "+KP" numbers fly at once; extra taps show none. */
+export const MAX_COMPACT_FLOATS = 3;
+/** Room kept for the number's own width so it never runs off the right edge. */
+const FLOAT_ROOM = 64;
+
+export interface FloatSpot { x: number; y: number; dx: number }
+
+/** Where a "+KP" number starts (its left edge) and how far right it drifts in the compact strip (059):
+ * just right of SYNKA (`hub.right`, layer px) and away from it, clamped to the layer's width. Null when
+ * `active` numbers already fly. */
+export function compactFloatSpot(hub: { right: number; cy: number }, width: number, active: number, rng: () => number): FloatSpot | null {
+  if (active >= MAX_COMPACT_FLOATS) return null;
+  const max = Math.max(0, width - FLOAT_ROOM);
+  const x = Math.min(max, Math.max(0, hub.right + 8 + rng() * 16));
+  const y = hub.cy - 8 + rng() * 16;
+  const dx = Math.min(12 + rng() * 12, max - x);
+  return { x, y, dx };
 }
 
 const rolls = new WeakMap<HTMLElement, { shown: Decimal; target: Decimal; raf: number }>();

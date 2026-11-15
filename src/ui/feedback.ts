@@ -1,6 +1,6 @@
 // Juice: synthesized sounds, haptics, floating numbers and toasts. No audio files, no network.
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
-import { fxNode, trimLayer } from './fx';
+import { compactFloatSpot, fxNode, trimLayer } from './fx';
 
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
@@ -102,13 +102,22 @@ export function haptic(strength: 'light' | 'medium' = 'light'): void {
   Haptics.impact({ style: strength === 'light' ? ImpactStyle.Light : ImpactStyle.Medium }).catch(() => undefined); // not supported: ignore
 }
 
-/** Floating "+12" that rises from a point and fades. */
-export function floatText(layer: HTMLElement, x: number, y: number, text: string): void {
-  const span = fxNode(layer, 'float-num', x + (Math.random() * 40 - 20), y);
+/** Floating "+12" that rises from a point and fades. With `hub` (the compact strip, 059) it starts just
+ * right of SYNKA, drifts right and fades fast, and at most three fly at once. */
+export function floatText(layer: HTMLElement, x: number, y: number, text: string, hub?: { right: number; cy: number }): void {
+  let span: HTMLElement;
+  if (hub) {
+    const spot = compactFloatSpot(hub, layer.clientWidth, layer.querySelectorAll('.float-num').length, Math.random);
+    if (!spot) return;
+    span = fxNode(layer, 'float-num compact', spot.x, spot.y);
+    span.style.setProperty('--dx', `${spot.dx.toFixed(0)}px`);
+  } else {
+    span = fxNode(layer, 'float-num', x + (Math.random() * 40 - 20), y);
+    // A slightly random arc and size so repeated taps do not stack in a straight column.
+    span.style.setProperty('--dx', `${(Math.random() * 60 - 30).toFixed(0)}px`);
+    span.style.setProperty('--s', (0.9 + Math.random() * 0.3).toFixed(2));
+  }
   span.textContent = text;
-  // A slightly random arc and size so repeated taps do not stack in a straight column.
-  span.style.setProperty('--dx', `${(Math.random() * 60 - 30).toFixed(0)}px`);
-  span.style.setProperty('--s', (0.9 + Math.random() * 0.3).toFixed(2));
   span.addEventListener('animationend', () => span.remove());
   trimLayer(layer); // keep the layer light even under heavy tapping
 }

@@ -1,7 +1,7 @@
 ---
 id: 059
 size: S
-status: ready
+status: done
 touches: [src/ui/app.ts, src/ui/fx.ts, src/ui/feedback.ts, src/ui/network.ts, src/ui/style.css]
 depends: []
 priority: normal
