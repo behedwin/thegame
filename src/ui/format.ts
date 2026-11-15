@@ -1,5 +1,5 @@
 // Swedish number and time formatting.
-import { Decimal } from '../core/state';
+import { Decimal, type Notation } from '../core/state';
 
 // Swedish short scale names: miljon, miljard, biljon, biljard, triljon, triljard, kvadriljon, kvadriljard.
 const SUFFIXES = ['M', 'md', 'bn', 'bd', 'tn', 'td', 'kvn', 'kvd'];
@@ -18,11 +18,18 @@ function threeSig(x: number): string {
   return truncated.toFixed(decimals).replace('.', ',');
 }
 
-/** Format a Decimal or number for display: "12,3", "123 456", "1,23 M", "4,56e42". */
-export function fmt(value: Decimal | number): string {
+let current: Notation = 'short';
+
+/** The notation fmt() uses when none is given. Set by the UI from the player's settings. */
+export function setNotation(n: Notation): void {
+  current = n;
+}
+
+/** Format a Decimal or number for display: "12,3", "123 456", "1,23 M" ("1,23e6" in sci), "4,56e42". */
+export function fmt(value: Decimal | number, notation: Notation = current): string {
   const d = value instanceof Decimal ? value : new Decimal(value);
   if (!Number.isFinite(d.mantissa) || !Number.isFinite(d.exponent)) return '–';
-  if (d.lt(0)) return '-' + fmt(d.neg());
+  if (d.lt(0)) return '-' + fmt(d.neg(), notation);
   if (d.lt(100)) {
     const n = d.toNumber();
     if (Number.isInteger(n)) return n.toString();
@@ -30,7 +37,7 @@ export function fmt(value: Decimal | number): string {
   }
   if (d.lt(1e6)) return groupThousands(d.toNumber());
   const group = Math.floor(d.exponent / 3) - 2; // 1e6 -> 0
-  const suffix = SUFFIXES[group];
+  const suffix = notation === 'short' ? SUFFIXES[group] : undefined;
   if (suffix !== undefined) {
     const scaled = d.mantissa * Math.pow(10, d.exponent % 3);
     return `${threeSig(scaled)}${NBSP}${suffix}`;

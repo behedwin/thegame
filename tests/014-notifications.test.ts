@@ -42,7 +42,7 @@ describe('014 local notifications: settings and save', () => {
       settings: { sound: false, vibration: true, volume: 0.5, notifyOfflineCap: false, notifySeason: false },
     });
     const old = deserialize(JSON.stringify(v3), 0).settings;
-    expect(old).toEqual({ sound: false, vibration: true, volume: 0.5, notifyOfflineCap: false, notifySeason: false, tips: true });
+    expect(old).toEqual({ sound: false, vibration: true, volume: 0.5, notifyOfflineCap: false, notifySeason: false, tips: true, notation: 'short' });
   });
 
   it('v1 saves migrate all the way and get notifications off', () => {

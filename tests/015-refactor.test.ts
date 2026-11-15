@@ -95,7 +95,7 @@ describe('save format v3/v4', () => {
     const out = migrate({ version: 1, settings: { sound: false, vibration: true } });
     expect(out.version).toBe(SAVE_VERSION);
     expect(out.achievements).toEqual([]);
-    expect(out.settings).toEqual({ sound: false, vibration: true, volume: DEFAULT_VOLUME, notifyOfflineCap: false, notifySeason: false, tips: true });
+    expect(out.settings).toEqual({ sound: false, vibration: true, volume: DEFAULT_VOLUME, notifyOfflineCap: false, notifySeason: false, tips: true, notation: 'short' });
   });
 
   it('migration of a save without settings still yields defaults', () => {
