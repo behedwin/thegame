@@ -18,6 +18,7 @@ export function statRows(state: GameState): StatRow[] {
     { label: T.stats.purchases, value: fmt(state.purchases) },
     { label: T.stats.clicks, value: fmt(state.clicks) },
     { label: T.stats.events, value: fmt(state.eventsClaimed) },
+    { label: T.stats.tickets, value: fmt(state.ticketsAnswered) },
     { label: T.stats.schoolYears, value: fmt(state.prestiges + 1) },
     { label: T.stats.meritsEarned, value: fmt(state.meritsEarned) },
     { label: T.stats.achievements, value: T.stats.of(state.achievements.length, ACHIEVEMENTS.length) },

@@ -72,7 +72,8 @@ test('a ticket can be opened and answered, and the result survives a reload', as
   await expect(inbox).toBeVisible();
   await expect(inbox).toHaveText('Inkorg');
   await inbox.click();
-  await expect(page.locator('.toast').last()).toContainText('Inga ärenden');
+  await expect(page.getByTestId('inbox-empty-dialog')).toContainText('Inga ärenden');
+  await expect(page.getByTestId('inbox-archive')).toHaveText('Du har löst 1 ärende. Skolorna tackar.');
   expect(errors).toEqual([]);
 });
 

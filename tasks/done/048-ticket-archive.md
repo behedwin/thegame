@@ -1,7 +1,7 @@
 ---
 id: 048
 size: S
-status: ready
+status: done
 touches: [src/ui/inbox.ts, src/ui/stats.ts, src/content/texts.ts]
 depends: []
 priority: normal
