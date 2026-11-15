@@ -120,6 +120,14 @@ export const T = {
     unlockLater: (year: number, names: string) => `Läsår ${year}: ${names}`,
     unlocked: (names: string) => `Ny integrationstyp: ${names}`,
   },
+  goal: {
+    title: 'Hela Sverige på en standard',
+    count: (n: number, total: number) => `Anslutna kommuner: ${n} av ${total}`,
+    short: (n: number, total: number) => `${n}/${total} kommuner`,
+    aria: 'Anslutna kommuner',
+    nextYear: (n: number) => `Nästa läsår: +${n} kommuner`,
+    chapters: 'Berättelsen hittills',
+  },
   help: { open: 'Hjälp', title: 'Så spelar du', close: 'Stäng', replay: 'Visa introduktionen igen' },
   settings: {
     title: 'Inställningar',

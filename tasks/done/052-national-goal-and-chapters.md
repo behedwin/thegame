@@ -1,7 +1,7 @@
 ---
 id: 052
 size: M
-status: ready
+status: done
 touches: [src/content/chapters/, src/content/registry.ts, src/content/types.ts, src/content/balance.ts, src/content/texts.ts, src/core/, src/ui/hud.ts, src/ui/prestige.ts, src/ui/celebrate.ts, src/ui/style.css, tasks/proposed/p-story-and-ending.md]
 depends: []
 priority: normal

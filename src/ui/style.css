@@ -158,3 +158,14 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .hub-ring { fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 2 10; opacity: 0; transition: opacity 1.5s; transform-origin: center; transform-box: fill-box; animation: spin 30s linear infinite; }
 @keyframes spin { to { rotate: 360deg; } } .network[data-tier='2'] .hub-ring { opacity: 0.3; } .network[data-tier='3'] .hub-ring, .network[data-tier='4'] .hub-ring { opacity: 0.6; }
 .network[data-tier='4'] .hub-glow { animation: heart 1.8s ease-in-out infinite; } @keyframes heart { 15%, 45% { transform: scale(1.06); } 30% { transform: scale(0.98); } }
+/* National goal and story chapters (052) */
+.goal-chip { display: inline-block; margin-top: 4px; font-size: 0.75rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.goal { background: var(--surface); border-radius: var(--radius); padding: 12px 16px; margin-bottom: 12px; }
+.goal p { margin: 4px 0; font-size: 0.875rem; }
+.goal-bar { height: 6px; border-radius: 3px; background: var(--surface2); overflow: hidden; margin: 6px 0; }
+.goal-bar span { display: block; height: 100%; background: var(--gold); transition: width 0.6s; }
+.story { margin-top: 12px; background: var(--surface); border-radius: var(--radius); padding: 10px 16px; }
+.story summary { cursor: pointer; font-weight: 700; min-height: 32px; display: flex; align-items: center; }
+.story h4 { margin: 10px 0 4px; } .story p { margin: 0; font-size: 0.875rem; color: var(--muted); }
+.celebrate .chapter { max-width: min(420px, 86vw); margin: 12px auto 0; } .celebrate .chapter p { color: var(--muted); line-height: 1.45; }
+.celebrate[data-chapter] { background: color-mix(in srgb, var(--bg) 97%, transparent); }

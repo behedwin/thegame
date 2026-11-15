@@ -57,6 +57,8 @@ export const stamp = (el: HTMLElement, text: string): void => {
   setTimeout(() => s.remove(), 1100);
 };
 
+let current: { o: HTMLElement; close: () => void } | null = null;
+
 /** Full-screen New school year moment (≤ 2 s, tap to skip); merits roll up, the map zooms out and back. */
 export function yearTransition(title: string, merits: Decimal, done: () => void): void {
   const [o, num, hero] = [mk('div', 'celebrate'), mk('strong', '', '0'), document.querySelector('.hero')];
@@ -66,8 +68,21 @@ export function yearTransition(title: string, merits: Decimal, done: () => void)
   countUp(num, merits.mul(0), merits, reducedMotion() ? 0 : 1000);
   hero?.classList.toggle('reset', !reducedMotion());
   const close = (): void => {
-    if (o.isConnected) (o.remove(), hero?.classList.remove('reset'), done());
+    if (o.isConnected) (o.remove(), hero?.classList.remove('reset'), (current = null), done());
   };
+  current = { o, close };
   o.addEventListener('click', close);
-  setTimeout(close, 1800);
+  setTimeout(() => o.dataset.chapter || close(), 1800);
+}
+
+/** Add the new school year's chapter (052) to the running transition; it then stays ~7 s so it can be read. */
+export function addChapter(title: string, text: string): void {
+  if (!current) return;
+  const { o, close } = current;
+  o.dataset.chapter = '1';
+  const box = mk('div', 'chapter');
+  box.dataset.testid = 'chapter';
+  box.append(mk('h3', '', title), mk('p', '', text));
+  o.append(box);
+  setTimeout(close, 7000);
 }
