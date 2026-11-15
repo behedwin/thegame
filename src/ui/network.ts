@@ -2,14 +2,50 @@
 // target systems on the right. Data packets flow along the lines.
 import { AUTOMATIONS, SYSTEMS, systemName, type SystemDef } from '../content/registry';
 import type { NetworkFlow } from '../core';
+import { T } from '../content/texts';
 import { flashClass } from './celebrate';
 
 const NS = 'http://www.w3.org/2000/svg';
 const W = 360;
 const H = 300;
-const HUB = { x: W / 2, y: H / 2 };
 const NODE_W = 98;
 const NODE_H = 34;
+/** The compact strip (062): map height in user units, chip size and how many rows fit. */
+export const COMPACT_H = 100;
+const CHIP_W = 40;
+const CHIP_H = 22;
+export const COMPACT_ROWS = 3;
+
+/** Map size in user units, where the end nodes sit and how wide they are. */
+interface Geo { w: number; h: number; nodeW: number; compact: boolean }
+const BIG: Geo = { w: W, h: H, nodeW: NODE_W, compact: false };
+
+/** Two or three letters for a system chip (062): initials of the first two words, or the first two letters. */
+export function systemAbbr(name: string): string {
+  const words = name.split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+  if (words.length === 0) return '?';
+  const abbr = words.length > 1 ? [...words[0]!][0]! + [...words[1]!][0]! : [...words[0]!].slice(0, 2).join('');
+  return abbr.toLocaleUpperCase('sv');
+}
+
+/** Rows for the compact strip (062): the ones with most owned integrations (ties: newest), in map order,
+ * and how many owned rows did not fit. With nothing owned the first row stands alone. */
+export function pickCompactRows(counts: readonly number[], max = COMPACT_ROWS): { shown: number[]; more: number } {
+  const owned = counts.flatMap((c, i) => (c > 0 ? [i] : []));
+  if (owned.length === 0) return { shown: counts.length ? [0] : [], more: 0 };
+  const best = [...owned].sort((a, b) => counts[b]! - counts[a]! || b - a).slice(0, max);
+  return { shown: best.sort((a, b) => a - b), more: owned.length - best.length };
+}
+
+/** Row centres in the compact strip: 30 units apart around the middle. */
+export function compactYs(n: number, height: number): number[] {
+  return Array.from({ length: n }, (_, i) => height / 2 + (i - (n - 1) / 2) * 30);
+}
+
+/** Compact map width in user units for the strip's width/height ratio, so it fills the strip edge to edge. */
+export function compactWidth(aspect: number): number {
+  return Math.max(300, Math.round(COMPACT_H * aspect));
+}
 export const MAX_PACKETS = 60;
 export const HUB_TIERS = 5;
 
@@ -68,9 +104,11 @@ export function nodeTip(id: string, systems: readonly SystemDef[] = SYSTEMS): st
   return s.tagline ? `${s.name}: ”${s.tagline}”` : `${s.name} · ${s.kind}`;
 }
 
-function rowPath(y: number): string {
-  return `M ${NODE_W + 6} ${y} C ${HUB.x - 40} ${y}, ${HUB.x - 50} ${HUB.y}, ${HUB.x} ${HUB.y} ` +
-    `C ${HUB.x + 50} ${HUB.y}, ${HUB.x + 40} ${y}, ${W - NODE_W - 6} ${y}`;
+function rowPath(y: number, { w, h, nodeW }: Geo = BIG): string {
+  const x = w / 2;
+  const c = h / 2;
+  return `M ${nodeW + 6} ${y} C ${x - 40} ${y}, ${x - 50} ${c}, ${x} ${c} ` +
+    `C ${x + 50} ${c}, ${x + 40} ${y}, ${w - nodeW - 6} ${y}`;
 }
 
 interface Row {
@@ -80,6 +118,8 @@ interface Row {
   outer: SVGGElement;
   group: SVGGElement;
   lines: SVGPathElement;
+  /** The compact strip's destination chip, moved with the strip's width. */
+  dstChip: SVGGElement;
   visible: boolean;
   /** Packets per second currently emitted by this row, and how many may be live at once. */
   rate: number;
@@ -113,6 +153,16 @@ function node(x: number, systemId: string, side: 'src' | 'dst'): SVGGElement {
   return g;
 }
 
+/** A filled chip with the system's abbreviation, shown instead of the node in the compact strip (062). */
+function chip(x: number, systemId: string, side: 'src' | 'dst'): SVGGElement {
+  const g = el('g', { class: `net-chip chip-${side}`, 'data-system': systemId, transform: `translate(${x} 0)` });
+  // font-size as an attribute: 12 units is ≥ 11 px in the 96 px strip (COMPACT_H 100).
+  const text = el('text', { x: CHIP_W / 2, y: 4, 'text-anchor': 'middle', 'font-size': 12 });
+  text.textContent = systemAbbr(systemName(systemId));
+  g.append(el('rect', { x: 0, y: -CHIP_H / 2, width: CHIP_W, height: CHIP_H, rx: CHIP_H / 2 }), text);
+  return g;
+}
+
 export class NetworkView {
   readonly svg: SVGSVGElement;
   private rows: Row[] = [];
@@ -122,6 +172,12 @@ export class NetworkView {
   private booted = false;
   private tier = -1;
   private frameAcc = 0;
+  private geo: Geo = BIG;
+  private counts: number[] = [];
+  private bg: SVGRectElement;
+  private glow: SVGCircleElement;
+  private ring: SVGCircleElement;
+  private more: SVGTextElement;
   /** False while the map is scrolled out of view (IntersectionObserver); without one it is always true. */
   onScreen = true;
   /** Queried once; with reduced motion no packets travel at all. */
@@ -140,9 +196,11 @@ export class NetworkView {
     const dots = el('pattern', { id: 'netDots', width: 24, height: 24, patternUnits: 'userSpaceOnUse' });
     dots.append(el('circle', { cx: 2, cy: 2, r: 0.9, style: 'fill: var(--muted)' }));
     defs.append(grad, dots);
-    this.svg.append(defs, el('rect', { x: -24, y: -24, width: W + 48, height: H + 48, fill: 'url(#netDots)', class: 'net-bg' }),
-      el('circle', { cx: HUB.x, cy: HUB.y, r: 110, fill: 'url(#hubGlow)', class: 'hub-glow' }),
-      el('circle', { cx: HUB.x, cy: HUB.y, r: 68, class: 'hub-ring' }));
+    this.bg = el('rect', { x: -24, y: -24, width: W + 48, height: H + 48, fill: 'url(#netDots)', class: 'net-bg' });
+    this.glow = el('circle', { cx: W / 2, cy: H / 2, r: 110, fill: 'url(#hubGlow)', class: 'hub-glow' });
+    this.ring = el('circle', { cx: W / 2, cy: H / 2, r: 68, class: 'hub-ring' });
+    this.more = el('text', { class: 'net-more', 'text-anchor': 'middle', 'font-size': 11 });
+    this.svg.append(defs, this.bg, this.glow, this.ring);
 
     const lineLayer = el('g', {});
     const nodeLayer = el('g', {});
@@ -151,7 +209,7 @@ export class NetworkView {
     this.tip.setAttribute('aria-live', 'polite');
     this.tip.addEventListener('pointerenter', () => clearTimeout(this.tipTimer)); // no fading while touched
     this.tip.addEventListener('pointerleave', () => this.tipId && this.showTip(this.tipId));
-    this.svg.append(lineLayer, this.packetLayer, nodeLayer);
+    this.svg.append(lineLayer, this.packetLayer, nodeLayer, this.more);
     nodeLayer.addEventListener('click', (e) => {
       const g = (e.target as Element).closest<SVGGElement>('.net-node');
       const row = g && this.rows.find((r) => r.group.contains(g));
@@ -167,12 +225,22 @@ export class NetworkView {
       lineLayer.append(lines);
       const outer = el('g', { transform: `translate(0 ${H / 2})` });
       const group = el('g', { class: 'net-row' });
-      group.append(node(4, a.from, 'src'), node(W - NODE_W - 4, a.to, 'dst'));
+      const dstChip = chip(W - CHIP_W - 4, a.to, 'dst');
+      group.append(node(4, a.from, 'src'), node(W - NODE_W - 4, a.to, 'dst'), chip(4, a.from, 'src'), dstChip);
       outer.append(group);
       nodeLayer.append(outer);
-      this.rows.push({ id: a.id, y: H / 2, outer, group, lines, visible: false, rate: 0, budget: 0, acc: 0, len: 0 });
+      this.rows.push({ id: a.id, y: H / 2, outer, group, lines, dstChip, visible: false, rate: 0, budget: 0, acc: 0, len: 0 });
     }
-    this.layout(pickRows(this.rows.map(() => false), MAX_ROWS));
+    this.counts = this.rows.map(() => 0);
+    this.relayout();
+    // The compact strip (057) has its own layout (062): the map's size follows the hero's class and size.
+    if (typeof ResizeObserver === 'function') {
+      new ResizeObserver(() => {
+        const r = this.svg.getBoundingClientRect();
+        const compact = !!this.svg.parentElement?.classList.contains('compact') && r.height > 0;
+        this.setGeo(compact ? { w: compactWidth(r.width / r.height), h: COMPACT_H, nodeW: CHIP_W, compact } : BIG);
+      }).observe(this.svg);
+    }
     // Battery saver (049): nobody sees packets on a map that is out of view, so frame() then does nothing.
     if (typeof IntersectionObserver === 'function') {
       new IntersectionObserver((entries) => {
@@ -191,21 +259,51 @@ export class NetworkView {
     this.tipTimer = setTimeout(() => this.showTip(''), tipDurationMs(this.tip.textContent));
   }
 
+  /** Switch between the big map and the compact strip (or a new strip width) and lay the rows out again. */
+  private setGeo(geo: Geo): void {
+    const g = this.geo;
+    if (g.w === geo.w && g.h === geo.h && g.compact === geo.compact) return;
+    this.geo = geo;
+    const { w, h, compact } = geo;
+    this.svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+    this.bg.setAttribute('width', String(w + 48));
+    this.bg.setAttribute('height', String(h + 48));
+    for (const c of [this.glow, this.ring]) {
+      c.setAttribute('cx', String(w / 2));
+      c.setAttribute('cy', String(h / 2));
+    }
+    this.glow.setAttribute('r', compact ? '40' : '110');
+    this.more.setAttribute('x', String(w / 2));
+    this.more.setAttribute('y', String(h - 5));
+    for (const row of this.rows) row.dstChip.setAttribute('transform', `translate(${w - CHIP_W - 4} 0)`);
+    this.relayout();
+  }
+
+  /** Pick and place the rows for the current size from the latest integration counts. */
+  private relayout(): void {
+    if (this.geo.compact) {
+      const { shown, more } = pickCompactRows(this.counts);
+      this.more.textContent = more > 0 ? T.netMore(more) : '';
+      this.layout(shown);
+    } else {
+      this.layout(pickRows(this.counts.map((c) => c > 0), MAX_ROWS));
+    }
+  }
+
   /** Show exactly the given rows, evenly spaced; hide the rest. */
   private layout(shown: number[]): void {
-    const key = shown.join(',');
+    const geo = this.geo;
+    const key = `${geo.w}x${geo.h}:${shown.join(',')}`;
     if (key === this.layoutKey) return;
     this.layoutKey = key;
-    const ys = rowYs(shown.length, H);
+    const ys = geo.compact ? compactYs(shown.length, geo.h) : rowYs(shown.length, geo.h);
     shown.forEach((i, k) => {
       const row = this.rows[i]!;
       const y = ys[k]!;
-      if (row.y !== y) {
-        row.y = y;
-        row.lines.setAttribute('d', rowPath(y));
-        row.outer.setAttribute('transform', `translate(0 ${y})`);
-        row.len = 0;
-      }
+      row.y = y;
+      row.lines.setAttribute('d', rowPath(y, geo));
+      row.outer.setAttribute('transform', `translate(0 ${y})`);
+      row.len = 0;
     });
     const keep = new Set(shown);
     this.rows.forEach((row, i) => this.setRowVisible(row, keep.has(i)));
@@ -223,8 +321,9 @@ export class NetworkView {
 
   /** Update rows (counts and KP/s shares per automation id, see core networkFlow) and the hub tier; returns a tier gained in play. */
   update({ counts, shares, total: kps }: NetworkFlow): number | null {
-    const owned = this.rows.map((row) => (counts[row.id] ?? 0) > 0);
-    this.layout(pickRows(owned, MAX_ROWS));
+    this.counts = this.rows.map((row) => counts[row.id] ?? 0);
+    const owned = this.counts.map((c) => c > 0);
+    this.relayout();
     this.rows.forEach((row, i) => {
       const busy = owned[i]! && row.visible;
       row.lines.classList.toggle('active', busy);
