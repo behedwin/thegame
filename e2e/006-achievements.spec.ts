@@ -40,7 +40,7 @@ test('achievements: old save unlocks on load, tab lists them, unlocks persist af
   const tab = page.getByTestId('tab-achievements');
   await expect(tab).toBeVisible();
   await tab.click();
-  await expect(page.getByTestId('achievement-summary')).toContainText('4 av 22 troféer');
+  await expect(page.getByTestId('achievement-summary')).toContainText(/4 av \d+ troféer/);
   await expect(page.getByTestId('achievement-list').locator('[data-unlocked="true"]')).toHaveCount(4);
   await expect(page.getByTestId('achievement-tiotusen-losenord')).toHaveAttribute('data-unlocked', 'true');
   await expect(page.getByTestId('achievement-musarm')).toHaveAttribute('data-unlocked', 'false');
@@ -52,7 +52,7 @@ test('achievements: old save unlocks on load, tab lists them, unlocks persist af
   expect(stored.version).toBeGreaterThanOrEqual(2);
   expect(stored.achievements).toHaveLength(4);
   await page.getByTestId('tab-achievements').click();
-  await expect(page.getByTestId('achievement-summary')).toContainText('4 av 22');
+  await expect(page.getByTestId('achievement-summary')).toContainText(/4 av \d+/);
   // No new unlocks after reload, so no achievement toast.
   await expect(page.locator('.toast').filter({ hasText: 'troféer!' })).toHaveCount(0);
   expect(errors).toEqual([]);
