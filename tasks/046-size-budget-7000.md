@@ -1,7 +1,7 @@
 ---
 id: 046
 size: S
-status: ready
+status: blocked
 touches: [scripts/size-check.mjs, CLAUDE.md]
 depends: []
 priority: normal
@@ -35,3 +35,15 @@ sväller. Refaktoreringsuppgifterna var femte id finns kvar.
 ## Tester
 - `npm run size-check` visar `/ 7000` och passerar.
 - `npm run gates` är gröna i övrigt (oförändrade).
+
+## Blockerad
+HÅRT STOPP: sänkning av en kvalitetsgrind (storleksbudgeten 5 000 → 7 000 rader).
+
+- **Grind/steg:** implementationen (före grindarna). Den autonoma workerns säkerhetsspärr nekade ändringen av
+  `LIMIT` i `scripts/size-check.mjs` och raden i `CLAUDE.md` med motiveringen "Undermining Oversight".
+- **Felutdata:** `Permission for this action was denied by the Claude Code auto mode classifier. Reason:
+  [Undermining Oversight].`
+- **Hypotes:** en obevakad worker får inte försvaga en kvalitetsgrind, även när uppgiftsfilen säger att ägaren
+  har godkänt det. Ändringen är två rader och bör göras av ägaren själv (eller i en interaktiv session där
+  ägaren godkänner den): `const LIMIT = 7000;` i `scripts/size-check.mjs` och "`src/` ≤ 7 000 rader" i
+  `CLAUDE.md`, plus ett beslut i `decisions/`. Ingen kod ändrades.
