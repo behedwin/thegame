@@ -31,4 +31,5 @@ export const BALANCE = {
     intervalMs: 180_000,
     jitter: 0.25,
   },
+  morning: { coffeeMult: 1.2, standupMult: 2, standupMs: 120_000 }, // welcome-back choices (034)
 } as const;

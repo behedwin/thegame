@@ -3,7 +3,7 @@
 import { BALANCE } from '../content/balance';
 import { byId, TICKETS, type TicketChoice, type TicketDef } from '../content/registry';
 import { applyEffect, type Rng } from './events';
-import { Decimal, type GameState } from './state';
+import { Decimal, earn, type GameState } from './state';
 
 export const getTicket = byId(TICKETS);
 
@@ -68,4 +68,15 @@ export function refillInboxOffline(state: GameState, awayMs: number, rng: Rng): 
   }
   if (inbox === state.inbox) return state;
   return { ...state, inbox, nextTicketAtMs: state.timeMs + Math.max(0, due - awayMs) };
+}
+
+export const MORNING_CHOICES = ['coffee', 'inbox', 'standup'] as const;
+export type MorningChoice = (typeof MORNING_CHOICES)[number];
+
+/** Bonus for the welcome-back choice, on top of offline earnings already credited. Closing the dialog skips it. */
+export function applyMorningChoice(state: GameState, choice: MorningChoice, earned: Decimal, rng: Rng): GameState {
+  const m = BALANCE.morning;
+  if (choice === 'coffee') return earn(state, earned.mul(m.coffeeMult - 1));
+  if (choice === 'inbox') return { ...state, inbox: addTicket(state.inbox, rng) ?? state.inbox };
+  return applyEffect(state, 'morning', { kind: 'clickMult', mult: m.standupMult, durationMs: m.standupMs }).state;
 }

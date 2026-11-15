@@ -6,11 +6,11 @@ import { BALANCE } from '../content/balance';
 import { AUTOMATIONS, CUSTOMERS, systemName } from '../content/registry';
 import { T } from '../content/texts';
 import {
-  activeBuffs, answerTicket, activeSeason, applyOffline, buy, type CalendarDay, buyMerit, canPrestige, claimEvent,
+  activeBuffs, answerTicket, activeSeason, applyMorningChoice, applyOffline, buy, type CalendarDay, buyMerit, canPrestige, claimEvent,
   click, createInitialState, customersSigned, getAutomation, getEvent, kpPerClick, kpPerSecond, level, milestoneName,
   milestonesReached, newAchievements, networkFlow, nextYearSpeedupPct, pendingMerits, prestige, prestigeUnlocked,
   receiveTicket, refillInboxOffline, rollEvent, runKpForMerits, setCalendar, setSettings, type Settings, spawnEvent,
-  tick, touch, type GameState,
+  tick, touch, type GameState, MORNING_CHOICES,
 } from '../core';
 import { buyMany, BULK_MODES, resolveBulk, type BulkMode } from '../core/bulk';
 import { loadGame, saveGame, wipeGame } from '../save/storage';
@@ -246,8 +246,10 @@ export async function startApp(root: HTMLElement): Promise<void> {
         h('p', { class: 'big-line', text: T.welcomeBody(system, fmt(earned)) }),
         h('p', { class: 'muted', text: T.welcomeAway(fmtDuration(awayMs), awayMs > creditedMs, fmtDuration(creditedMs)) }),
         ...(state.inbox.length ? [h('p', { testId: 'welcome-tickets', text: T.welcomeTickets(state.inbox.length) })] : []),
+        h('p', { text: T.morning.ask }),
       ],
-      [{ label: T.welcomeOk, primary: true, testId: 'welcome-ok' }],
+      MORNING_CHOICES.map((c, i) => ({ label: T.morning[c], primary: !i, testId: i ? `welcome-${c}` : 'welcome-ok',
+        onClick: () => ((state = applyMorningChoice(state, c, earned, Math.random)), persist(), render()) })),
       'welcome-dialog',
     );
     sfx.fanfare();
@@ -331,7 +333,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
     const buffs = activeBuffs(state);
     if (buffs.length) {
       const b = buffs[0]!;
-      buffEl.textContent = T.buffActive(b.mult, Math.ceil((b.untilMs - state.timeMs) / 1000));
+      buffEl.textContent = T.buffActive(b.mult, Math.ceil((b.untilMs - state.timeMs) / 1000), b.kind === 'clickMult');
       buffEl.hidden = false;
     } else buffEl.hidden = true;
 
