@@ -4,7 +4,7 @@ import { getFocus } from '../core/focus';
 import { getTicket } from '../core/tickets';
 import { type Buff, createInitialState, Decimal, DEFAULT_FOCUS, DEFAULT_VOLUME, type GameState } from '../core/state';
 
-export const SAVE_VERSION = 10;
+export const SAVE_VERSION = 11;
 
 /** Raw JSON shape. Unknown on purpose: anything may come out of storage. */
 export type RawSave = { version: number; [key: string]: unknown };
@@ -42,6 +42,8 @@ export const MIGRATIONS: Record<number, Migration> = {
   8: (s) => ({ ...s, version: 9, focus: DEFAULT_FOCUS }),
   // v10 (task 056): last seen version. Unknown (0), so the app stores the current build and shows no news.
   9: (s) => ({ ...s, version: 10, lastSeenVersion: 0 }),
+  // v11 (task 068): focuses played. Earlier years are unknown, so the list starts empty.
+  10: (s) => ({ ...s, version: 11, focusesPlayed: [] }),
 };
 
 export class SaveError extends Error {}
@@ -159,6 +161,7 @@ export function deserialize(text: string, nowMs: number): GameState {
     ticketsAnswered: num(s.ticketsAnswered, 0),
     tipsSeen: uniqueStrings(s.tipsSeen),
     focus: typeof s.focus === 'string' && getFocus(s.focus) ? s.focus : DEFAULT_FOCUS,
+    focusesPlayed: uniqueStrings(s.focusesPlayed).filter((id) => id !== DEFAULT_FOCUS && getFocus(id)),
     lastSeenVersion: Number.isInteger(s.lastSeenVersion) && (s.lastSeenVersion as number) > 0 ? (s.lastSeenVersion as number) : 0,
     settings: {
       sound: bool(settings.sound, d.settings.sound),

@@ -40,5 +40,11 @@ export const focusCooldownMult = (state: Focused): number => product(effectsOf(s
 /** Production factor per reached milestone: BALANCE.milestoneMult unless the focus replaces it. */
 export const milestoneMultOf = (state: Focused): number => effectsOf(state, 'milestoneMult').at(-1)?.mult ?? BALANCE.milestoneMult;
 
+/** focusesPlayed after the running school year ends: the running focus added once, never the default (068). */
+export function withFocusPlayed(state: Pick<GameState, 'focus' | 'focusesPlayed'>): string[] {
+  const id = currentFocus(state).id;
+  return id === DEFAULT_FOCUS || state.focusesPlayed.includes(id) ? state.focusesPlayed : [...state.focusesPlayed, id];
+}
+
 /** Merit factor at the next "Nytt läsår": a bonus for trying anything but the default. */
 export const focusMeritMult = (state: Focused): number => (currentFocus(state).effects.length > 0 ? BALANCE.focus.meritBonus : 1);

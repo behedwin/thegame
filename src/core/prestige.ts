@@ -1,6 +1,6 @@
 // "Nytt läsår" (prestige): when it unlocks, what it resets and what it keeps. Pure, like actions.ts.
 import { MERITS, type AutomationDef, type ChapterDef, type FocusDef } from '../content/registry';
-import { focusesForYear } from './focus';
+import { focusesForYear, withFocusPlayed } from './focus';
 import { chapterFor } from './goal';
 import { bestYearEarned, customersSigned, pendingMerits, runKpForMerits } from './rules';
 import { Decimal, DEFAULT_FOCUS, level, totalLevels, type GameState } from './state';
@@ -44,6 +44,7 @@ export function prestige(state: GameState): GameState {
     merits: state.merits.add(gained),
     meritsEarned: state.meritsEarned.add(gained),
     prestiges: state.prestiges + 1,
+    focusesPlayed: withFocusPlayed(state),
     focus: DEFAULT_FOCUS, // the player picks the new year's focus right after (053)
     calendar: state.calendar ?? null,
   };
