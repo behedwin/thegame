@@ -1,7 +1,7 @@
 ---
 id: 073
 size: S
-status: ready
+status: done
 priority: normal
 changelog: "Maxade uppgraderingar samlas längst ned så att det du kan köpa står först."
 touches: [src/ui/shop.ts, src/ui/style.css, src/content/texts.ts]
