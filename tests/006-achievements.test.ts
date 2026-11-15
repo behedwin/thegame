@@ -20,9 +20,9 @@ import { deserialize, migrate, MIGRATIONS, SAVE_VERSION, serialize } from '../sr
 const fresh = () => createInitialState(1_000);
 
 describe('achievement content', () => {
-  it('has exactly 24 achievements with unique order and Swedish texts', () => {
-    expect(ACHIEVEMENTS).toHaveLength(24);
-    expect(new Set(ACHIEVEMENTS.map((a) => a.order)).size).toBe(24);
+  it('has exactly 27 achievements with unique order and Swedish texts', () => {
+    expect(ACHIEVEMENTS).toHaveLength(27);
+    expect(new Set(ACHIEVEMENTS.map((a) => a.order)).size).toBe(27);
     for (const a of ACHIEVEMENTS) {
       expect(a.name.trim(), a.id).not.toBe('');
       expect(a.desc.trim(), a.id).not.toBe('');
@@ -62,6 +62,7 @@ describe('conditions', () => {
       automations: Object.fromEntries(AUTOMATIONS.map((a) => [a.id, 300])),
       upgrades: Object.fromEntries(UPGRADES.map((u) => [u.id, u.maxLevel])),
       eventsClaimed: 1000,
+      bestEventStreak: 1000,
       ticketsAnswered: 1000,
       prestiges: 10,
       focusesPlayed: FOCUSES.filter((f) => f.effects.length > 0).map((f) => f.id),
