@@ -1,5 +1,7 @@
 ---
+id: p-fold-maxed-merits
 size: S
+status: proposed
 touches: [src/ui/shop.ts, src/ui/prestige.ts, src/ui/style.css]
 depends: [073]
 ---
