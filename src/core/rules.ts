@@ -64,8 +64,13 @@ export function automationCostFactor(state: GameState): number {
   return f;
 }
 
-/** Base price of an automation's first unit after merit discounts. */
-export const automationBaseCost = (state: GameState, def: AutomationDef): number => def.baseCost * automationCostFactor(state);
+/**
+ * Base prices after merit discounts and the school-year focus. The single source for both costOf() and
+ * bulk buying (bulk.ts), so the shown price and the price actually paid can never drift apart.
+ */
+export const automationBaseCost = (state: GameState, def: AutomationDef): number =>
+  def.baseCost * automationCostFactor(state) * focusCostMult(state, true);
+export const upgradeBaseCost = (state: GameState, def: { baseCost: number }): number => def.baseCost * focusCostMult(state, false);
 
 /** Time between a claimed/expired event and the next possible one. */
 export function eventCooldownMs(state: GameState): number {
@@ -169,10 +174,10 @@ export function costOf(state: GameState, id: string): Decimal {
   const auto = getAutomation(id);
   if (auto) {
     const owned = level(state.automations, id);
-    return new Decimal(automationBaseCost(state, auto) * focusCostMult(state, true)).mul(Decimal.pow(BALANCE.automationCostGrowth, owned)).ceil();
+    return new Decimal(automationBaseCost(state, auto)).mul(Decimal.pow(BALANCE.automationCostGrowth, owned)).ceil();
   }
   const up = getUpgrade(id);
-  if (up) return new Decimal(up.baseCost * focusCostMult(state, false)).mul(Decimal.pow(up.costGrowth, level(state.upgrades, id))).ceil();
+  if (up) return new Decimal(upgradeBaseCost(state, up)).mul(Decimal.pow(up.costGrowth, level(state.upgrades, id))).ceil();
   throw new Error(`Unknown item: ${id}`);
 }
 

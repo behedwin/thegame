@@ -164,7 +164,10 @@ export function simulateSeed(seed: number, durationSec: number): SeedResult {
             }
           }
           if (!best) break;
-          s = buy(s, best);
+          const bought = buy(s, best);
+          // canBuy said yes but buy refused: a core bug. Stop instead of spinning 100 no-op buys per second.
+          if (bought === s) throw new Error(`seed ${seed} t=${t}: canBuy(${best}) but buy() refused`);
+          s = bought;
           r.purchases++;
           if (t <= 600) purchasesFirst10++;
           r.firstPurchaseSec ??= t;
