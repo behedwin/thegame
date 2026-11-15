@@ -1,7 +1,7 @@
 ---
 id: 064
 size: S
-status: ready
+status: done
 touches: [src/content/types.ts, src/core/achievements.ts, src/content/achievements/]
 depends: []
 priority: normal
