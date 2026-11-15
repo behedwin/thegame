@@ -209,6 +209,9 @@ export function pendingMerits(state: GameState): Decimal {
   return state.runEarned.div(divisor).pow(exponent).floor();
 }
 
+/** Most KP earned in one school year, counting the running one. */
+export const bestYearEarned = (state: GameState): Decimal => Decimal.max(state.bestRunEarned, state.runEarned);
+
 /** KP this school year needed to reach `merits` pending Meriter. */
 export function runKpForMerits(merits: number): Decimal {
   const { divisor, exponent } = BALANCE.prestige;

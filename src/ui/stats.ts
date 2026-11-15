@@ -2,7 +2,7 @@
 // game state on open; every value shown is already part of the save.
 import { ACHIEVEMENTS } from '../content/registry';
 import { T } from '../content/texts';
-import { Decimal, type GameState } from '../core';
+import { bestYearEarned, type GameState } from '../core';
 import { h, showDialog } from './dialogs';
 import { fmt, fmtDuration } from './format';
 
@@ -14,7 +14,7 @@ export function statRows(state: GameState): StatRow[] {
   return [
     { label: T.stats.totalEarned, value: kp(state.totalEarned) },
     { label: T.stats.thisYear, value: kp(state.runEarned) },
-    { label: T.stats.bestYear, value: kp(Decimal.max(state.bestRunEarned, state.runEarned)) },
+    { label: T.stats.bestYear, value: kp(bestYearEarned(state)) },
     { label: T.stats.purchases, value: fmt(state.purchases) },
     { label: T.stats.clicks, value: fmt(state.clicks) },
     { label: T.stats.events, value: fmt(state.eventsClaimed) },

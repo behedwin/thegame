@@ -4,6 +4,7 @@ import { checkAchievements } from './achievements';
 import { buyMany } from './bulk';
 import {
   baseKps,
+  bestYearEarned,
   canBuyMerit,
   eventCooldownMs,
   kpPerClick,
@@ -14,7 +15,7 @@ import {
   runKpForMerits,
   withMeritLevel,
 } from './rules';
-import { createInitialState, Decimal, earn, level, type GameState } from './state';
+import { Decimal, earn, level, type GameState } from './state';
 
 /** Advance game time by dtMs: production, buff and event expiry, achievement unlocks. */
 export function tick(state: GameState, dtMs: number): GameState {
@@ -57,11 +58,10 @@ export function prestigeUnlocked(state: GameState): boolean {
   return state.prestiges > 0 || state.runEarned.gte(runKpForMerits(1).mul(0.25));
 }
 
-/** "Nytt läsår": reset the run, keep merits, merit upgrades, totals and settings. */
+/** "Nytt läsår": reset the run; keep merits, lifetime totals, events, tickets and settings. */
 export function prestige(state: GameState): GameState {
   if (!canPrestige(state)) return state;
   const gained = pendingMerits(state);
-  const fresh = createInitialState(state.lastSeenMs);
   const automations: Record<string, number> = {};
   for (const m of MERITS) {
     const lvl = level(state.meritUpgrades, m.id);
@@ -70,24 +70,18 @@ export function prestige(state: GameState): GameState {
     }
   }
   return {
-    ...fresh,
+    ...state,
+    kp: new Decimal(0),
+    runEarned: new Decimal(0),
+    upgrades: {},
     automations,
-    totalEarned: state.totalEarned,
-    bestRunEarned: Decimal.max(state.bestRunEarned, state.runEarned),
-    purchases: state.purchases,
+    activeEvent: null,
+    buffs: [],
+    tipsSeen: [], // tips only show in the first school year, so this changes nothing visible
+    bestRunEarned: bestYearEarned(state),
     merits: state.merits.add(gained),
     meritsEarned: state.meritsEarned.add(gained),
-    meritUpgrades: state.meritUpgrades,
     prestiges: state.prestiges + 1,
-    clicks: state.clicks,
-    timeMs: state.timeMs,
-    nextEventAtMs: state.nextEventAtMs,
-    eventsClaimed: state.eventsClaimed,
-    achievements: state.achievements,
-    inbox: state.inbox,
-    nextTicketAtMs: state.nextTicketAtMs,
-    ticketsAnswered: state.ticketsAnswered,
-    settings: state.settings,
     calendar: state.calendar ?? null,
   };
 }
