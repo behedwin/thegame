@@ -5,5 +5,5 @@ export default {
   name: 'Götebörs grundskoleförvaltning',
   kind: 'kommun',
   atRunKp: 60_000_000,
-  effect: { kind: 'prodPct', pct: 3 },
+  effect: { kind: 'prodPct', pct: 10 },
 } satisfies CustomerDef;

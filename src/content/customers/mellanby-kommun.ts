@@ -5,5 +5,5 @@ export default {
   name: 'Linjeköpings kommun',
   kind: 'kommun',
   atRunKp: 1000,
-  effect: { kind: 'prodPct', pct: 2 },
+  effect: { kind: 'prodPct', pct: 10 },
 } satisfies CustomerDef;
