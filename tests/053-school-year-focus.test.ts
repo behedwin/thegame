@@ -166,8 +166,8 @@ describe('053 school-year focus: effects', () => {
 });
 
 describe('053 school-year focus: save', () => {
-  it('a save from the previous version gets the default focus', () => {
-    const migrated = migrate({ version: SAVE_VERSION - 1, kp: '5' });
+  it('a v8 save gets the default focus', () => {
+    const migrated = migrate({ version: 8, kp: '5' });
     expect(migrated.focus).toBe(DEFAULT_FOCUS);
     expect(migrated.version).toBe(SAVE_VERSION);
   });

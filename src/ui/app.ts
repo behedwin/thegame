@@ -31,6 +31,8 @@ import { renderInboxButton, showTicket } from './inbox';
 import { helpHooks } from './help';
 import { markTipSeen, nextTip, settleTips, TipBar, tourNext, TOUR, type TourStep } from './onboarding';
 import { showWelcome } from './welcome';
+import { NewsBar } from './changelog';
+import { build } from 'virtual:changelog';
 
 const GEAR = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3h-4l-.4 2.9a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.4 7.4 0 0 0 1.7 1L11 21h4l.4-2.9a7.4 7.4 0 0 0 1.7-1l2.5 1 2-3.5zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg>';
 const SYNC = '<svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true"><path fill="currentColor" d="M12 4V1L8 5l4 4V6a6 6 0 0 1 5.7 7.9l1.5 1.5A8 8 0 0 0 12 4zm0 14a6 6 0 0 1-5.7-7.9L4.8 8.6A8 8 0 0 0 12 20v3l4-4-4-4z"/></svg>';
@@ -78,6 +80,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
   );
   helpHooks.replay = () => ((tour = TOUR[0]), render());
   const customers = new CustomerRow(() => state);
+  const newsBar = new NewsBar((v) => ((state = { ...state, lastSeenVersion: v }), commit()));
 
   const tabButtons = {} as Record<Tab, HTMLElement>;
   for (const t of TABS) tabButtons[t] = h('button', { class: 'tab', attrs: { role: 'tab' }, text: T.tabs[t], testId: `tab-${t}` });
@@ -108,7 +111,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
 
   const tabsNav = h('nav', { class: 'tabs', attrs: { role: 'tablist', 'aria-label': T.a11y.tabsAria } }, ...Object.values(tabButtons));
   const top = h('header', { class: 'top' }, h('div', { class: 'brand', text: T.title }), inboxBtn, settingsBtn);
-  root.replaceChildren(h('div', { class: 'app' }, top, hud.host, hero, tips.host, customers.host, tabsNav, panel));
+  root.replaceChildren(h('div', { class: 'app' }, top, newsBar.host, hud.host, hero, tips.host, customers.host, tabsNav, panel));
   tips.marks = { sync: hub, buy: panel, event: eventSlot, help: settingsBtn };
 
   // ---------- Actions ----------
@@ -215,13 +218,14 @@ export async function startApp(root: HTMLElement): Promise<void> {
     if (save) commit();
   }
 
-  function resume(nowMs: number): void {
+  /** Offline catch-up. `news` (056, on start only) goes into the welcome dialog when it shows; returns whether it did. */
+  function resume(nowMs: number, news?: () => HTMLElement): boolean {
     const r = applyOffline(state, nowMs);
     state = refillInboxOffline(r.state, r.awayMs, Math.random);
-    if (r.creditedMs >= BALANCE.offline.dialogMinMs && r.earned.gt(0)) {
-      const earned = r.earned;
-      showWelcome(state, earned, r.awayMs, r.creditedMs, (c) => ((state = applyMorningChoice(state, c, earned, Math.random)), commit()));
-    }
+    if (r.creditedMs < BALANCE.offline.dialogMinMs || !r.earned.gt(0)) return false;
+    const earned = r.earned;
+    showWelcome(state, earned, r.awayMs, r.creditedMs, (c) => ((state = applyMorningChoice(state, c, earned, Math.random)), commit()), news?.());
+    return true;
   }
 
   // ---------- Rendering ----------
@@ -344,7 +348,10 @@ export async function startApp(root: HTMLElement): Promise<void> {
   syncFeedbackSettings();
   void cancelNotifications();
   if (loaded.error) toast(T.saveError);
-  if (loaded.state) resume(Date.now());
+  if (loaded.state) {
+    const news = newsBar.load(state.lastSeenVersion).length > 0;
+    if (!resume(Date.now(), news ? () => newsBar.line() : undefined) && news) newsBar.showBar();
+  } else state = { ...state, lastSeenVersion: build };
   render();
   requestAnimationFrame(frame);
 }
