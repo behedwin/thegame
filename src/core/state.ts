@@ -71,6 +71,9 @@ export interface GameState {
   /** Game time when the next ticket may arrive. */
   nextTicketAtMs: number;
   ticketsAnswered: number;
+  /** Events solved and tickets answered in the running school year (076). Reset by prestige(). */
+  yearEvents: number;
+  yearTickets: number;
   /** Onboarding tip ids already shown and finished. A tip is never shown again once here. */
   tipsSeen: string[];
   settings: Settings;
@@ -113,6 +116,8 @@ export function createInitialState(nowMs: number): GameState {
     inbox: [],
     nextTicketAtMs: BALANCE.tickets.firstAtMs,
     ticketsAnswered: 0,
+    yearEvents: 0,
+    yearTickets: 0,
     tipsSeen: [],
     focus: DEFAULT_FOCUS,
     focusesPlayed: [],

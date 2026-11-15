@@ -1,7 +1,7 @@
 ---
 id: 076
 size: M
-status: ready
+status: done
 priority: normal
 changelog: "Återblicken vid Nytt läsår visar hur många event och ärenden du tog hand om."
 touches: [src/core/state.ts, src/core/prestige.ts, src/core/events.ts, src/core/tickets.ts, src/save/, src/ui/prestige.ts, src/content/texts.ts]

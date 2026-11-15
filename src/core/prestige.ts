@@ -44,6 +44,8 @@ export function prestige(state: GameState): GameState {
     merits: state.merits.add(gained),
     meritsEarned: state.meritsEarned.add(gained),
     prestiges: state.prestiges + 1,
+    yearEvents: 0,
+    yearTickets: 0,
     focusesPlayed: withFocusPlayed(state),
     focus: DEFAULT_FOCUS, // the player picks the new year's focus right after (053)
     calendar: state.calendar ?? null,
@@ -56,6 +58,9 @@ export interface YearSummary {
   customers: number;
   integrations: number;
   merits: Decimal;
+  /** Events solved and tickets answered this year (076). */
+  events: number;
+  tickets: number;
   /** True when this year beat every earlier one. */
   bestYear: boolean;
 }
@@ -66,6 +71,8 @@ export const yearSummary = (state: GameState): YearSummary => ({
   customers: customersSigned(state),
   integrations: totalLevels(state.automations),
   merits: pendingMerits(state),
+  events: state.yearEvents,
+  tickets: state.yearTickets,
   bestYear: state.runEarned.gt(state.bestRunEarned),
 });
 
