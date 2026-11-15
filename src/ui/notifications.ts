@@ -15,18 +15,10 @@ let generation = 0;
 /** Local hour a season notification fires on its first day: daytime, never at night. */
 export const SEASON_NOTIFY_HOUR = 10;
 
-export interface PlannedNotification {
-  id: number;
-  atMs: number;
-  title: string;
-  body: string;
-}
+export interface PlannedNotification { id: number; atMs: number; title: string; body: string }
 
 /** The first season start strictly after nowMs (local time), looking up to five years ahead for 29 Feb. */
-export function nextSeasonStart(
-  nowMs: number,
-  seasons: readonly SeasonDef[] = SEASONS,
-): { season: SeasonDef; atMs: number } | null {
+export function nextSeasonStart(nowMs: number, seasons: readonly SeasonDef[] = SEASONS): { season: SeasonDef; atMs: number } | null {
   const year = new Date(nowMs).getFullYear();
   let best: { season: SeasonDef; atMs: number } | null = null;
   for (const season of seasons) {

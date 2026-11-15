@@ -52,34 +52,13 @@ export function settleTips(state: GameState, shown: TipId | null): GameState {
   return markTipSeen(state, shown);
 }
 
-/** The tip bubble. Styles are inline so the feature lives in one file. */
+/** The tip bubble (styles in style.css, `.tip`). */
 export class TipBar {
-  readonly host = h('div', {
-    testId: 'tip',
-    attrs: {
-      role: 'status',
-      'aria-label': T.tips.aria,
-      hidden: '',
-      style:
-        'display:none;align-items:center;gap:8px;margin:8px 0 0;padding:8px 10px 8px 14px;border-radius:12px;' +
-        'background:var(--surface2);color:var(--text);font-size:13px;line-height:1.35',
-    },
-  });
-  private readonly text = h('span', { testId: 'tip-text', attrs: { style: 'flex:1' } });
-  private readonly off = h('button', {
-    testId: 'tip-off',
-    text: T.tips.off,
-    attrs: { style: 'border:0;background:transparent;color:var(--muted);font-size:12px;text-decoration:underline;padding:6px 4px' },
-  });
-  private readonly close = h('button', {
-    testId: 'tip-close',
-    text: '×',
-    attrs: { 'aria-label': T.tips.close, style: 'border:0;background:transparent;color:var(--muted);font-size:20px;line-height:1;padding:4px 8px' },
-  });
-  private readonly next = h('button', {
-    testId: 'tip-next',
-    attrs: { hidden: '', style: 'border:0;border-radius:8px;background:var(--accent);color:var(--accent-ink);font-size:13px;padding:6px 12px' },
-  });
+  readonly host = h('div', { class: 'tip', testId: 'tip', attrs: { role: 'status', 'aria-label': T.tips.aria, hidden: '' } });
+  private readonly text = h('span', { class: 'tip-text', testId: 'tip-text' });
+  private readonly off = h('button', { class: 'tip-off', testId: 'tip-off', text: T.tips.off });
+  private readonly close = h('button', { class: 'tip-close', testId: 'tip-close', text: '×', attrs: { 'aria-label': T.tips.close } });
+  private readonly next = h('button', { class: 'tip-next', testId: 'tip-next', attrs: { hidden: '' } });
   /** The regular tip on screen, and the tour step on screen. */
   shown: TipId | null = null;
   step: TourStep | null = null;
@@ -102,14 +81,9 @@ export class TipBar {
     this.off.hidden = !!step;
     this.next.textContent = step === TOUR.at(-1) ? T.tips.done : T.tips.next;
     const key = step ?? tip;
-    if (key) {
-      this.text.textContent = step ? T.tips.tour[step] : T.tips[tip!];
-      this.host.dataset.tip = key;
-      this.host.hidden = false;
-      this.host.style.display = 'flex';
-    } else {
-      this.host.hidden = true;
-      this.host.style.display = 'none';
-    }
+    this.host.hidden = !key;
+    if (!key) return;
+    this.text.textContent = step ? T.tips.tour[step] : T.tips[tip!];
+    this.host.dataset.tip = key;
   }
 }

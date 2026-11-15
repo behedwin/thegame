@@ -99,9 +99,7 @@ export const sfx = {
 
 export function haptic(strength: 'light' | 'medium' = 'light'): void {
   if (!vibrationOn) return;
-  Haptics.impact({ style: strength === 'light' ? ImpactStyle.Light : ImpactStyle.Medium }).catch(() => {
-    /* not supported: ignore */
-  });
+  Haptics.impact({ style: strength === 'light' ? ImpactStyle.Light : ImpactStyle.Medium }).catch(() => undefined); // not supported: ignore
 }
 
 /** Floating "+12" that rises from a point and fades. */

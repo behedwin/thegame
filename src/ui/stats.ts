@@ -6,10 +6,7 @@ import type { GameState } from '../core';
 import { h, showDialog } from './dialogs';
 import { fmt, fmtDuration } from './format';
 
-export interface StatRow {
-  label: string;
-  value: string;
-}
+export interface StatRow { label: string; value: string }
 
 /** The rows of the stats page. Pure, so it can be tested without a DOM. */
 export function statRows(state: GameState): StatRow[] {
@@ -26,12 +23,9 @@ export function statRows(state: GameState): StatRow[] {
   ];
 }
 
-// Inline layout keeps the change inside this file (no shared stylesheet edits).
-const ROW_STYLE = 'display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid var(--surface2)';
-
 export function showStats(state: GameState): void {
   const rows = statRows(state).map((r, i) =>
-    h('div', { class: 'stat-row', testId: `stat-${i}`, attrs: { style: ROW_STYLE } }, h('span', { text: r.label }), h('strong', { text: r.value })),
+    h('div', { class: 'stat-row', testId: `stat-${i}` }, h('span', { text: r.label }), h('strong', { text: r.value })),
   );
   showDialog(
     T.stats.title,

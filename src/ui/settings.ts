@@ -47,10 +47,7 @@ export function openSettings(host: SettingsHost): void {
     attrs: { type: 'range', min: '0', max: '100', step: '5', value: String(Math.round(host.state().settings.volume * 100)), 'aria-label': T.settings.volume, style: 'width:100%' },
   });
   slider.addEventListener('input', () => host.apply({ volume: Number(slider.value) / 100 }, false));
-  slider.addEventListener('change', () => {
-    sfx.buy();
-    host.apply({}, true);
-  });
+  slider.addEventListener('change', () => (sfx.buy(), host.apply({}, true)));
   const [help, stats, wipe] = [button(T.help.open, 'open-help'), button(T.stats.open, 'open-stats'), button(T.settings.wipe, 'wipe', 'btn danger wide')];
   help.addEventListener('click', showHelp);
   stats.addEventListener('click', () => showStats(host.state()));
