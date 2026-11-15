@@ -1,7 +1,7 @@
 // Prestige tab: merits owned and pending, next-year preview, the prestige button and the merit shop.
 import { T } from '../content/texts';
 import { BALANCE } from '../content/balance';
-import { canPrestige, chaptersRead, connectedMunicipalities, nextYearMunicipalities, nextUnlock, nextYearSpeedupPct, pendingMerits, runKpForMerits, schoolYear, yearStart, yearSummary, type GameState } from '../core';
+import { canPrestige, chaptersRead, DEFAULT_FOCUS, connectedMunicipalities, nextYearMunicipalities, nextUnlock, nextYearSpeedupPct, pendingMerits, runKpForMerits, schoolYear, yearStart, yearSummary, type GameState } from '../core';
 import type { FocusDef } from '../content/types';
 import { toast } from './feedback';
 import { h, showDialog } from './dialogs';
@@ -9,6 +9,9 @@ import { addChapter } from './celebrate';
 import { focusLines } from './effects';
 import { fmt } from './format';
 import { ShopList } from './shop';
+
+/** A focus the player has not played a whole school year yet; never the default (072). */
+export const isUntriedFocus = (id: string, played: readonly string[]): boolean => id !== DEFAULT_FOCUS && !played.includes(id);
 
 export class PrestigeView {
   readonly merits: ShopList;
@@ -52,18 +55,19 @@ export class PrestigeView {
     const { chapter, unlocked, focuses } = yearStart(schoolYear(state()));
     if (chapter) addChapter(chapter.title, chapter.text);
     if (unlocked.length > 0) toast(T.prestige.unlocked(unlocked.map((a) => a.name).join(', ')), 'good');
-    this.pickFocus(focuses);
+    this.pickFocus(focuses, state().focusesPlayed);
   }
 
   /**
    * Let the player pick this school year's focus (053). It opens under the year transition, so it is seen
    * once that closes. Closing it keeps the default focus: no time limit, nothing lost.
    */
-  private pickFocus(options: FocusDef[]): void {
+  private pickFocus(options: FocusDef[], played: readonly string[]): void {
     if (options.length < 2) return;
     let close = (): void => {};
     const buttons = options.map((f) => {
-      const b = h('button', { class: 'btn wide focus-opt', testId: `focus-${f.id}` }, h('strong', { text: f.name }), h('br'), h('small', { text: focusLines(f).join(' · ') }));
+      const b = h('button', { class: 'btn wide focus-opt', testId: `focus-${f.id}` }, h('strong', { text: f.name }),
+        ...(isUntriedFocus(f.id, played) ? [' · ', h('small', { class: 'muted', testId: 'focus-untried', text: T.focus.untried })] : []), h('br'), h('small', { text: focusLines(f).join(' · ') }));
       b.style.textAlign = 'left';
       b.addEventListener('click', () => (close(), this.chooseFocus(f.id)));
       return b;

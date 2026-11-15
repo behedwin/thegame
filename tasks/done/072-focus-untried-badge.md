@@ -1,7 +1,7 @@
 ---
 id: 072
 size: S
-status: ready
+status: done
 priority: normal
 changelog: "Vid nytt läsår ser du vilka inriktningar du inte har provat än."
 touches: [src/ui/prestige.ts, src/content/texts.ts]

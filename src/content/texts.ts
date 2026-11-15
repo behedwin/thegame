@@ -148,6 +148,8 @@ export const T = {
     aria: (name: string) => `Läsårets inriktning: ${name}. Tryck för detaljer.`,
     meritBonus: `+${num((BALANCE.focus.meritBonus - 1) * 100)} % Meriter vid nästa nytt läsår`,
     none: 'Inga ändringar',
+    /** Badge in the focus picker on focuses not yet played a whole school year (072). */
+    untried: 'Inte provad',
     close: 'Stäng',
     /** One rule change; `names` are the targeted integrations ('' for all). */
     effect: (e: FocusEffect, names: string): string =>
