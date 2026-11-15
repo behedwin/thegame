@@ -1,6 +1,6 @@
 // Bulk buying (×1 / ×10 / MAX). Pure: never mutates the input state.
 import { BALANCE } from '../content/balance';
-import { automationBaseCost, getAutomation, getUpgrade } from './rules';
+import { automationBaseCost, getAutomation, getUpgrade, upgradeBaseCost } from './rules';
 import { Decimal, level, type GameState } from './state';
 import { isUnlocked } from './unlocks';
 
@@ -29,7 +29,7 @@ function curve(state: GameState, id: string): Curve | null {
   const up = getUpgrade(id);
   if (up) {
     const owned = level(state.upgrades, id);
-    return { base: up.baseCost, growth: up.costGrowth, owned, remaining: Math.max(0, up.maxLevel - owned) };
+    return { base: upgradeBaseCost(state, up), growth: up.costGrowth, owned, remaining: Math.max(0, up.maxLevel - owned) };
   }
   return null;
 }
