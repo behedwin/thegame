@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ACHIEVEMENTS, AUTOMATIONS, CUSTOMERS, UPGRADES } from '../src/content/registry';
+import { ACHIEVEMENTS, AUTOMATIONS, CUSTOMERS, FOCUSES, UPGRADES } from '../src/content/registry';
 import {
   ACHIEVEMENT_PROD_PCT,
   achievementProdMult,
@@ -20,9 +20,9 @@ import { deserialize, migrate, MIGRATIONS, SAVE_VERSION, serialize } from '../sr
 const fresh = () => createInitialState(1_000);
 
 describe('achievement content', () => {
-  it('has exactly 22 achievements with unique order and Swedish texts', () => {
-    expect(ACHIEVEMENTS).toHaveLength(22);
-    expect(new Set(ACHIEVEMENTS.map((a) => a.order)).size).toBe(22);
+  it('has exactly 24 achievements with unique order and Swedish texts', () => {
+    expect(ACHIEVEMENTS).toHaveLength(24);
+    expect(new Set(ACHIEVEMENTS.map((a) => a.order)).size).toBe(24);
     for (const a of ACHIEVEMENTS) {
       expect(a.name.trim(), a.id).not.toBe('');
       expect(a.desc.trim(), a.id).not.toBe('');
@@ -64,6 +64,7 @@ describe('conditions', () => {
       eventsClaimed: 1000,
       ticketsAnswered: 1000,
       prestiges: 10,
+      focusesPlayed: FOCUSES.filter((f) => f.effects.length > 0).map((f) => f.id),
     };
     for (const a of ACHIEVEMENTS) expect(isMet(big, a.condition), a.id).toBe(true);
   });

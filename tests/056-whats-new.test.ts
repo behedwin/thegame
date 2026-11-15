@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { build } from 'virtual:changelog';
 import { createInitialState } from '../src/core';
-import { deserialize, migrate, SAVE_VERSION, serialize } from '../src/save/format';
+import { deserialize, migrate, MIGRATIONS, SAVE_VERSION, serialize } from '../src/save/format';
 import { newsSince } from '../src/ui/changelog';
 
 const list = [
@@ -42,8 +42,8 @@ describe('lastSeenVersion in the save', () => {
 
   it('migration v9 → v10 marks the version as unknown, which the app treats as the current one', () => {
     const old = { version: 9, kp: '5', focus: 'normal' };
-    const m = migrate(old);
-    expect(SAVE_VERSION).toBe(10);
+    const m = migrate(old, MIGRATIONS, 10);
+    expect(SAVE_VERSION).toBeGreaterThanOrEqual(10);
     expect(m.version).toBe(10);
     expect(m.lastSeenVersion).toBe(0);
     expect(newsSince(list, Number(m.lastSeenVersion), 60)).toEqual([]);

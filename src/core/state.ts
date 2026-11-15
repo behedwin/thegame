@@ -70,6 +70,8 @@ export interface GameState {
   settings: Settings;
   /** School-year focus id (053, src/content/focuses/). Reset to the default every new school year. */
   focus: string;
+  /** Non-default focuses played for a whole school year (068), first-played order. Added by prestige(). */
+  focusesPlayed: string[];
   /**
    * Build number (the "54" in "1.54") whose news the player has seen (056). 0 means unknown (new game or
    * a save from before 056): the UI then just stores the current build and shows no news.
@@ -104,6 +106,7 @@ export function createInitialState(nowMs: number): GameState {
     ticketsAnswered: 0,
     tipsSeen: [],
     focus: DEFAULT_FOCUS,
+    focusesPlayed: [],
     lastSeenVersion: 0,
     settings: { sound: true, vibration: true, volume: DEFAULT_VOLUME, notifyOfflineCap: false, notifySeason: false, tips: true, notation: 'short' },
   };

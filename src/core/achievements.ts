@@ -27,6 +27,8 @@ export function isMet(state: GameState, c: AchievementCondition): boolean {
       return state.prestiges >= c.n;
     case 'ticketsAnswered':
       return state.ticketsAnswered >= c.n;
+    case 'focusesPlayed':
+      return state.focusesPlayed.length >= c.n;
   }
 }
 
@@ -54,6 +56,8 @@ function count(state: GameState, c: AchievementCondition): number | null {
       return state.prestiges;
     case 'ticketsAnswered':
       return state.ticketsAnswered;
+    case 'focusesPlayed':
+      return state.focusesPlayed.length;
     default:
       return null;
   }
