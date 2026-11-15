@@ -5,11 +5,32 @@ import { getTicket, type GameState } from '../core';
 import { h, showDialog } from './dialogs';
 import { effectLine } from './effects';
 
-/** Show the oldest unanswered ticket. Returns false if the inbox is empty. */
+/** The lifetime count of solved tickets, shown in the empty inbox. Null before the first answer. */
+export const inboxArchiveLine = (state: GameState): string | null =>
+  state.ticketsAnswered > 0 ? T.inbox.archive(state.ticketsAnswered) : null;
+
+/** Empty inbox after the first answer: a small dialog with the archive line instead of a toast. */
+function showEmptyInbox(line: string): void {
+  showDialog(
+    T.inbox.title,
+    [h('p', { class: 'muted', text: T.inbox.empty }), h('p', { testId: 'inbox-archive', text: line })],
+    [{ label: T.inbox.close, primary: true }],
+    'inbox-empty-dialog',
+  );
+}
+
+/**
+ * Show the oldest unanswered ticket. Returns false if the inbox is empty and there is nothing to show
+ * (no ticket answered yet); with an answered history the empty inbox shows the archive line instead.
+ */
 export function showTicket(state: GameState, onAnswer: (ticketId: string, choice: number) => void): boolean {
   const id = state.inbox[0];
   const ticket = id ? getTicket(id) : undefined;
-  if (!id || !ticket) return false;
+  if (!id || !ticket) {
+    const line = inboxArchiveLine(state);
+    if (line) showEmptyInbox(line);
+    return line !== null;
+  }
   showDialog(
     ticket.title,
     [h('p', { class: 'muted', text: T.inbox.from(senderName(ticket.from)) }), h('p', { text: ticket.text }), h('p', { class: 'muted', testId: 'ticket-note', text: T.inbox.note })],

@@ -98,6 +98,9 @@ export const T = {
     later: 'Senare',
     note: `Ärenden väntar tills du svarar. Högst ${BALANCE.tickets.cap} åt gången.`,
     empty: 'Inga ärenden just nu. Alla är nöjda, för stunden.',
+    archive: (n: number) => `Du har löst ${n} ${n === 1 ? 'ärende' : 'ärenden'}. Skolorna tackar.`,
+    title: 'Inkorg',
+    close: 'Stäng',
   },
   celebrate: { double: '×2', signed: 'Påskrivet!' },
   prestige: {
@@ -150,6 +153,7 @@ export const T = {
     purchases: 'Köp totalt',
     clicks: 'Manuella synkningar',
     events: 'Lösta händelser',
+    tickets: 'Besvarade ärenden',
     schoolYears: 'Läsår',
     meritsEarned: 'Meriter totalt',
     achievements: 'Troféer',
