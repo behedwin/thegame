@@ -98,7 +98,8 @@ describe('next unlock', () => {
     expect(nextUnlock(inYear(2))!.defs.map((a) => a.id)).toEqual(['federation']);
     expect(nextUnlock(inYear(3))).toMatchObject({ year: 6 });
     expect(nextUnlock(inYear(8))!.defs.map((a) => a.id)).toEqual(['gradetransfer']);
-    expect(nextUnlock(inYear(9))).toBeNull();
+    expect(nextUnlock(inYear(9))).toMatchObject({ year: 12 }); // 066: licenses
+    expect(nextUnlock(inYear(12))).toBeNull();
   });
 
   it('lists what a school year unlocks (nothing in year 1)', () => {

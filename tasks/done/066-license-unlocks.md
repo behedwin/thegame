@@ -1,7 +1,7 @@
 ---
 id: 066
 size: S
-status: ready
+status: done
 touches: [src/content/automations/, src/content/systems/, src/content/balance.ts, sim/]
 depends: []
 priority: normal
