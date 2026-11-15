@@ -78,25 +78,6 @@ export function ripple(el: HTMLElement, layer: HTMLElement, scale = 1.7): void {
   trimLayer(layer);
 }
 
-/** In the compact strip (059) at most this many "+KP" numbers fly at once; extra taps show none. */
-export const MAX_COMPACT_FLOATS = 3;
-/** Room kept for the number's own width so it never runs off the right edge. */
-const FLOAT_ROOM = 64;
-
-export interface FloatSpot { x: number; y: number; dx: number }
-
-/** Where a "+KP" number starts (its left edge) and how far right it drifts in the compact strip (059):
- * just right of SYNKA (`hub.right`, layer px) and away from it, clamped to the layer's width. Null when
- * `active` numbers already fly. */
-export function compactFloatSpot(hub: { right: number; cy: number }, width: number, active: number, rng: () => number): FloatSpot | null {
-  if (active >= MAX_COMPACT_FLOATS) return null;
-  const max = Math.max(0, width - FLOAT_ROOM);
-  const x = Math.min(max, Math.max(0, hub.right + 8 + rng() * 16));
-  const y = hub.cy - 8 + rng() * 16;
-  const dx = Math.min(12 + rng() * 12, max - x);
-  return { x, y, dx };
-}
-
 const rolls = new WeakMap<HTMLElement, { shown: Decimal; target: Decimal; raf: number }>();
 
 /** The value an element currently shows, if it is driven by countUp. */
@@ -123,16 +104,4 @@ export function countUp(el: HTMLElement, from: Decimal, to: Decimal, ms: number)
     if (t < 1) roll.raf = requestAnimationFrame(step);
   };
   roll.raf = requestAnimationFrame(step);
-}
-
-export type HeroMode = 'big' | 'compact';
-/** The list must be scrolled past this many px before the map shrinks (057). */
-export const COMPACT_AT = 24;
-
-/** Map size from the shop list's scroll (057). Compact past COMPACT_AT, big again only at the very top,
- * so it never flickers around the threshold. `room` is how far the list can scroll and `shrink` how much
- * taller it gets when the map shrinks: without room to stay scrolled it would snap back, so it stays big. */
-export function heroMode(scrollTop: number, mode: HeroMode, room: number, shrink: number): HeroMode {
-  if (mode === 'compact') return scrollTop <= 0 ? 'big' : 'compact';
-  return scrollTop > COMPACT_AT && room - shrink > COMPACT_AT ? 'compact' : 'big';
 }

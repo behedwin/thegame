@@ -1,6 +1,7 @@
 // Juice: synthesized sounds, haptics, floating numbers and toasts. No audio files, no network.
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
-import { compactFloatSpot, fxNode, trimLayer } from './fx';
+import { fxNode, trimLayer } from './fx';
+import { compactFloatSpot, type HubAnchor } from './hero';
 
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
@@ -104,7 +105,7 @@ export function haptic(strength: 'light' | 'medium' = 'light'): void {
 
 /** Floating "+12" that rises from a point and fades. With `hub` (the compact strip, 059) it starts just
  * right of SYNKA, drifts right and fades fast, and at most three fly at once. */
-export function floatText(layer: HTMLElement, x: number, y: number, text: string, hub?: { right: number; cy: number }): void {
+export function floatText(layer: HTMLElement, x: number, y: number, text: string, hub?: HubAnchor): void {
   let span: HTMLElement;
   if (hub) {
     const spot = compactFloatSpot(hub, layer.clientWidth, layer.querySelectorAll('.float-num').length, Math.random);
