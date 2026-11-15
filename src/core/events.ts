@@ -64,13 +64,21 @@ export function claimEvent(state: GameState): ClaimResult {
   return { state: r.state, event, granted: r.granted };
 }
 
+export type EffectPreview =
+  | { kind: 'lump'; kp: Decimal }
+  | { kind: 'prodMult' | 'clickMult'; mult: number; durationMs: number };
+
+/** What an effect would give right now. applyEffect uses it, so preview and outcome never differ. */
+export function previewEffect(state: GameState, e: EventEffect): EffectPreview {
+  if (e.kind === 'lump') return { kind: 'lump', kp: Decimal.max(baseKps(state).mul(e.seconds), e.minKp) };
+  return { kind: e.kind, mult: e.mult, durationMs: e.durationMs };
+}
+
 /** Apply an event/ticket effect: a lump of KP now, or a buff (replacing one from the same source). */
 export function applyEffect(state: GameState, source: string, e: EventEffect): { state: GameState; granted: Decimal } {
-  if (e.kind === 'lump') {
-    const granted = Decimal.max(baseKps(state).mul(e.seconds), e.minKp);
-    return { state: earn(state, granted), granted };
-  }
+  const p = previewEffect(state, e);
+  if (p.kind === 'lump') return { state: earn(state, p.kp), granted: p.kp };
   const buffs = state.buffs.filter((b) => b.source !== source);
-  buffs.push({ source, kind: e.kind, mult: e.mult, untilMs: state.timeMs + e.durationMs });
+  buffs.push({ source, kind: p.kind, mult: p.mult, untilMs: state.timeMs + p.durationMs });
   return { state: { ...state, buffs }, granted: new Decimal(0) };
 }

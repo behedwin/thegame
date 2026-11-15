@@ -8,12 +8,12 @@ export default {
   choices: [
     {
       label: 'Byt namn i alla mappningar',
-      outcome: 'Sök och ersätt, 4 000 träffar. Synken lyser grönt igen. Du får en klump KP.',
+      outcome: 'Sök och ersätt, 4 000 träffar. Synken lyser grönt igen.',
       effect: { kind: 'lump', seconds: 18, minKp: 15 },
     },
     {
       label: 'Lägg in ett alias som klarar nästa namnbyte',
-      outcome: 'Nästa gång de byter namn märker ingen något. Produktion ×1,25 i 60 s.',
+      outcome: 'Nästa gång de byter namn märker ingen något.',
       effect: { kind: 'prodMult', mult: 1.25, durationMs: 60_000 },
     },
   ],

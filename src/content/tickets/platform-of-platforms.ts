@@ -8,17 +8,17 @@ export default {
   choices: [
     {
       label: 'Koppla in den som alla andra',
-      outcome: 'En nod till på kartan. Den gör samma sak som tre andra, men den gör det. Du får en klump KP.',
+      outcome: 'En nod till på kartan. Den gör samma sak som tre andra, men den gör det.',
       effect: { kind: 'lump', seconds: 15, minKp: 10 },
     },
     {
       label: 'Bygg en plattform som samlar alla plattformar',
-      outcome: 'Metaplattformen fungerar förvånansvärt bra, tills någon köper en till. Produktion ×1,5 i 30 s.',
+      outcome: 'Metaplattformen fungerar förvånansvärt bra, tills någon köper en till.',
       effect: { kind: 'prodMult', mult: 1.5, durationMs: 30_000 },
     },
     {
       label: 'Boka ett möte om plattformsstrategin',
-      outcome: 'Strategin får en egen plattform. Du synkar för hand under tiden. KP/klick ×2 i 30 s.',
+      outcome: 'Strategin får en egen plattform. Du synkar för hand under tiden.',
       effect: { kind: 'clickMult', mult: 2, durationMs: 30_000 },
     },
   ],

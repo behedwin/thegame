@@ -17,7 +17,8 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .kp .unit { font-size: 0.45em; font-weight: 700; color: var(--muted); }
 .rates { color: var(--muted); font-size: 0.875rem; display: flex; gap: 8px; justify-content: center; font-variant-numeric: tabular-nums; }
 .buff { display: inline-block; margin-top: 6px; padding: 4px 12px; border-radius: 999px; background: color-mix(in srgb, var(--event) 20%, transparent); color: var(--event); font-weight: 700; font-size: 0.8125rem; }
-.buff[hidden] { display: none; }
+.buff[hidden], .buffs[hidden] { display: none; }
+.buffs { display: flex; flex-wrap: wrap; justify-content: center; gap: 0 6px; }
 /* Onboarding tip bubble (018, 031). */
 .tip { display: flex; align-items: center; gap: 8px; margin: 8px 0 0; padding: 8px 10px 8px 14px; border-radius: 12px; background: var(--surface2); color: var(--text); font-size: 0.8125rem; line-height: 1.35; }
 .tip[hidden] { display: none; }
@@ -136,6 +137,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .inbox-btn.has { background: var(--surface); font-weight: 700; }
 .overlay[data-testid='ticket-dialog'] .dialog-actions { flex-direction: column; }
 .overlay[data-testid='ticket-dialog'] .dialog-actions .btn { min-height: 52px; text-align: left; }
+.effect { display: block; margin-top: 2px; font-size: 0.8125rem; font-weight: 400; color: var(--muted); }
 .card, .customers { position: relative; } .card .stamp { right: auto; left: 42%; top: 14px; translate: none; }
 .card.flash .buy { animation: press 0.25s ease-out; } @keyframes press { 40% { transform: scale(0.94); } }
 .card.sheen { background-image: linear-gradient(110deg, transparent 40%, rgb(255 255 255 / 0.16) 50%, transparent 60%); background-size: 250% 100%; animation: sheen 0.9s ease-out; }

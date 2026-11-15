@@ -1,7 +1,7 @@
 ---
 id: 043
 size: M
-status: ready
+status: done
 touches: [src/ui/inbox.ts, src/ui/hud.ts, src/ui/app.ts, src/ui/style.css, src/ui/format.ts, src/core/events.ts, src/core/tickets.ts, src/content/texts.ts, src/content/tickets/]
 depends: []
 priority: normal

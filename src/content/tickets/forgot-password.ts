@@ -8,12 +8,12 @@ export default {
   choices: [
     {
       label: 'Återställ det, igen',
-      outcome: 'Nytt lösenord: "Vinter2025!". Rektorn är glad. Du får en klump KP.',
+      outcome: 'Nytt lösenord: "Vinter2025!". Rektorn är glad.',
       effect: { kind: 'lump', seconds: 12, minKp: 10 },
     },
     {
       label: 'Inför lösenordsfri inloggning',
-      outcome: 'Ingen behöver minnas något längre. Supporten blir tyst. Produktion ×2 i 15 s.',
+      outcome: 'Ingen behöver minnas något längre. Supporten blir tyst.',
       effect: { kind: 'prodMult', mult: 2, durationMs: 15_000 },
     },
   ],

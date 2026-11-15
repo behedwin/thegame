@@ -96,7 +96,7 @@ test('standup shows a two-minute buff', async ({ page }) => {
   await page.getByTestId('welcome-standup').click();
   const buff = page.locator('.buff:not(.season)');
   await expect(buff).toBeVisible();
-  await expect(buff).toContainText('×2 klick');
+  await expect(buff).toContainText('KP/klick ×2');
   await expect(buff).toContainText(/1[01]\d s/);
   expect(errors).toEqual([]);
 });
