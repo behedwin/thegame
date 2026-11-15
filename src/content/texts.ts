@@ -20,6 +20,8 @@ export const T = {
   hubTierUp: (name: string) => `Navet har uppgraderats till ${name}`,
   sourceSystems: 'Källsystem',
   targetSystems: 'Målsystem',
+  /** Owned integrations that do not fit in the compact map strip (062). */
+  netMore: (n: number) => `+${n}`,
   tabs: { automations: 'Integrationer', upgrades: 'Uppgraderingar', prestige: 'Läsår', achievements: 'Troféer' },
   a11y: { tabsAria: 'Vyer', buyAria: (name: string, label: string) => `Köp ${name}: ${label.replace(/\n/g, ' ')}` },
   owned: (n: number) => `${n} st`,
