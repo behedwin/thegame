@@ -5,5 +5,5 @@ export default {
   name: 'Stackholms stad',
   kind: 'kommun',
   atRunKp: 2_000_000,
-  effect: { kind: 'prodPct', pct: 3 },
+  effect: { kind: 'prodPct', pct: 10 },
 } satisfies CustomerDef;

@@ -13,7 +13,7 @@ export const BALANCE = {
   },
   prestige: {
     /** Meriter = floor((KP earned this school year / divisor) ^ exponent). */
-    divisor: 6e7,
+    divisor: 1e9,
     exponent: 0.5,
   },
   events: {
