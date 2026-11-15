@@ -1,5 +1,11 @@
-// Quality gate: pacing simulation. Usage: npm run sim [-- --seeds 200 --hours 3]
-import { writeFileSync } from 'node:fs';
+// Quality gate: pacing simulation. Usage: npm run sim [-- --seeds 200 --hours 3 --jobs N]
+// Seeds are independent and deterministic, so they run in parallel child processes (one per core, at most
+// 8; --jobs 1 runs serially). The results are merged in seed order and judged exactly as a serial run:
+// the gate, the seeds and sim-report.json are identical, only the wall-clock time drops.
+import { spawn } from 'node:child_process';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { availableParallelism, tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { simulateSeed, type SeedResult } from './bot';
 
 const GATES = {
@@ -21,9 +27,42 @@ function arg(name: string, fallback: number): number {
 const seeds = arg('seeds', 200);
 const hours = arg('hours', 3);
 const started = Date.now();
+const durationSec = Math.round(hours * 3600);
 
-const results: SeedResult[] = [];
-for (let seed = 1; seed <= seeds; seed++) results.push(simulateSeed(seed, Math.round(hours * 3600)));
+/** Seeds of shard i out of n: every n-th seed, so slow late seeds spread evenly. */
+const shardSeeds = (i: number, n: number): number[] =>
+  Array.from({ length: seeds }, (_, k) => k + 1).filter((seed) => (seed - 1) % n === i);
+
+// Child mode: simulate one shard, write its results and stop (the parent judges and reports).
+const shardArg = process.argv[process.argv.indexOf('--shard') + 1];
+if (process.argv.includes('--shard') && shardArg) {
+  const [i, n] = shardArg.split('/').map(Number) as [number, number];
+  const out = process.argv[process.argv.indexOf('--out') + 1]!;
+  writeFileSync(out, JSON.stringify(shardSeeds(i, n).map((seed) => simulateSeed(seed, durationSec))));
+  process.exit(0);
+}
+
+function runShards(jobs: number): Promise<SeedResult[]> {
+  const dir = mkdtempSync(join(tmpdir(), 'sim-'));
+  const runs = Array.from({ length: jobs }, (_, i) => {
+    const out = join(dir, `shard-${i}.json`);
+    const args = ['scripts/run-sim.mjs', '--seeds', String(seeds), '--hours', String(hours), '--shard', `${i}/${jobs}`, '--out', out];
+    return new Promise<SeedResult[]>((resolve, reject) => {
+      const child = spawn(process.execPath, args, { stdio: ['ignore', 'inherit', 'inherit'] });
+      child.on('error', reject);
+      child.on('exit', (code) =>
+        code === 0 ? resolve(JSON.parse(readFileSync(out, 'utf8')) as SeedResult[]) : reject(new Error(`sim shard ${i}/${jobs} exited with ${code}`)),
+      );
+    });
+  });
+  return Promise.all(runs)
+    .then((parts) => parts.flat().sort((a, b) => a.seed - b.seed))
+    .finally(() => rmSync(dir, { recursive: true, force: true }));
+}
+
+const jobs = Math.min(arg('jobs', Math.min(8, availableParallelism())), seeds);
+const results: SeedResult[] =
+  jobs > 1 ? await runShards(jobs) : Array.from({ length: seeds }, (_, k) => simulateSeed(k + 1, durationSec));
 
 function stats(values: number[]) {
   const v = [...values].sort((a, b) => a - b);
@@ -93,7 +132,7 @@ const report = {
 
 writeFileSync('sim-report.json', JSON.stringify(report, null, 2) + '\n');
 console.log(JSON.stringify(report.pacing, null, 1).replace(/\n\s*/g, ' '));
-console.log(`\n${seeds} seeds x ${hours} h in ${((Date.now() - started) / 1000).toFixed(1)} s`);
+console.log(`\n${seeds} seeds x ${hours} h in ${((Date.now() - started) / 1000).toFixed(1)} s (${jobs} job${jobs > 1 ? 's' : ''})`);
 if (failures.length) {
   console.error(`\nSIM GATE FAILED (${failures.length} failures):\n` + failures.slice(0, 15).join('\n'));
   process.exit(1);
