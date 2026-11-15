@@ -1,7 +1,7 @@
 ---
 id: 033
 size: S
-status: ready
+status: done
 touches: [src/content/upgrades/, src/content/balance.ts]
 depends: []
 priority: normal
