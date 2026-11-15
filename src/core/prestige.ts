@@ -3,7 +3,7 @@ import { MERITS, type AutomationDef, type ChapterDef, type FocusDef } from '../c
 import { focusesForYear } from './focus';
 import { chapterFor } from './goal';
 import { bestYearEarned, customersSigned, pendingMerits, runKpForMerits } from './rules';
-import { Decimal, DEFAULT_FOCUS, level, type GameState } from './state';
+import { Decimal, DEFAULT_FOCUS, level, totalLevels, type GameState } from './state';
 import { unlocksInYear } from './unlocks';
 
 export function canPrestige(state: GameState): boolean {
@@ -63,7 +63,7 @@ export interface YearSummary {
 export const yearSummary = (state: GameState): YearSummary => ({
   kpEarned: state.runEarned,
   customers: customersSigned(state),
-  integrations: Object.values(state.automations).reduce((sum, n) => sum + n, 0),
+  integrations: totalLevels(state.automations),
   merits: pendingMerits(state),
   bestYear: state.runEarned.gt(state.bestRunEarned),
 });

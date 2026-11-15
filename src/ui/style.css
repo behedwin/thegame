@@ -186,10 +186,11 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .network { transition: margin 0.2s, width 0.2s; }
 /* Compact map strip while the shop is scrolled (057, src/ui/hero.ts): SYNKA on the left, a mini map, the
    event card on the right. Every `.compact` rule lives in this block. */
-.hero.compact { height: 96px; cursor: pointer; }
+/* --strip-left: where the map and the event card start, right of SYNKA (8 px gap + 72 px hub + 4 px). */
+.hero.compact { height: 96px; cursor: pointer; --strip-left: 84px; }
 .hero.compact .hub { left: 8px; width: 72px; height: 72px; margin: -36px 0 0 0; }
 .hero.compact .hub svg { width: 24px; height: 24px; }
-.hero.compact .network { margin-left: 84px; width: calc(100% - 84px); }
+.hero.compact .network { margin-left: var(--strip-left); width: calc(100% - var(--strip-left)); }
 .hero.compact .net-node text, .hero.compact .side-labels, .hero.compact .net-tip, .hero.compact .hub-ring { display: none; }
 .hero.compact .net-node { pointer-events: none; visibility: hidden; opacity: 0; }
 /* System chips (062): the strip has its own layout in network.ts (sources left, hub mid, targets right). */
@@ -204,7 +205,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   to { transform: translate(var(--dx, 0px), -28px); opacity: 0; }
 }
 /* The event card (061) is centred in the strip right of SYNKA, vertically too, and never leaves it. */
-.hero.compact .event-slot { left: 84px; right: 8px; bottom: 0; align-items: center; }
+.hero.compact .event-slot { left: var(--strip-left); right: 8px; bottom: 0; align-items: center; }
 .hero.compact .event-card { padding: 8px 12px 10px; max-width: 100%; overflow-wrap: break-word; }
 /* Denser shop cards (058): one-line description that a tap on the text expands, sub row shared with the
    milestone quote, and the progress bar along the card's bottom edge. */

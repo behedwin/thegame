@@ -2,13 +2,7 @@
 // ACHIEVEMENT_PROD_PCT % production (applied in rules.ts).
 import { ACHIEVEMENTS, type AchievementCondition, type AchievementDef } from '../content/registry';
 import { baseKps, customersSigned } from './rules';
-import { level, type GameState } from './state';
-
-function sum(map: Record<string, number>): number {
-  let n = 0;
-  for (const v of Object.values(map)) n += v;
-  return n;
-}
+import { level, totalLevels, type GameState } from './state';
 
 /** Whether a condition holds in this state. */
 export function isMet(state: GameState, c: AchievementCondition): boolean {
@@ -22,9 +16,9 @@ export function isMet(state: GameState, c: AchievementCondition): boolean {
     case 'automation':
       return level(state.automations, c.id) >= c.n;
     case 'automationsTotal':
-      return sum(state.automations) >= c.n;
+      return totalLevels(state.automations) >= c.n;
     case 'upgradesTotal':
-      return sum(state.upgrades) >= c.n;
+      return totalLevels(state.upgrades) >= c.n;
     case 'eventsClaimed':
       return state.eventsClaimed >= c.n;
     case 'customers':

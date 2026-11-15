@@ -113,6 +113,13 @@ export function level(map: Record<string, number>, id: string): number {
   return map[id] ?? 0;
 }
 
+/** Sum of all levels in a map (owned integrations or upgrades in total). */
+export function totalLevels(map: Record<string, number>): number {
+  let n = 0;
+  for (const v of Object.values(map)) n += v;
+  return n;
+}
+
 /** Credit earned KP to the wallet and both lifetime counters. Returns the same state for amount ≤ 0. */
 export function earn(state: GameState, amount: Decimal): GameState {
   if (amount.lte(0)) return state;
