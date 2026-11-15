@@ -1,11 +1,8 @@
 // School-year focus (053): a choice at "Nytt läsår" that changes the rules for one school year. Pure.
 import { BALANCE } from '../content/balance';
 import { byId, FOCUSES, type FocusDef, type FocusEffect } from '../content/registry';
-import type { GameState } from './state';
+import { DEFAULT_FOCUS, type GameState } from './state';
 import { schoolYear } from './unlocks';
-
-/** "Vanligt läsår": no rule changes. Every new game and every new school year starts here. */
-export const DEFAULT_FOCUS = 'normal';
 
 export const getFocus = byId(FOCUSES);
 

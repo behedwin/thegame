@@ -77,6 +77,9 @@ export interface GameState {
   calendar?: CalendarDay | null;
 }
 
+/** "Vanligt läsår": no rule changes (053). Every new game and every new school year starts here. */
+export const DEFAULT_FOCUS = 'normal';
+
 export function createInitialState(nowMs: number): GameState {
   return {
     kp: new Decimal(0), runEarned: new Decimal(0), totalEarned: new Decimal(0), merits: new Decimal(0), meritsEarned: new Decimal(0),
@@ -95,7 +98,7 @@ export function createInitialState(nowMs: number): GameState {
     nextTicketAtMs: BALANCE.tickets.firstAtMs,
     ticketsAnswered: 0,
     tipsSeen: [],
-    focus: 'normal',
+    focus: DEFAULT_FOCUS,
     settings: { sound: true, vibration: true, volume: DEFAULT_VOLUME, notifyOfflineCap: false, notifySeason: false, tips: true, notation: 'short' },
   };
 }

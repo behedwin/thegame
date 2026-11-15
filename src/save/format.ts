@@ -1,8 +1,8 @@
 // Versioned save format. Pure functions: no storage access here.
 import { BALANCE } from '../content/balance';
-import { DEFAULT_FOCUS, getFocus } from '../core/focus';
+import { getFocus } from '../core/focus';
 import { getTicket } from '../core/tickets';
-import { type Buff, createInitialState, Decimal, DEFAULT_VOLUME, type GameState } from '../core/state';
+import { type Buff, createInitialState, Decimal, DEFAULT_FOCUS, DEFAULT_VOLUME, type GameState } from '../core/state';
 
 export const SAVE_VERSION = 9;
 

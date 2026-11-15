@@ -1,8 +1,10 @@
 // "Nytt läsår" (prestige): when it unlocks, what it resets and what it keeps. Pure, like actions.ts.
-import { MERITS } from '../content/registry';
-import { DEFAULT_FOCUS } from './focus';
+import { MERITS, type AutomationDef, type ChapterDef, type FocusDef } from '../content/registry';
+import { focusesForYear } from './focus';
+import { chapterFor } from './goal';
 import { bestYearEarned, pendingMerits, runKpForMerits } from './rules';
-import { Decimal, level, type GameState } from './state';
+import { Decimal, DEFAULT_FOCUS, level, type GameState } from './state';
+import { unlocksInYear } from './unlocks';
 
 export function canPrestige(state: GameState): boolean {
   return pendingMerits(state).gte(1);
@@ -46,3 +48,19 @@ export function prestige(state: GameState): GameState {
     calendar: state.calendar ?? null,
   };
 }
+
+/** What a school year brings when it starts (051-053): its chapter, new integration types and focus options. */
+export interface YearStart {
+  year: number;
+  chapter: ChapterDef | undefined;
+  unlocked: AutomationDef[];
+  focuses: FocusDef[];
+}
+
+/** The single source for the "Nytt läsår" follow-up in the UI: chapter, unlock toast and focus choice. */
+export const yearStart = (year: number): YearStart => ({
+  year,
+  chapter: chapterFor(year),
+  unlocked: unlocksInYear(year),
+  focuses: focusesForYear(year),
+});
