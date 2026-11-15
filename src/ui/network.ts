@@ -13,12 +13,21 @@ const NODE_H = 34;
 /** The compact strip (062): map height in user units, chip size and how many rows fit. */
 export const COMPACT_H = 100;
 const CHIP_W = 40;
-const CHIP_H = 22;
+export const CHIP_H = 22;
 export const COMPACT_ROWS = 3;
+/** Distance between row centres in the compact strip. */
+const COMPACT_ROW_GAP = 30;
 
 /** Map size in user units, where the end nodes sit and how wide they are. */
-interface Geo { w: number; h: number; nodeW: number; compact: boolean }
+export interface Geo { w: number; h: number; nodeW: number; compact: boolean }
 const BIG: Geo = { w: W, h: H, nodeW: NODE_W, compact: false };
+
+/** The map's geometry for the hero's mode and the map's size in px (062): the big map, or a strip as wide
+ * as its box. A strip with no height yet (not laid out) keeps the big map. */
+export function mapGeo(compact: boolean, widthPx: number, heightPx: number): Geo {
+  if (!compact || heightPx <= 0) return BIG;
+  return { w: compactWidth(widthPx / heightPx), h: COMPACT_H, nodeW: CHIP_W, compact: true };
+}
 
 /** Two or three letters for a system chip (062): initials of the first two words, or the first two letters. */
 export function systemAbbr(name: string): string {
@@ -37,9 +46,9 @@ export function pickCompactRows(counts: readonly number[], max = COMPACT_ROWS): 
   return { shown: best.sort((a, b) => a - b), more: owned.length - best.length };
 }
 
-/** Row centres in the compact strip: 30 units apart around the middle. */
+/** Row centres in the compact strip: COMPACT_ROW_GAP units apart around the middle. */
 export function compactYs(n: number, height: number): number[] {
-  return Array.from({ length: n }, (_, i) => height / 2 + (i - (n - 1) / 2) * 30);
+  return Array.from({ length: n }, (_, i) => height / 2 + (i - (n - 1) / 2) * COMPACT_ROW_GAP);
 }
 
 /** Compact map width in user units for the strip's width/height ratio, so it fills the strip edge to edge. */
@@ -237,8 +246,7 @@ export class NetworkView {
     if (typeof ResizeObserver === 'function') {
       new ResizeObserver(() => {
         const r = this.svg.getBoundingClientRect();
-        const compact = !!this.svg.parentElement?.classList.contains('compact') && r.height > 0;
-        this.setGeo(compact ? { w: compactWidth(r.width / r.height), h: COMPACT_H, nodeW: CHIP_W, compact } : BIG);
+        this.setGeo(mapGeo(!!this.svg.parentElement?.classList.contains('compact'), r.width, r.height));
       }).observe(this.svg);
     }
     // Battery saver (049): nobody sees packets on a map that is out of view, so frame() then does nothing.
