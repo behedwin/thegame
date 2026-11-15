@@ -36,8 +36,29 @@ export function rollEvent(state: GameState, rng: Rng): EventDef | null {
   return EVENTS[EVENTS.length - 1] ?? null;
 }
 
+/** A new event. If the previous one was never solved (it ran out), the streak starts over (069). */
 export function spawnEvent(state: GameState, event: EventDef): GameState {
-  return { ...state, activeEvent: { id: event.id, expiresAtMs: state.timeMs + BALANCE.events.visibleMs } };
+  return {
+    ...state,
+    activeEvent: { id: event.id, expiresAtMs: state.timeMs + BALANCE.events.visibleMs },
+    eventStreak: state.eventOpen ? 0 : state.eventStreak,
+    eventOpen: true,
+  };
+}
+
+/** Extra effect share for an event solved with `streak` events already solved in a row (069). */
+export function eventStreakBonus(streak: number): number {
+  const { min, step, cap } = BALANCE.events.streak;
+  return streak < min ? 0 : Math.min(cap, (streak - min + 1) * step);
+}
+
+/** The event's effect with the current streak bonus: a bigger lump, or a buff with a bigger extra part. */
+export function eventEffect(state: GameState, event: EventDef): EventEffect {
+  const b = eventStreakBonus(state.eventStreak);
+  const e = event.effect;
+  if (b === 0) return e;
+  if (e.kind === 'lump') return { ...e, seconds: e.seconds * (1 + b), minKp: e.minKp * (1 + b) };
+  return { ...e, mult: Math.round((1 + (e.mult - 1) * (1 + b)) * 1000) / 1000 };
 }
 
 export interface ClaimResult {
@@ -54,14 +75,18 @@ export function claimEvent(state: GameState): ClaimResult {
   if (!active || !event || active.expiresAtMs <= state.timeMs) {
     return { state, event: null, granted: new Decimal(0) };
   }
+  const effect = eventEffect(state, event);
   const next: GameState = {
     ...state,
     activeEvent: null,
     nextEventAtMs: state.timeMs + eventCooldownMs(state),
     eventsClaimed: state.eventsClaimed + 1,
+    eventStreak: state.eventStreak + 1,
+    eventOpen: false,
   };
-  const r = applyEffect(next, event.id, event.effect);
-  return { state: r.state, event, granted: r.granted };
+  const r = applyEffect(next, event.id, effect);
+  // The returned event carries the boosted effect, so the receipt shows what was actually given.
+  return { state: r.state, event: effect === event.effect ? event : { ...event, effect }, granted: r.granted };
 }
 
 export type EffectPreview =

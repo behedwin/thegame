@@ -58,6 +58,10 @@ export interface GameState {
   nextEventAtMs: number;
   buffs: Buff[];
   eventsClaimed: number;
+  /** Events solved in a row (069). Reset when an event runs out; kept across school years. */
+  eventStreak: number;
+  /** True from an event's spawn until it is solved, so the next spawn can tell a miss (069). */
+  eventOpen: boolean;
   /** Unlocked achievement ids, in unlock order. Kept across school years. */
   achievements: string[];
   /** Unanswered ticket ids, oldest first (at most BALANCE.tickets.cap). Kept across school years. */
@@ -100,6 +104,8 @@ export function createInitialState(nowMs: number): GameState {
     nextEventAtMs: 0,
     buffs: [],
     eventsClaimed: 0,
+    eventStreak: 0,
+    eventOpen: false,
     achievements: [],
     inbox: [],
     nextTicketAtMs: BALANCE.tickets.firstAtMs,
