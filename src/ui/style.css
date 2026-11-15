@@ -12,7 +12,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .brand { font-weight: 700; letter-spacing: 0.02em; color: var(--muted); font-size: 0.875rem; text-transform: uppercase; }
 .icon-btn { width: 44px; height: 44px; border-radius: 50%; border: 0; background: transparent; color: var(--muted); display: grid; place-items: center; }
 .icon-btn:active { background: var(--surface); }
-.stats { text-align: center; padding: 2px 0 6px; }
+.stats { text-align: center; padding: 0 0 4px; }
 .kp { font-size: clamp(2.125rem, 10vw, 2.875rem); font-weight: 800; color: var(--gold); font-variant-numeric: tabular-nums; line-height: 1.1; }
 .kp .unit { font-size: 0.45em; font-weight: 700; color: var(--muted); }
 .rates { color: var(--muted); font-size: 0.875rem; display: flex; gap: 8px; justify-content: center; font-variant-numeric: tabular-nums; }
@@ -30,7 +30,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .tip-close { font-size: 1.25rem; line-height: 1; padding: 4px 8px; }
 .tip .tip-next { border-radius: 8px; background: var(--accent); color: var(--accent-ink); font-size: 0.8125rem; padding: 6px 12px; }
 /* ---------- Hero network ---------- */
-.hero { position: relative; flex: 0 0 auto; height: min(42vh, 300px); margin: 4px -8px 0; }
+.hero { position: relative; flex: 0 0 auto; height: min(34vh, 250px); margin: 4px -8px 0; transition: height 0.2s ease-out; }
 .network { width: 100%; height: 100%; display: block; }
 .side-labels { position: absolute; left: 8px; right: 8px; bottom: -4px; display: flex; justify-content: space-between; font-size: 0.6875rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; pointer-events: none; }
 /* A tapped system's tagline: an overlay just below the map, so it never covers nodes or moves the tabs. */
@@ -49,7 +49,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .packet.manual { fill: var(--gold); filter: drop-shadow(0 0 5px var(--gold)); }
 .hub-glow { animation: breathe 4s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
 @keyframes breathe { 50% { opacity: 0.6; transform: scale(0.94); } }
-.hub { position: absolute; left: 50%; top: 50%; width: 112px; height: 112px; margin: -56px 0 0 -56px; border-radius: 50%; border: 0; touch-action: manipulation; background: radial-gradient(circle at 35% 30%, #6ff5d8, var(--accent) 55%, #1fa88a); color: var(--accent-ink); font-weight: 800; font-size: 13px; letter-spacing: 0.12em; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 18%, transparent), 0 10px 30px rgba(0, 0, 0, 0.45); }
+.hub { position: absolute; left: 50%; top: 50%; width: 96px; height: 96px; margin: -48px 0 0 -48px; transition: width 0.2s, height 0.2s, left 0.2s, margin 0.2s; border-radius: 50%; border: 0; touch-action: manipulation; background: radial-gradient(circle at 35% 30%, #6ff5d8, var(--accent) 55%, #1fa88a); color: var(--accent-ink); font-weight: 800; font-size: 13px; letter-spacing: 0.12em; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 18%, transparent), 0 10px 30px rgba(0, 0, 0, 0.45); }
 .hub.pop { animation: pop 0.3s ease-out; }
 @keyframes pop { 25% { transform: scale(1.1, 0.86); } 55% { transform: scale(0.94, 1.06); } 80% { transform: scale(1.02, 0.98); } 100% { transform: scale(1); } }
 .kp-value { display: inline-block; }
@@ -175,3 +175,16 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .changelog-day h3 { font-size: 0.95rem; margin: 14px 0 6px; color: var(--accent); }
 .changelog-day ul { margin: 0; padding-left: 20px; }
 .changelog-day li { padding: 4px 0; line-height: 1.4; }
+/* Compact map strip while the shop is scrolled (057): SYNKA on the left, a mini map, the event card on the right. */
+.chips { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px 8px; margin-top: 4px; }
+.chips .buffs { display: contents; } .chips > *, .chips .buff { margin: 0 !important; } .chips [hidden] { display: none !important; }
+.network { transition: margin 0.2s, width 0.2s; }
+.hero.compact { height: 96px; cursor: pointer; }
+.hero.compact .hub { left: 8px; width: 72px; height: 72px; margin: -36px 0 0 0; }
+.hero.compact .hub svg { width: 24px; height: 24px; }
+.hero.compact .network { margin-left: 84px; width: calc(100% - 84px); }
+.hero.compact .net-node text, .hero.compact .side-labels, .hero.compact .net-tip, .hero.compact .hub-ring { display: none; }
+.hero.compact .net-node { pointer-events: none; }
+.hero.compact .event-slot { left: 84px; justify-content: flex-end; }
+.hero.compact .event-card { padding: 8px 12px 10px; max-width: 100%; }
+.chips:not(:has(> :not([hidden]))) { display: none; }

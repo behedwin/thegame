@@ -13,7 +13,7 @@ import { buyMany, BULK_MODES, resolveBulk, type BulkMode } from '../core/bulk';
 import { loadGame, saveGame, wipeGame } from '../save/storage';
 import { closeTopDialog, h, showDialog } from './dialogs';
 import { configureFeedback, floatText, haptic, setBackground, sfx, toast } from './feedback';
-import { burst, motionOk, reducedMotion, ripple } from './fx';
+import { burst, heroMode, type HeroMode, motionOk, reducedMotion, ripple } from './fx';
 import { confetti, effectsFor, flashClass, stamp, yearTransition } from './celebrate';
 import { fmt, setNotation } from './format';
 import { AchievementList } from './achievements';
@@ -45,6 +45,8 @@ type Tab = (typeof TABS)[number];
 const AUTOSAVE_MS = 10_000;
 /** Hold-to-sync repeat interval: about 8 clicks per second (see hold.ts). */
 const HOLD_REPEAT_MS = 125;
+/** Height of the compact map strip (057); keep in sync with `.hero.compact` in style.css. */
+const HERO_COMPACT_PX = 96;
 
 export async function startApp(root: HTMLElement): Promise<void> {
   const loaded = await loadGame(Date.now());
@@ -283,7 +285,29 @@ export async function startApp(root: HTMLElement): Promise<void> {
     openSettings({ state: () => state, apply: applySettings, wipe: () => leaveFor(wipeGame()), load: (next) => leaveFor(saveGame(next)) }),
   );
   inboxBtn.addEventListener('click', openInbox);
-  for (const t of TABS) tabButtons[t].addEventListener('click', () => ((tab = t), render()));
+  for (const t of TABS) tabButtons[t].addEventListener('click', () => ((tab = t), render(), syncHero()));
+
+  // Compact map (057): scrolling the shop shrinks the map to a strip so more cards fit.
+  let heroState: HeroMode = 'big';
+  function setHero(mode: HeroMode): void {
+    if (mode === heroState) return;
+    heroState = mode;
+    const compact = mode === 'compact';
+    hero.classList.toggle('compact', compact);
+    if (compact) hero.setAttribute('title', T.heroExpand);
+    else hero.removeAttribute('title');
+  }
+  function syncHero(): void {
+    setHero(heroMode(panel.scrollTop, heroState, panel.scrollHeight - panel.clientHeight, hero.offsetHeight - HERO_COMPACT_PX));
+  }
+  panel.addEventListener('scroll', syncHero, { passive: true });
+  // Tapping the strip (not SYNKA or the event card) brings the whole map back and the list to its top.
+  hero.addEventListener('click', (e) => {
+    const t = e.target as Node;
+    if (heroState !== 'compact' || hub.contains(t) || eventSlot.contains(t)) return;
+    panel.scrollTop = 0;
+    setHero('big');
+  });
 
   // Back: close the top dialog, otherwise save and minimize (never quit, so nothing is lost).
   function handleBack(): void {
