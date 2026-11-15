@@ -1,10 +1,10 @@
-// Onboarding: three discreet tips for a brand-new player. The tip logic is pure (state in,
+// Onboarding: a few discreet tips for a brand-new player. The tip logic is pure (state in,
 // state out); TipBar only renders the current tip.
 import { T } from '../content/texts';
 import type { GameState } from '../core/state';
 import { h } from './dialogs';
 
-export type TipId = 'event' | 'sync' | 'buy';
+export type TipId = 'event' | 'sync' | 'buy' | 'inbox';
 
 /** "Visa introduktionen igen": a tour through the tips, kept in memory only. It ignores
  * prestiges, done, tipsSeen and the tips setting, so it works for any player. */
@@ -20,11 +20,12 @@ interface TipDef {
   done: (s: GameState) => boolean;
 }
 
-/** Display priority: a live event is urgent, so it goes first. */
+/** Display priority: a live event is urgent, so it goes first. Tickets never expire, so they go last. */
 export const TIPS: readonly TipDef[] = [
   { id: 'event', ready: (s) => s.activeEvent !== null, done: (s) => s.eventsClaimed > 0 },
   { id: 'sync', ready: () => true, done: (s) => s.clicks > 0 },
   { id: 'buy', ready: (s) => s.clicks > 0, done: (s) => Object.values(s.automations).some((n) => n > 0) },
+  { id: 'inbox', ready: (s) => s.inbox.length > 0, done: (s) => s.ticketsAnswered > 0 },
 ];
 
 /** The tip to show now, or null. Only in the first school year, and never a tip already seen. */

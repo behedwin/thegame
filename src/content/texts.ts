@@ -1,4 +1,5 @@
 // All player-facing UI strings (Swedish). Game data texts live next to their data.
+import { BALANCE } from './balance';
 import type { CustomerDef, CustomerEffect, SeasonDef } from './types';
 
 const num = (n: number) => String(Math.round(n * 100) / 100).replace('.', ',');
@@ -61,6 +62,7 @@ export const T = {
     sync: 'Tips: Tryck på SYNKA för att flytta data och tjäna KP.',
     buy: 'Tips: Köp din första integration nedan, så synkar den åt dig.',
     event: 'Tips: Ett event! Tryck snabbt innan tiden tar slut.',
+    inbox: 'Tips: Ett ärende i inkorgen! Svara när du vill. Varje val ger en bonus, och ärenden går aldrig ut.',
     close: 'Stäng tipset',
     off: 'Inga fler tips',
     next: 'Nästa',
@@ -92,6 +94,7 @@ export const T = {
     aria: (n: number) => `Inkorg, ${n} obesvarade ärenden`,
     from: (name: string) => `Från: ${name}`,
     later: 'Senare',
+    note: `Ärenden väntar tills du svarar. Högst ${BALANCE.tickets.cap} åt gången.`,
     empty: 'Inga ärenden just nu. Alla är nöjda, för stunden.',
     receipt: (outcome: string, result: string) => `${outcome} ${result}.`,
   },
