@@ -140,10 +140,13 @@ export async function startApp(root: HTMLElement): Promise<void> {
     state = click(state);
     const rect = hero.getBoundingClientRect();
     const [lx, ly] = [x - rect.left, y - rect.top];
-    floatText(floatLayer, lx, ly, `+${fmt(gained)}`);
+    // The compact strip (059) gets smaller effects that start beside SYNKA instead of on top of it.
+    const compact = hero.classList.contains('compact');
+    const hr = hub.getBoundingClientRect();
+    floatText(floatLayer, lx, ly, `+${fmt(gained)}`, compact ? { right: hr.right - rect.left, cy: hr.top - rect.top + hr.height / 2 } : undefined);
     flashClass(hub, 'pop', 300);
-    ripple(hub, floatLayer);
-    burst(floatLayer, lx, ly);
+    ripple(hub, floatLayer, compact ? 1.3 : 1.7);
+    burst(floatLayer, lx, ly, { spread: compact ? 0.6 : 1 });
     if (motionOk()) net.pulse();
     sfx.click();
     haptic('light');
