@@ -1,7 +1,7 @@
 ---
 id: 034
 size: M
-status: ready
+status: done
 touches: [src/ui/dialogs.ts, src/ui/app.ts, src/core/, src/content/texts.ts, src/content/balance.ts, src/save/]
 depends: []
 priority: normal

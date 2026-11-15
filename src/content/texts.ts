@@ -83,12 +83,12 @@ export const T = {
       help: 'Hjälpen hittar du under kugghjulet, under Hjälp.',
     },
   },
-  buffActive: (mult: number, sec: number) => `×${mult} produktion · ${sec} s`,
+  buffActive: (mult: number, sec: number, click = false) => `×${mult} ${click ? 'klick' : 'produktion'} · ${sec} s`,
   welcomeTitle: 'Välkommen tillbaka!',
   welcomeBody: (system: string, amount: string) => `Medan du var borta synkade ${system} ${amount} KP.`,
   welcomeAway: (away: string, capped: boolean, cap: string) =>
     capped ? `Du var borta ${away}. Systemen orkade jobba i ${cap}.` : `Du var borta ${away}.`,
-  welcomeOk: 'Hämta',
+  morning: { ask: 'Hur börjar du dagen?', coffee: 'Kaffe (+20 %)', inbox: 'Inkorgen (+1 ärende)', standup: 'Standup (klick ×2, 2 min)' },
   welcomeTickets: (n: number) => (n === 1 ? 'Ett ärende väntar i inkorgen.' : `${n} ärenden väntar i inkorgen.`),
   inbox: {
     label: (n: number) => (n > 0 ? `Inkorg ${n}` : 'Inkorg'),
