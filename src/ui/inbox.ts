@@ -1,35 +1,9 @@
 // Inbox ticket dialog. The choice is applied by the caller (app.ts), which owns the state.
 import { senderName } from '../content/registry';
 import { T } from '../content/texts';
-import type { EventEffect } from '../content/types';
-import { getTicket, kpPerClick, kpPerSecond, previewEffect, type AnswerResult, type EffectPreview, type GameState } from '../core';
+import { getTicket, type GameState } from '../core';
 import { h, showDialog } from './dialogs';
-import { fmt } from './format';
-
-/** The effect itself: "Produktion ×1,5 i 30 s", "KP/klick ×2 i 30 s" or "+1 234 KP". */
-export function effectText(p: EffectPreview): string {
-  if (p.kind === 'lump') return T.effect.lump(fmt(p.kp));
-  return T.effect.buff(p.mult, Math.round(p.durationMs / 1000), p.kind === 'clickMult');
-}
-
-/** The line under a choice. Buffs also show roughly what they are worth at today's pace, so they compare with lumps. */
-export function effectLine(state: GameState, e: EventEffect): string {
-  const p = previewEffect(state, e);
-  if (p.kind === 'lump') return T.effect.now(effectText(p));
-  const click = p.kind === 'clickMult';
-  const rate = click ? T.effect.clicksPerSec : undefined;
-  const perSec = click ? kpPerClick(state).mul(T.effect.clicksPerSec) : kpPerSecond(state);
-  const worth = perSec.mul(p.mult - 1).mul(p.durationMs / 1000);
-  // Nothing to multiply yet (no production): an estimate of +0 would only mislead.
-  return worth.gte(1) ? T.effect.worth(effectText(p), fmt(worth), rate) : effectText(p);
-}
-
-/** Toast after an answer: the fun outcome, then what actually happened. */
-export function receiptText(r: AnswerResult): string {
-  if (!r.choice) return '';
-  const p: EffectPreview = r.choice.effect.kind === 'lump' ? { kind: 'lump', kp: r.granted } : previewEffect(r.state, r.choice.effect);
-  return T.inbox.receipt(r.choice.outcome, effectText(p));
-}
+import { effectLine } from './effects';
 
 /** Show the oldest unanswered ticket. Returns false if the inbox is empty. */
 export function showTicket(state: GameState, onAnswer: (ticketId: string, choice: number) => void): boolean {
