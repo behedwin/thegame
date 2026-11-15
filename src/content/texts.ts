@@ -3,6 +3,7 @@ import { BALANCE } from './balance';
 import type { CustomerDef, CustomerEffect, SeasonDef } from './types';
 
 const num = (n: number) => String(Math.round(n * 100) / 100).replace('.', ',');
+const buffName = (mult: number, click: boolean) => `${click ? 'KP/klick' : 'Produktion'} ×${num(mult)}`;
 const pctText = (n: number) => `${num(n)}\u00a0%`;
 
 export const T = {
@@ -74,9 +75,10 @@ export const T = {
       help: 'Hjälpen hittar du under kugghjulet, under Hjälp.',
     },
   },
-  buffActive: (mult: number, sec: number, click = false) => `${click ? 'KP/klick' : 'Produktion'} ×${num(mult)} · ${sec} s`,
+  buffActive: (mult: number, sec: number, click = false) => `${buffName(mult, click)} · ${sec} s`,
+  receipt: (text: string, result: string) => `${text} ${result}.`,
   effect: {
-    buff: (mult: number, sec: number, click: boolean) => `${click ? 'KP/klick' : 'Produktion'} ×${num(mult)} i ${sec} s`,
+    buff: (mult: number, sec: number, click: boolean) => `${buffName(mult, click)} i ${sec} s`,
     lump: (kp: string) => `+${kp} KP`,
     now: (lump: string) => `${lump} direkt`,
     worth: (buff: string, kp: string, clicksPerSec?: number) => `${buff} · ≈ +${kp} KP${clicksPerSec ? ` vid ${clicksPerSec} klick/s` : ''}`,
@@ -96,7 +98,6 @@ export const T = {
     later: 'Senare',
     note: `Ärenden väntar tills du svarar. Högst ${BALANCE.tickets.cap} åt gången.`,
     empty: 'Inga ärenden just nu. Alla är nöjda, för stunden.',
-    receipt: (outcome: string, result: string) => `${outcome} ${result}.`,
   },
   celebrate: { double: '×2', signed: 'Påskrivet!' },
   prestige: {

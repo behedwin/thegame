@@ -1,14 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { AUTOMATIONS, TICKETS } from '../src/content/registry';
-import { answerTicket, applyEffect, createInitialState, Decimal, previewEffect, type GameState } from '../src/core';
+import { answerTicket, applyEffect, createInitialState, Decimal, previewEffect, type AnswerResult, type GameState } from '../src/core';
 import { buffLines } from '../src/ui/hud';
-import { effectLine, effectText, receiptText } from '../src/ui/inbox';
+import { effectLine, effectText, receiptText } from '../src/ui/effects';
 
 const fresh = (): GameState => createInitialState(0);
 const producing = (): GameState => ({ ...fresh(), timeMs: 10_000, automations: { [AUTOMATIONS[0]!.id]: 10 } });
 const lump = { kind: 'lump', seconds: 15, minKp: 10 } as const;
 const prod = { kind: 'prodMult', mult: 1.5, durationMs: 30_000 } as const;
 const clk = { kind: 'clickMult', mult: 2, durationMs: 30_000 } as const;
+const receipt = (r: AnswerResult) => receiptText(r.choice!.outcome, r.choice!.effect, r.state, r.granted);
 
 describe('previewEffect (task 043)', () => {
   it('gives the same KP as applyEffect for lumps, also when minKp applies', () => {
@@ -51,9 +52,9 @@ describe('effect texts (task 043)', () => {
   it('ends the receipt with the actual result', () => {
     const s = { ...producing(), inbox: ['csv-semicolon'] };
     const lumpR = answerTicket(s, 'csv-semicolon', 1);
-    expect(receiptText(lumpR)).toBe(`${lumpR.choice!.outcome} ${effectText({ kind: 'lump', kp: lumpR.granted })}.`);
+    expect(receipt(lumpR)).toBe(`${lumpR.choice!.outcome} ${effectText({ kind: 'lump', kp: lumpR.granted })}.`);
     const buffR = answerTicket(s, 'csv-semicolon', 0);
-    expect(receiptText(buffR).endsWith('Produktion ×1,5 i 30 s.')).toBe(true);
+    expect(receipt(buffR).endsWith('Produktion ×1,5 i 30 s.')).toBe(true);
   });
 });
 
