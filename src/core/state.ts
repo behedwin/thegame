@@ -36,6 +36,10 @@ export interface GameState {
   totalEarned: Decimal;
   merits: Decimal;
   meritsEarned: Decimal;
+  /** Most KP earned in one finished school year. Updated by prestige(). */
+  bestRunEarned: Decimal;
+  /** Upgrade levels and automations bought ever (bulk buys count every unit). */
+  purchases: number;
   upgrades: Record<string, number>;
   automations: Record<string, number>;
   meritUpgrades: Record<string, number>;
@@ -70,6 +74,7 @@ export interface GameState {
 export function createInitialState(nowMs: number): GameState {
   return {
     kp: new Decimal(0), runEarned: new Decimal(0), totalEarned: new Decimal(0), merits: new Decimal(0), meritsEarned: new Decimal(0),
+    bestRunEarned: new Decimal(0), purchases: 0,
     upgrades: {}, automations: {}, meritUpgrades: {},
     prestiges: 0,
     clicks: 0,

@@ -132,6 +132,8 @@ export const T = {
     open: 'Statistik',
     totalEarned: 'Totalt intjänat',
     thisYear: 'Intjänat i år',
+    bestYear: 'Bästa läsår',
+    purchases: 'Köp totalt',
     clicks: 'Manuella synkningar',
     events: 'Lösta händelser',
     schoolYears: 'Läsår',

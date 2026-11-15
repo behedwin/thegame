@@ -81,8 +81,9 @@ export function buyMany(state: GameState, id: string, n: number): GameState {
   const cost = costOfMany(state, id, n);
   if (state.kp.lt(cost)) return state;
   const kp = state.kp.sub(cost);
+  const purchases = state.purchases + n;
   if (getAutomation(id)) {
-    return { ...state, kp, automations: { ...state.automations, [id]: c.owned + n } };
+    return { ...state, kp, purchases, automations: { ...state.automations, [id]: c.owned + n } };
   }
-  return { ...state, kp, upgrades: { ...state.upgrades, [id]: c.owned + n } };
+  return { ...state, kp, purchases, upgrades: { ...state.upgrades, [id]: c.owned + n } };
 }
