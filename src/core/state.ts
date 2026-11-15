@@ -21,7 +21,11 @@ export interface Settings {
   notifySeason: boolean;
   /** Onboarding tips for new players. On by default; the player can turn them off. */
   tips: boolean;
+  /** How big numbers are shown: Swedish abbreviations ("1,23 M") or scientific ("1,23e6"). */
+  notation: Notation;
 }
+
+export type Notation = 'short' | 'sci';
 
 export const DEFAULT_VOLUME = 0.7;
 
@@ -89,7 +93,7 @@ export function createInitialState(nowMs: number): GameState {
     nextTicketAtMs: BALANCE.tickets.firstAtMs,
     ticketsAnswered: 0,
     tipsSeen: [],
-    settings: { sound: true, vibration: true, volume: DEFAULT_VOLUME, notifyOfflineCap: false, notifySeason: false, tips: true },
+    settings: { sound: true, vibration: true, volume: DEFAULT_VOLUME, notifyOfflineCap: false, notifySeason: false, tips: true, notation: 'short' },
   };
 }
 

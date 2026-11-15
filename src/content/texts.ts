@@ -118,6 +118,7 @@ export const T = {
     notifyOfflineCap: 'Notis när systemen har jobbat klart offline',
     notifySeason: 'Notis när en ny säsong börjar',
     tips: 'Tips för nya spelare',
+    sciNotation: 'Vetenskaplig notation (1,23e6)',
     notifyNote: 'Notiserna är av från början och skapas bara på din enhet.',
     notifyDenied: 'Notiser är avstängda för appen i telefonens inställningar.',
     about: 'Gratis. Inga annonser, inga köp och ingen datainsamling. Allt sparas bara på din enhet.',

@@ -3,7 +3,7 @@ import { BALANCE } from '../content/balance';
 import { getTicket } from '../core/tickets';
 import { type Buff, createInitialState, Decimal, DEFAULT_VOLUME, type GameState } from '../core/state';
 
-export const SAVE_VERSION = 7;
+export const SAVE_VERSION = 8;
 
 /** Raw JSON shape. Unknown on purpose: anything may come out of storage. */
 export type RawSave = { version: number; [key: string]: unknown };
@@ -35,6 +35,8 @@ export const MIGRATIONS: Record<number, Migration> = {
   5: (s) => ({ ...s, version: 6, inbox: [], nextTicketAtMs: num(s.timeMs, 0), ticketsAnswered: 0 }),
   // v7 (task 039): lifetime records. The running year is the best one known so far.
   6: (s) => ({ ...s, version: 7, bestRunEarned: dec(s.runEarned, new Decimal(0)).toString(), purchases: 0 }),
+  // v8 (task 041): number notation. Everyone keeps the Swedish abbreviations.
+  7: (s) => ({ ...s, version: 8, settings: { ...obj(s.settings), notation: 'short' } }),
 };
 
 export class SaveError extends Error {}
@@ -158,6 +160,7 @@ export function deserialize(text: string, nowMs: number): GameState {
       notifyOfflineCap: settings.notifyOfflineCap === true,
       notifySeason: settings.notifySeason === true,
       tips: settings.tips !== false,
+      notation: settings.notation === 'sci' ? 'sci' : 'short',
     },
   };
 }

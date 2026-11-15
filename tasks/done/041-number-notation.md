@@ -1,7 +1,7 @@
 ---
 id: 041
 size: S
-status: ready
+status: done
 priority: normal
 touches: [src/ui/format.ts, src/ui/settings.ts, src/ui/app.ts, src/core/state.ts, src/save/, src/content/texts.ts]
 depends: [040]
