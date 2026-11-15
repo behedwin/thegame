@@ -173,7 +173,7 @@ Kön väljs i ordningen `priority: high` före `normal`, och därefter lägsta i
    30–90 min. Skriver `sim-report.json`.
 4. `npm run e2e`: laddar, klickar, köper, laddar om, verifierar sparning, inga konsolfel och ingen extern
    trafik, och sparar skärmdumpar i `e2e-output/`.
-5. `npm run size-check`: `src/` ≤ 5 000 rader.
+5. `npm run size-check`: `src/` ≤ 7 000 rader.
 6. `npm run tasks:check`: tasks/ är giltig och inga låsfiler finns.
 
 `npm run gates` kör allt i rätt ordning.

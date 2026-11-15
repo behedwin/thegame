@@ -1,7 +1,7 @@
 ---
 id: 046
 size: S
-status: ready
+status: done
 touches: [scripts/size-check.mjs, CLAUDE.md]
 depends: []
 priority: normal
