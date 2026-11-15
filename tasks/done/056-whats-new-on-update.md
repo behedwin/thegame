@@ -1,7 +1,7 @@
 ---
 id: 056
 size: S
-status: ready
+status: done
 touches: [src/ui/changelog.ts, src/ui/app.ts, src/ui/welcome.ts, src/core/state.ts, src/save/, src/content/texts.ts]
 depends: [054]
 priority: normal

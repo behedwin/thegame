@@ -13,13 +13,15 @@ export function welcomeSystemId(state: GameState, rng: () => number): string {
   return pick ? (rng() < 0.5 ? pick.from : pick.to) : 'skolmjuk';
 }
 
-export function showWelcome(state: GameState, earned: GameState['kp'], awayMs: number, creditedMs: number, choose: (c: MorningChoice) => void): void {
+/** `news`: an optional "Spelet har uppdaterats" line (056), so two dialogs never stack on start. */
+export function showWelcome(state: GameState, earned: GameState['kp'], awayMs: number, creditedMs: number, choose: (c: MorningChoice) => void, news?: HTMLElement): void {
   showDialog(
     T.welcomeTitle,
     [
       h('p', { class: 'big-line', text: T.welcomeBody(systemName(welcomeSystemId(state, Math.random)), fmt(earned)) }),
       h('p', { class: 'muted', text: T.welcomeAway(fmtDuration(awayMs), awayMs > creditedMs, fmtDuration(creditedMs)) }),
       ...(state.inbox.length ? [h('p', { testId: 'welcome-tickets', text: T.welcomeTickets(state.inbox.length) })] : []),
+      ...(news ? [news] : []),
       h('p', { text: T.morning.ask }),
     ],
     MORNING_CHOICES.map((c, i) => ({ label: T.morning[c], primary: !i, testId: i ? `welcome-${c}` : 'welcome-ok', onClick: () => choose(c) })),

@@ -171,7 +171,8 @@ export const T = {
     offlineBody: (cap: string) => `Integrationerna har synkat i ${cap} och tar en paus tills du tittar in.`,
   },
   changelog: {
-    title: 'Nyheter i spelet', open: 'Nyheter i spelet', version: (v: string) => `Version ${v}`, close: 'Stäng', earlier: 'Tidigare',
+    title: 'Nyheter i spelet', open: 'Nyheter i spelet', newsTitle: 'Nytt sedan sist',
+    updated: (n: number) => `Spelet har uppdaterats: ${n} ${n === 1 ? 'nyhet' : 'nyheter'}`, show: 'Visa', hide: 'Dölj nyheten', version: (v: string) => `Version ${v}`, close: 'Stäng', earlier: 'Tidigare',
     day: (iso: string) => {
       const [y, m, d] = iso.split('-').map(Number);
       const months = ['januari', 'februari', 'mars', 'april', 'maj', 'juni', 'juli', 'augusti', 'september', 'oktober', 'november', 'december'];
