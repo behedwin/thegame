@@ -21,6 +21,8 @@ export const BALANCE = {
     chancePerRoll: 1 / 150,
     cooldownMs: 60_000,
     visibleMs: 15_000,
+    /** Event streak (069): from `min` solved in a row, each solved event gives +step effect, at most +cap. */
+    streak: { min: 3, step: 0.05, cap: 0.2 },
   },
   tickets: {
     /** Inbox size. It stops filling when full; nothing expires. */

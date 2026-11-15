@@ -65,6 +65,7 @@ export const T = {
     `Milstolpe! ${count} st ${name}: produktionen ×2${named ? `. ${named}!` : ''}`,
   season: { banner: (s: SeasonDef) => `${s.name}: ${s.desc}`, aria: 'Säsong just nu' },
   eventTap: 'Tryck för att lösa!',
+  eventStreak: (n: number) => `Svit ${n} 🔥`,
   tips: {
     aria: 'Tips',
     sync: 'Tips: Tryck på SYNKA för att flytta data och tjäna KP.',
