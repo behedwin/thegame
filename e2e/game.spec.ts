@@ -50,7 +50,7 @@ test('offline progress shows the welcome dialog and the full network', async ({ 
   const save = {
     version: 1,
     kp: '250000',
-    runEarned: '8000000',
+    runEarned: '300000000', // above the prestige-tab unlock (25 % of the first merit's KP)
     totalEarned: '3000000',
     merits: '0',
     meritsEarned: '0',
