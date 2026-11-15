@@ -51,8 +51,10 @@ export class HeroSize {
   constructor(private readonly hero: HTMLElement, private readonly panel: HTMLElement, private readonly keep: readonly Node[]) {
     panel.addEventListener('scroll', () => this.sync(), { passive: true });
     hero.addEventListener('click', (e) => {
-      const t = e.target as Node;
-      if (this.mode !== 'compact' || keep.some((k) => k.contains(t))) return;
+      // The path is fixed at dispatch, so a tap on the event card still counts as "kept" after the claim
+      // has already removed the card from the slot (061).
+      const path = e.composedPath();
+      if (this.mode !== 'compact' || keep.some((k) => path.includes(k))) return;
       panel.scrollTop = 0;
       this.set('big');
     });
@@ -82,7 +84,8 @@ export class HeroSize {
     this.mode = mode;
     const compact = mode === 'compact';
     this.hero.classList.toggle('compact', compact);
-    if (compact) this.hero.setAttribute('title', T.heroExpand);
-    else this.hero.removeAttribute('title');
+    // aria-label, not title (061): the browser's title tooltip covered the event card on desktop.
+    if (compact) this.hero.setAttribute('aria-label', T.heroExpand);
+    else this.hero.removeAttribute('aria-label');
   }
 }

@@ -196,8 +196,9 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   60% { transform: translate(calc(var(--dx, 0px) * 0.6), -18px); }
   to { transform: translate(var(--dx, 0px), -28px); opacity: 0; }
 }
-.hero.compact .event-slot { left: 84px; justify-content: flex-end; }
-.hero.compact .event-card { padding: 8px 12px 10px; max-width: 100%; }
+/* The event card (061) is centred in the strip right of SYNKA, vertically too, and never leaves it. */
+.hero.compact .event-slot { left: 84px; right: 8px; bottom: 0; align-items: center; }
+.hero.compact .event-card { padding: 8px 12px 10px; max-width: 100%; overflow-wrap: break-word; }
 /* Denser shop cards (058): one-line description that a tap on the text expands, sub row shared with the
    milestone quote, and the progress bar along the card's bottom edge. */
 .list:has(.shop-card) { gap: 6px; }
