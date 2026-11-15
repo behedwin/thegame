@@ -1,4 +1,4 @@
-// Settings dialog: sound, volume, vibration, tips, opt-in notifications, help, stats, save export/import and wipe.
+// Settings dialog: sound, volume, vibration, tips, number notation, opt-in notifications, help, stats, save export/import and wipe.
 import { T } from '../content/texts';
 import type { GameState, Settings } from '../core';
 import { exportSave, importSave } from '../save/format';
@@ -42,6 +42,13 @@ export function openSettings(host: SettingsHost): void {
         h('p', { class: 'muted', text: T.settings.notifyNote }),
       ]
     : [];
+  // Notation is a choice between two formats, shown as one toggle: on = scientific.
+  const sci = () => host.state().settings.notation === 'sci';
+  const notation = h('button', { class: 'toggle', text: T.settings.sciNotation, testId: 'toggle-sciNotation', attrs: { 'aria-pressed': String(sci()) } });
+  notation.addEventListener('click', () => {
+    host.apply({ notation: sci() ? 'short' : 'sci' }, true);
+    notation.setAttribute('aria-pressed', String(sci()));
+  });
   const slider = h('input', {
     testId: 'volume',
     attrs: { type: 'range', min: '0', max: '100', step: '5', value: String(Math.round(host.state().settings.volume * 100)), 'aria-label': T.settings.volume, style: 'width:100%' },
@@ -78,7 +85,7 @@ export function openSettings(host: SettingsHost): void {
   });
   showDialog(
     T.settings.title,
-    [toggle(T.settings.sound, 'sound'), h('label', { class: 'muted', text: T.settings.volume }, slider), toggle(T.settings.vibration, 'vibration'), toggle(T.settings.tips, 'tips'), ...notify, help, stats, exp, field, imp, wipe, h('p', { class: 'muted', text: T.settings.about })],
+    [toggle(T.settings.sound, 'sound'), h('label', { class: 'muted', text: T.settings.volume }, slider), toggle(T.settings.vibration, 'vibration'), toggle(T.settings.tips, 'tips'), notation, ...notify, help, stats, exp, field, imp, wipe, h('p', { class: 'muted', text: T.settings.about })],
     [{ label: T.settings.close, primary: true }],
     'settings-dialog',
   );

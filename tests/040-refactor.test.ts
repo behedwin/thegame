@@ -30,7 +30,7 @@ function veteran(): GameState {
     nextTicketAtMs: 7_400_000,
     ticketsAnswered: 4,
     tipsSeen: ['sync'],
-    settings: { sound: false, vibration: false, volume: 0.3, notifyOfflineCap: true, notifySeason: true, tips: false },
+    settings: { sound: false, vibration: false, volume: 0.3, notifyOfflineCap: true, notifySeason: true, tips: false, notation: 'short' },
     calendar: { month: 6, day: 10 },
   };
 }

@@ -15,7 +15,7 @@ import { closeTopDialog, h, showDialog } from './dialogs';
 import { configureFeedback, floatText, haptic, setBackground, sfx, toast } from './feedback';
 import { burst, motionOk, reducedMotion, ripple } from './fx';
 import { confetti, effectsFor, flashClass, stamp, yearTransition } from './celebrate';
-import { fmt } from './format';
+import { fmt, setNotation } from './format';
 import { AchievementList } from './achievements';
 import { CustomerRow } from './customers';
 import { EventCard } from './event-card';
@@ -125,7 +125,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
     });
   }
 
-  const syncFeedbackSettings = (): void => configureFeedback(state.settings.sound, state.settings.vibration, state.settings.volume);
+  const syncFeedbackSettings = (): void => (configureFeedback(state.settings.sound, state.settings.vibration, state.settings.volume), setNotation(state.settings.notation));
   /** Sound and haptic for a purchase or an answered ticket. */
   const reward = (): void => (sfx.buy(), haptic('medium'));
 
@@ -209,6 +209,8 @@ export async function startApp(root: HTMLElement): Promise<void> {
   function applySettings(patch: Partial<Settings>, save: boolean): void {
     state = setSettings(state, patch);
     syncFeedbackSettings();
+    // The KP counter only redraws when the value changes, so a new notation is written out here.
+    if (patch.notation) hud.host.querySelector('.kp-value')!.textContent = fmt(state.kp);
     if (save) commit();
   }
 
