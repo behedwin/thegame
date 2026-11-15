@@ -41,5 +41,13 @@ export const BALANCE = {
     yearsToGoal: 14,
     yearExponent: 0.6,
   },
+  /** School-year focuses (053). Every focus but the default gives meritBonus × Meriter at the next prestige. */
+  focus: {
+    meritBonus: 1.15,
+    cloud: { boost: 3, cut: 0.5 },
+    budget: { cost: 0.7, prod: 0.85 },
+    project: { click: 5, cooldown: 0.5, auto: 0.7 },
+    standard: { milestone: 3, autoCost: 1.25 },
+  },
   morning: { coffeeMult: 1.2, standupMult: 2, standupMs: 120_000 }, // welcome-back choices (034)
 } as const;

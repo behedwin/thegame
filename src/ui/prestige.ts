@@ -1,10 +1,11 @@
 // Prestige tab: merits owned and pending, next-year preview, the prestige button and the merit shop.
 import { T } from '../content/texts';
 import { BALANCE } from '../content/balance';
-import { canPrestige, chapterFor, chaptersRead, connectedMunicipalities, nextYearMunicipalities, nextUnlock, nextYearSpeedupPct, pendingMerits, runKpForMerits, schoolYear, unlocksInYear, type GameState } from '../core';
+import { canPrestige, chapterFor, focusesForYear, chaptersRead, connectedMunicipalities, nextYearMunicipalities, nextUnlock, nextYearSpeedupPct, pendingMerits, runKpForMerits, schoolYear, unlocksInYear, type GameState } from '../core';
 import { toast } from './feedback';
 import { h, showDialog } from './dialogs';
 import { addChapter } from './celebrate';
+import { focusLines } from './effects';
 import { fmt } from './format';
 import { ShopList } from './shop';
 
@@ -17,8 +18,11 @@ export class PrestigeView {
   private readonly story = h('details', { class: 'story', testId: 'chapters' });
   private shownYear = 0;
 
-  /** `confirm` runs when the player confirms the prestige dialog; it gets the merits gained. */
-  constructor(buyMerit: (id: string) => void, state: () => GameState, confirm: (gained: GameState['merits']) => void) {
+  /**
+   * `confirm` runs when the player confirms the prestige dialog; it gets the merits gained.
+   * `chooseFocus` runs when the player picks the new school year's focus (053).
+   */
+  constructor(buyMerit: (id: string) => void, state: () => GameState, confirm: (gained: GameState['merits']) => void, private readonly chooseFocus: (id: string) => void) {
     this.merits = new ShopList(h('div', { class: 'list' }), 'merits', buyMerit);
     const card = h('div', { class: 'prestige-card' }, h('h3', { text: T.prestige.title }), h('p', { text: T.prestige.intro }), this.info, this.btn);
     this.host = h('div', {}, this.goal, card, this.story, h('h3', { class: 'list-title', text: T.prestige.shopTitle }), this.merits.host);
@@ -39,6 +43,24 @@ export class PrestigeView {
     if (chapter) addChapter(chapter.title, chapter.text);
     const fresh = unlocksInYear(schoolYear(state()));
     if (fresh.length > 0) toast(T.prestige.unlocked(fresh.map((a) => a.name).join(', ')), 'good');
+    this.pickFocus(schoolYear(state()));
+  }
+
+  /**
+   * Let the player pick this school year's focus (053). It opens under the year transition, so it is seen
+   * once that closes. Closing it keeps the default focus: no time limit, nothing lost.
+   */
+  private pickFocus(year: number): void {
+    const options = focusesForYear(year);
+    if (options.length < 2) return;
+    let close = (): void => {};
+    const buttons = options.map((f) => {
+      const b = h('button', { class: 'btn wide focus-opt', testId: `focus-${f.id}` }, h('strong', { text: f.name }), h('br'), h('small', { text: focusLines(f).join(' · ') }));
+      b.style.textAlign = 'left';
+      b.addEventListener('click', () => (close(), this.chooseFocus(f.id)));
+      return b;
+    });
+    close = showDialog(T.focus.pickTitle, [T.focus.pickIntro, ...buttons], [], 'focus-dialog');
   }
 
   render(state: GameState): void {

@@ -1,9 +1,10 @@
 // Versioned save format. Pure functions: no storage access here.
 import { BALANCE } from '../content/balance';
+import { DEFAULT_FOCUS, getFocus } from '../core/focus';
 import { getTicket } from '../core/tickets';
 import { type Buff, createInitialState, Decimal, DEFAULT_VOLUME, type GameState } from '../core/state';
 
-export const SAVE_VERSION = 8;
+export const SAVE_VERSION = 9;
 
 /** Raw JSON shape. Unknown on purpose: anything may come out of storage. */
 export type RawSave = { version: number; [key: string]: unknown };
@@ -37,6 +38,8 @@ export const MIGRATIONS: Record<number, Migration> = {
   6: (s) => ({ ...s, version: 7, bestRunEarned: dec(s.runEarned, new Decimal(0)).toString(), purchases: 0 }),
   // v8 (task 041): number notation. Everyone keeps the Swedish abbreviations.
   7: (s) => ({ ...s, version: 8, settings: { ...obj(s.settings), notation: 'short' } }),
+  // v9 (task 053): school-year focus. The running year of existing players is a normal one.
+  8: (s) => ({ ...s, version: 9, focus: DEFAULT_FOCUS }),
 };
 
 export class SaveError extends Error {}
@@ -153,6 +156,7 @@ export function deserialize(text: string, nowMs: number): GameState {
     nextTicketAtMs: num(s.nextTicketAtMs, d.nextTicketAtMs),
     ticketsAnswered: num(s.ticketsAnswered, 0),
     tipsSeen: uniqueStrings(s.tipsSeen),
+    focus: typeof s.focus === 'string' && getFocus(s.focus) ? s.focus : DEFAULT_FOCUS,
     settings: {
       sound: bool(settings.sound, d.settings.sound),
       vibration: bool(settings.vibration, d.settings.vibration),

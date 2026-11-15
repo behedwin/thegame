@@ -68,6 +68,8 @@ export interface GameState {
   /** Onboarding tip ids already shown and finished. A tip is never shown again once here. */
   tipsSeen: string[];
   settings: Settings;
+  /** School-year focus id (053, src/content/focuses/). Reset to the default every new school year. */
+  focus: string;
   /**
    * Today's calendar day, injected by the UI via setCalendar(). Drives seasons. Not saved: it is
    * re-injected on every start. Absent/null (sim, tests) means no season is active.
@@ -93,6 +95,7 @@ export function createInitialState(nowMs: number): GameState {
     nextTicketAtMs: BALANCE.tickets.firstAtMs,
     ticketsAnswered: 0,
     tipsSeen: [],
+    focus: 'normal',
     settings: { sound: true, vibration: true, volume: DEFAULT_VOLUME, notifyOfflineCap: false, notifySeason: false, tips: true, notation: 'short' },
   };
 }

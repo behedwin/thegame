@@ -8,10 +8,12 @@ import {
   buyMerit,
   canBuy,
   canBuyMerit,
+  chooseFocus,
   claimEvent,
   click,
   costOf,
   createInitialState,
+  focusesForYear,
   getTicket,
   kpPerClick,
   kpPerSecond,
@@ -21,6 +23,7 @@ import {
   prestige,
   receiveTicket,
   rollEvent,
+  schoolYear,
   spawnEvent,
   tick,
   type GameState,
@@ -175,6 +178,9 @@ export function simulateSeed(seed: number, durationSec: number): SeedResult {
           r.prestiges++;
           r.firstPrestigeSec ??= t;
           r.prestigeAtSec.push(t);
+          // School-year focus (053): rotate deterministically through the unlocked ones, default included.
+          const focuses = focusesForYear(schoolYear(s));
+          s = chooseFocus(s, focuses[s.prestiges % focuses.length]!.id);
           for (let n = 0; n < 200; n++) {
             const affordable = MERITS.filter((m) => canBuyMerit(s, m.id));
             if (affordable.length === 0) break;

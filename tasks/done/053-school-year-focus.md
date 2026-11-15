@@ -1,8 +1,8 @@
 ---
 id: 053
 size: M
-status: ready
-touches: [src/content/focuses/, src/content/registry.ts, src/content/types.ts, src/content/balance.ts, src/content/texts.ts, src/core/, src/save/, src/ui/prestige.ts, src/ui/hud.ts, sim/]
+status: done
+touches: [src/content/focuses/, src/content/registry.ts, src/content/types.ts, src/content/balance.ts, src/content/texts.ts, src/core/, src/save/, src/ui/prestige.ts, src/ui/hud.ts, src/ui/app.ts, src/ui/effects.ts, src/ui/style.css, sim/]
 depends: []
 priority: normal
 ---

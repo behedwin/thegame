@@ -55,6 +55,8 @@ test('New school year shows the chapter and connects more municipalities', async
   await expect(chapter).toBeVisible();
   await page.getByTestId('year-transition').click();
   await expect(page.getByTestId('year-transition')).toHaveCount(0);
+  // The focus picker (053) waits under the transition; pick a normal school year.
+  await page.getByTestId('focus-normal').click();
 
   const after = Number((await count.textContent())!.match(/(\d+) av 290/)![1]);
   expect(after).toBeGreaterThan(before);

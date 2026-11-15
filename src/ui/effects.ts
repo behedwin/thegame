@@ -1,7 +1,7 @@
 // Effect texts shared by random events and inbox tickets: the same preview, the same receipt.
 import { T } from '../content/texts';
-import type { EventDef, EventEffect } from '../content/types';
-import { kpPerClick, kpPerSecond, previewEffect, type Decimal, type EffectPreview, type GameState } from '../core';
+import type { EventDef, EventEffect, FocusDef } from '../content/types';
+import { getAutomation, kpPerClick, kpPerSecond, previewEffect, type Decimal, type EffectPreview, type GameState } from '../core';
 import { fmt } from './format';
 
 /** The effect itself: "Produktion ×1,5 i 30 s", "KP/klick ×2 i 30 s" or "+1 234 KP". */
@@ -30,4 +30,11 @@ export function eventCardText(state: GameState, def: EventDef): { line: string; 
 /** Toast after a claimed event or an answered ticket: the fun text, then what actually happened. */
 export function receiptText(text: string, e: EventEffect, after: GameState, granted: Decimal): string {
   return T.receipt(text, effectText(e.kind === 'lump' ? { kind: 'lump', kp: granted } : previewEffect(after, e)));
+}
+
+/** A school-year focus's rule changes (053), one line each, plus the merit bonus when it has any. */
+export function focusLines(def: FocusDef): string[] {
+  if (def.effects.length === 0) return [T.focus.none];
+  const names = (t: readonly string[] | 'all') => (t === 'all' ? '' : t.map((id) => getAutomation(id)?.name ?? id).join(' och '));
+  return [...def.effects.map((e) => T.focus.effect(e, e.kind === 'autoMult' ? names(e.targets) : '')), T.focus.meritBonus];
 }

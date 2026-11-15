@@ -57,6 +57,8 @@ test('milestone 25 fires confetti that disappears, and New school year can be sk
   await overlay.click();
   await expect(overlay).toHaveCount(0);
   await expect(page.locator('.toast').last()).toContainText('Nytt läsår!');
+  // The focus picker (053) opens under the transition; pick a normal school year.
+  await page.getByTestId('focus-normal').click();
   // The game is playable afterwards.
   await page.getByTestId('hub').click();
   await expect(page.getByTestId('kp-value')).not.toHaveText('0');

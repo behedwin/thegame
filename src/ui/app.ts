@@ -5,7 +5,7 @@ import { Capacitor } from '@capacitor/core';
 import { BALANCE } from '../content/balance';
 import { T } from '../content/texts';
 import {
-  answerTicket, applyMorningChoice, applyOffline, buy, type CalendarDay, buyMerit, claimEvent, click, createInitialState,
+  answerTicket, applyMorningChoice, applyOffline, buy, type CalendarDay, buyMerit, chooseFocus, claimEvent, click, createInitialState,
   getAutomation, kpPerClick, level, milestoneName, milestonesReached, newAchievements, networkFlow, prestige, prestigeUnlocked,
   receiveTicket, refillInboxOffline, rollEvent, setCalendar, setSettings, type Settings, spawnEvent, tick, touch, type GameState,
 } from '../core';
@@ -87,7 +87,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
     automations: new ShopList(h('div', { class: 'list' }), 'automations', (id, btn) => doBuy(id, btn)),
     upgrades: new ShopList(h('div', { class: 'list' }), 'upgrades', (id, btn) => doBuy(id, btn)),
   };
-  const prestigeView = new PrestigeView(doBuyMerit, () => state, doPrestige);
+  const prestigeView = new PrestigeView(doBuyMerit, () => state, doPrestige, (id) => ((state = chooseFocus(state, id)), commit()));
   const bulkLabel = (m: BulkMode) => (m === 1 ? T.bulk.one : m === 10 ? T.bulk.ten : T.bulk.max);
   const bulkButtons = BULK_MODES.map((m) => {
     const b = h('button', { class: 'bulk-opt', text: bulkLabel(m), testId: `bulk-${m}`, attrs: { 'aria-pressed': String(m === bulk) } });
