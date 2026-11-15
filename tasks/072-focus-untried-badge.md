@@ -1,7 +1,9 @@
 ---
-id: p-focus-untried-badge
+id: 072
 size: S
-status: proposed
+status: ready
+priority: normal
+changelog: "Vid nytt läsår ser du vilka inriktningar du inte har provat än."
 touches: [src/ui/prestige.ts, src/content/texts.ts]
 depends: [068]
 ---
@@ -20,3 +22,5 @@ finns i `state.focusesPlayed` (aldrig på "Vanligt läsår"). Ingen etikett när
 ## Tester
 - Enhet: en ren hjälpfunktion som avgör om en inriktning är oprovad (standardinriktningen aldrig).
 - e2e: med ett sparat spel där `cloud` är provad har bara de andra valen etiketten.
+
+Från förslaget `p-focus-untried-badge`.
