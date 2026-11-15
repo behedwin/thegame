@@ -1,7 +1,8 @@
 // Prestige tab: merits owned and pending, next-year preview, the prestige button and the merit shop.
 import { T } from '../content/texts';
 import { BALANCE } from '../content/balance';
-import { canPrestige, chapterFor, focusesForYear, chaptersRead, connectedMunicipalities, nextYearMunicipalities, nextUnlock, nextYearSpeedupPct, pendingMerits, runKpForMerits, schoolYear, unlocksInYear, type GameState } from '../core';
+import { canPrestige, chaptersRead, connectedMunicipalities, nextYearMunicipalities, nextUnlock, nextYearSpeedupPct, pendingMerits, runKpForMerits, schoolYear, yearStart, type GameState } from '../core';
+import type { FocusDef } from '../content/types';
 import { toast } from './feedback';
 import { h, showDialog } from './dialogs';
 import { addChapter } from './celebrate';
@@ -36,22 +37,20 @@ export class PrestigeView {
     });
   }
 
-  /** Run the prestige, then announce integration types the new school year unlocks (051). */
+  /** Run the prestige, then show what the new school year brings (yearStart: chapter 052, unlocks 051, focus 053). */
   private confirmed(confirm: (gained: GameState['merits']) => void, gained: GameState['merits'], state: () => GameState): void {
     confirm(gained);
-    const chapter = chapterFor(schoolYear(state()));
+    const { chapter, unlocked, focuses } = yearStart(schoolYear(state()));
     if (chapter) addChapter(chapter.title, chapter.text);
-    const fresh = unlocksInYear(schoolYear(state()));
-    if (fresh.length > 0) toast(T.prestige.unlocked(fresh.map((a) => a.name).join(', ')), 'good');
-    this.pickFocus(schoolYear(state()));
+    if (unlocked.length > 0) toast(T.prestige.unlocked(unlocked.map((a) => a.name).join(', ')), 'good');
+    this.pickFocus(focuses);
   }
 
   /**
    * Let the player pick this school year's focus (053). It opens under the year transition, so it is seen
    * once that closes. Closing it keeps the default focus: no time limit, nothing lost.
    */
-  private pickFocus(year: number): void {
-    const options = focusesForYear(year);
+  private pickFocus(options: FocusDef[]): void {
     if (options.length < 2) return;
     let close = (): void => {};
     const buttons = options.map((f) => {
