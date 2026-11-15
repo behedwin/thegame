@@ -74,6 +74,9 @@ export interface GameState {
   /** Events solved and tickets answered in the running school year (076). Reset by prestige(). */
   yearEvents: number;
   yearTickets: number;
+  /** The same counters for the school year before (078). Set by prestige(); 0 before the first one. */
+  lastYearEvents: number;
+  lastYearTickets: number;
   /** Onboarding tip ids already shown and finished. A tip is never shown again once here. */
   tipsSeen: string[];
   settings: Settings;
@@ -118,6 +121,8 @@ export function createInitialState(nowMs: number): GameState {
     ticketsAnswered: 0,
     yearEvents: 0,
     yearTickets: 0,
+    lastYearEvents: 0,
+    lastYearTickets: 0,
     tipsSeen: [],
     focus: DEFAULT_FOCUS,
     focusesPlayed: [],

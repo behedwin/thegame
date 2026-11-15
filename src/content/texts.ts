@@ -136,6 +136,8 @@ export const T = {
     summaryIntegrations: (n: number) => (n === 1 ? '1 integration i drift' : `${n} integrationer i drift`),
     summaryEvents: (n: number) => (n === 1 ? '1 event löst' : `${n} event lösta`),
     summaryTickets: (n: number) => (n === 1 ? '1 ärende stängt' : `${n} ärenden stängda`),
+    /** Change against last school year, appended to a summary line (078). */
+    summaryDiff: (n: number) => ` (${n > 0 ? '+' : n < 0 ? '−' : '±'}${Math.abs(n)})`,
     summaryMerits: (n: string) => `${n} Meriter att hämta ut`,
     summaryBest: 'Ditt bästa läsår hittills!',
   },

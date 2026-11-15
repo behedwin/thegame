@@ -44,6 +44,8 @@ export function prestige(state: GameState): GameState {
     merits: state.merits.add(gained),
     meritsEarned: state.meritsEarned.add(gained),
     prestiges: state.prestiges + 1,
+    lastYearEvents: state.yearEvents,
+    lastYearTickets: state.yearTickets,
     yearEvents: 0,
     yearTickets: 0,
     focusesPlayed: withFocusPlayed(state),
@@ -61,6 +63,9 @@ export interface YearSummary {
   /** Events solved and tickets answered this year (076). */
   events: number;
   tickets: number;
+  /** Change against last school year (078); null in the first school year, which has nothing to compare with. */
+  eventsDiff: number | null;
+  ticketsDiff: number | null;
   /** True when this year beat every earlier one. */
   bestYear: boolean;
 }
@@ -73,6 +78,8 @@ export const yearSummary = (state: GameState): YearSummary => ({
   merits: pendingMerits(state),
   events: state.yearEvents,
   tickets: state.yearTickets,
+  eventsDiff: state.prestiges > 0 ? state.yearEvents - state.lastYearEvents : null,
+  ticketsDiff: state.prestiges > 0 ? state.yearTickets - state.lastYearTickets : null,
   bestYear: state.runEarned.gt(state.bestRunEarned),
 });
 
