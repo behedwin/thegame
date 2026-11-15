@@ -122,6 +122,12 @@ export const T = {
     unlockNext: (names: string) => `Nästa läsår låser upp: ${names}`,
     unlockLater: (year: number, names: string) => `Läsår ${year}: ${names}`,
     unlocked: (names: string) => `Ny integrationstyp: ${names}`,
+    summaryTitle: 'Läsåret som gick',
+    summaryKp: (kp: string) => `${kp} KP intjänat`,
+    summaryCustomers: (n: number) => (n === 1 ? '1 kund skrev på' : `${n} kunder skrev på`),
+    summaryIntegrations: (n: number) => (n === 1 ? '1 integration i drift' : `${n} integrationer i drift`),
+    summaryMerits: (n: string) => `${n} Meriter att hämta ut`,
+    summaryBest: 'Ditt bästa läsår hittills!',
   },
   goal: {
     title: 'Hela Sverige på en standard',

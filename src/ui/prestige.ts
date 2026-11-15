@@ -1,7 +1,7 @@
 // Prestige tab: merits owned and pending, next-year preview, the prestige button and the merit shop.
 import { T } from '../content/texts';
 import { BALANCE } from '../content/balance';
-import { canPrestige, chaptersRead, connectedMunicipalities, nextYearMunicipalities, nextUnlock, nextYearSpeedupPct, pendingMerits, runKpForMerits, schoolYear, yearStart, type GameState } from '../core';
+import { canPrestige, chaptersRead, connectedMunicipalities, nextYearMunicipalities, nextUnlock, nextYearSpeedupPct, pendingMerits, runKpForMerits, schoolYear, yearStart, yearSummary, type GameState } from '../core';
 import type { FocusDef } from '../content/types';
 import { toast } from './feedback';
 import { h, showDialog } from './dialogs';
@@ -30,11 +30,20 @@ export class PrestigeView {
     this.btn.addEventListener('click', () => {
       if (!canPrestige(state())) return;
       const gained = pendingMerits(state());
-      showDialog(T.prestige.title, [T.prestige.confirm], [
+      showDialog(T.prestige.title, [this.summary(state()), T.prestige.confirm], [
         { label: T.cancel },
         { label: T.prestige.confirmYes, primary: true, testId: 'confirm-prestige', onClick: () => this.confirmed(confirm, gained, state) },
       ]);
     });
+  }
+
+  /** The year in review shown in the confirm dialog (063). */
+  private summary(state: GameState): HTMLElement {
+    const s = yearSummary(state);
+    const lines = [T.prestige.summaryKp(fmt(s.kpEarned)), T.prestige.summaryCustomers(s.customers), T.prestige.summaryIntegrations(s.integrations), T.prestige.summaryMerits(fmt(s.merits))];
+    return h('div', { class: 'year-summary', testId: 'year-summary' }, h('strong', { text: T.prestige.summaryTitle }),
+      h('ul', {}, ...lines.map((text) => h('li', { text }))),
+      ...(s.bestYear ? [h('p', { class: 'prestige-preview', testId: 'year-summary-best', text: T.prestige.summaryBest })] : []));
   }
 
   /** Run the prestige, then show what the new school year brings (yearStart: chapter 052, unlocks 051, focus 053). */
