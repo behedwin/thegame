@@ -1,12 +1,15 @@
 ---
-id: p-save-text-style
+id: 038
 size: S
-status: proposed
-touches: [src/ui/style.css]
+status: ready
+priority: normal
+touches: [src/ui/style.css, src/ui/settings.ts]
 depends: [032]
 ---
 
 # Stil för sparningsfältet i inställningarna
+
+Från förslaget `p-save-text-style`.
 
 Textfältet för export och import (032) har webbläsarens standardstil: vit bakgrund och svart monospace. Det
 sticker ut i den mörka dialogen.
@@ -15,7 +18,8 @@ sticker ut i den mörka dialogen.
 
 ## Vad som ska göras
 - Ge `[data-testid="save-text"]` (eller en klass) mörk bakgrund, ljus text, rundade hörn som knapparna,
-  radbrytning var som helst (`word-break: break-all`) och synlig fokusmarkering.
+  radbrytning var som helst (`word-break: break-all`) och synlig fokusmarkering. Flytta gärna den inline
+  `style: 'width:100%'` i `settings.ts` till CSS.
 - Ingen ändring i logik eller texter.
 
 ## Tester
