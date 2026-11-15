@@ -1,21 +1,14 @@
 import Decimal from 'break_infinity.js';
 import { BALANCE } from '../content/balance';
+import type { MonthDay } from '../content/types';
 
 export { Decimal };
 
 /** A temporary multiplier (from random events). Expires in game time, not wall time. */
-export interface Buff {
-  source: string;
-  kind: 'prodMult' | 'clickMult';
-  mult: number;
-  untilMs: number;
-}
+export interface Buff { source: string; kind: 'prodMult' | 'clickMult'; mult: number; untilMs: number }
 
 /** A random event currently on screen, waiting for a tap. */
-export interface ActiveEvent {
-  id: string;
-  expiresAtMs: number;
-}
+export interface ActiveEvent { id: string; expiresAtMs: number }
 
 export interface Settings {
   sound: boolean;
@@ -33,10 +26,7 @@ export interface Settings {
 export const DEFAULT_VOLUME = 0.7;
 
 /** Today's date (month 1-12, day 1-31), injected by the UI. Never read from a clock in core. */
-export interface CalendarDay {
-  month: number;
-  day: number;
-}
+export type CalendarDay = MonthDay;
 
 export interface GameState {
   kp: Decimal;
@@ -79,14 +69,8 @@ export interface GameState {
 
 export function createInitialState(nowMs: number): GameState {
   return {
-    kp: new Decimal(0),
-    runEarned: new Decimal(0),
-    totalEarned: new Decimal(0),
-    merits: new Decimal(0),
-    meritsEarned: new Decimal(0),
-    upgrades: {},
-    automations: {},
-    meritUpgrades: {},
+    kp: new Decimal(0), runEarned: new Decimal(0), totalEarned: new Decimal(0), merits: new Decimal(0), meritsEarned: new Decimal(0),
+    upgrades: {}, automations: {}, meritUpgrades: {},
     prestiges: 0,
     clicks: 0,
     timeMs: 0,

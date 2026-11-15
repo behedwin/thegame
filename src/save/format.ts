@@ -66,9 +66,7 @@ function dec(v: unknown, fallback: Decimal): Decimal {
   }
 }
 
-function num(v: unknown, fallback: number): number {
-  return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
-}
+const num = (v: unknown, fallback: number): number => (typeof v === 'number' && Number.isFinite(v) ? v : fallback);
 
 function levels(v: unknown): Record<string, number> {
   const out: Record<string, number> = {};
@@ -80,16 +78,15 @@ function levels(v: unknown): Record<string, number> {
   return out;
 }
 
-function obj(v: unknown): Record<string, unknown> {
-  return v && typeof v === 'object' ? (v as Record<string, unknown>) : {};
-}
+const obj = (v: unknown): Record<string, unknown> => (v && typeof v === 'object' ? (v as Record<string, unknown>) : {});
+
+/** The Decimal fields, saved as strings. */
+const BIG = ['kp', 'runEarned', 'totalEarned', 'merits', 'meritsEarned'] as const;
 
 export function serialize(state: GameState): string {
   // Every GameState field is saved except the calendar, which the UI re-injects on start.
-  const { calendar: _calendar, kp, runEarned, totalEarned, merits, meritsEarned, ...rest } = state;
-  const big = { kp, runEarned, totalEarned, merits, meritsEarned };
-  const save: RawSave = { version: SAVE_VERSION, ...rest, ...Object.fromEntries(Object.entries(big).map(([k, v]) => [k, v.toString()])) };
-  return JSON.stringify(save);
+  const { calendar: _calendar, ...rest } = state;
+  return JSON.stringify({ version: SAVE_VERSION, ...rest, ...Object.fromEntries(BIG.map((k) => [k, state[k].toString()])) });
 }
 
 const EXPORT_PREFIX = 'SKI1:';
@@ -129,12 +126,9 @@ export function deserialize(text: string, nowMs: number): GameState {
   const d = createInitialState(nowMs);
   const settings = obj(s.settings);
   const event = obj(s.activeEvent);
+  const bool = (v: unknown, fallback: boolean) => (typeof v === 'boolean' ? v : fallback);
   return {
-    kp: dec(s.kp, d.kp),
-    runEarned: dec(s.runEarned, d.runEarned),
-    totalEarned: dec(s.totalEarned, d.totalEarned),
-    merits: dec(s.merits, d.merits),
-    meritsEarned: dec(s.meritsEarned, d.meritsEarned),
+    ...(Object.fromEntries(BIG.map((k) => [k, dec(s[k], d[k])])) as Pick<GameState, (typeof BIG)[number]>),
     upgrades: levels(s.upgrades),
     automations: levels(s.automations),
     meritUpgrades: levels(s.meritUpgrades),
@@ -155,8 +149,8 @@ export function deserialize(text: string, nowMs: number): GameState {
     ticketsAnswered: num(s.ticketsAnswered, 0),
     tipsSeen: uniqueStrings(s.tipsSeen),
     settings: {
-      sound: typeof settings.sound === 'boolean' ? settings.sound : d.settings.sound,
-      vibration: typeof settings.vibration === 'boolean' ? settings.vibration : d.settings.vibration,
+      sound: bool(settings.sound, d.settings.sound),
+      vibration: bool(settings.vibration, d.settings.vibration),
       volume: Math.min(1, Math.max(0, num(settings.volume, d.settings.volume))),
       notifyOfflineCap: settings.notifyOfflineCap === true,
       notifySeason: settings.notifySeason === true,

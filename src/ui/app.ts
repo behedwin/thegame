@@ -31,16 +31,11 @@ import { helpHooks } from './help';
 import { markTipSeen, nextTip, settleTips, TipBar, tourNext, TOUR, type TourStep } from './onboarding';
 import { showWelcome } from './welcome';
 
-const GEAR =
-  '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3h-4l-.4 2.9a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.4 7.4 0 0 0 1.7 1L11 21h4l.4-2.9a7.4 7.4 0 0 0 1.7-1l2.5 1 2-3.5zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg>';
-const SYNC =
-  '<svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true"><path fill="currentColor" d="M12 4V1L8 5l4 4V6a6 6 0 0 1 5.7 7.9l1.5 1.5A8 8 0 0 0 12 4zm0 14a6 6 0 0 1-5.7-7.9L4.8 8.6A8 8 0 0 0 12 20v3l4-4-4-4z"/></svg>';
+const GEAR = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3h-4l-.4 2.9a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.4 7.4 0 0 0 1.7 1L11 21h4l.4-2.9a7.4 7.4 0 0 0 1.7-1l2.5 1 2-3.5zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg>';
+const SYNC = '<svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true"><path fill="currentColor" d="M12 4V1L8 5l4 4V6a6 6 0 0 1 5.7 7.9l1.5 1.5A8 8 0 0 0 12 4zm0 14a6 6 0 0 1-5.7-7.9L4.8 8.6A8 8 0 0 0 12 20v3l4-4-4-4z"/></svg>';
 
 /** Today's local calendar day, injected into the pure core for seasons. */
-function today(): CalendarDay {
-  const d = new Date();
-  return { month: d.getMonth() + 1, day: d.getDate() };
-}
+const today = (d = new Date()): CalendarDay => ({ month: d.getMonth() + 1, day: d.getDate() });
 
 const TABS = ['automations', 'upgrades', 'prestige', 'achievements'] as const;
 type Tab = (typeof TABS)[number];
@@ -96,9 +91,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
   const bulkButtons = BULK_MODES.map((m) => {
     const b = h('button', { class: 'bulk-opt', text: bulkLabel(m), testId: `bulk-${m}`, attrs: { 'aria-pressed': String(m === bulk) } });
     b.addEventListener('click', () => {
-      bulk = m;
-      lists.automations.bulk = m;
-      lists.upgrades.bulk = m;
+      bulk = lists.automations.bulk = lists.upgrades.bulk = m;
       for (const [i, o] of bulkButtons.entries()) o.setAttribute('aria-pressed', String(BULK_MODES[i] === m));
       render();
     });
@@ -132,9 +125,9 @@ export async function startApp(root: HTMLElement): Promise<void> {
     });
   }
 
-  function syncFeedbackSettings(): void {
-    configureFeedback(state.settings.sound, state.settings.vibration, state.settings.volume);
-  }
+  const syncFeedbackSettings = (): void => configureFeedback(state.settings.sound, state.settings.vibration, state.settings.volume);
+  /** Sound and haptic for a purchase or an answered ticket. */
+  const reward = (): void => (sfx.buy(), haptic('medium'));
 
   function doClick(x: number, y: number): void {
     const gained = kpPerClick(state);
@@ -155,8 +148,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
     const before = state;
     state = bulk === 1 ? buy(state, id) : buyMany(state, id, resolveBulk(state, id, bulk));
     if (state === before) return;
-    sfx.buy();
-    haptic('medium');
+    reward();
     const card = btn.closest<HTMLElement>('.card');
     flashClass(card, 'flash', 300);
     const fx = effectsFor(bulk === 1 ? 'buy' : 'bulkBuy', reducedMotion());
@@ -167,8 +159,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
       const count = level(state.automations, id);
       toast(T.toastMilestone(def.name, count, milestoneName(def, count)), 'good');
       sfx.milestone();
-      flashClass(card, 'sheen', 900);
-      if (card) stamp(card, T.celebrate.double);
+      if (card) (flashClass(card, 'sheen', 900), stamp(card, T.celebrate.double));
       if (effectsFor('milestone', reducedMotion()).includes('confetti')) confetti(r.left + r.width / 2, r.top);
     }
     commit();
@@ -178,8 +169,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
     const before = state;
     state = buyMerit(state, id);
     if (state === before) return;
-    sfx.buy();
-    haptic('medium');
+    reward();
     commit();
   }
 
@@ -210,8 +200,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
       if (!r.choice) return;
       state = r.state;
       toast(r.choice.outcome, 'event');
-      sfx.buy();
-      haptic('medium');
+      reward();
       commit();
     });
     if (!shown) toast(T.inbox.empty);
@@ -265,8 +254,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
     // Shop tabs get the bulk bar above their list; the others show only their view.
     const view = tabViews[tab];
     if (panel.lastElementChild !== view.host) {
-      if (view.bulk) panel.replaceChildren(bulkBar, view.host);
-      else panel.replaceChildren(view.host);
+      panel.replaceChildren(...(view.bulk ? [bulkBar] : []), view.host);
     }
     view.render();
   }
@@ -324,10 +312,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
   window.addEventListener('pagehide', leave);
 
   // ---------- Loop ----------
-  let last = performance.now();
-  let rollAcc = 0;
-  let renderAcc = 0;
-  let saveAcc = 0;
+  let [last, rollAcc, renderAcc, saveAcc] = [performance.now(), 0, 0, 0];
   function frame(now: number): void {
     const dt = Math.min(1000, Math.max(0, now - last));
     last = now;
@@ -342,13 +327,11 @@ export async function startApp(root: HTMLElement): Promise<void> {
       state = receiveTicket(state, Math.random);
     }
     net.frame(dt / 1000);
-    renderAcc += dt;
-    if (renderAcc >= 100) {
+    if ((renderAcc += dt) >= 100) {
       renderAcc = 0;
       render();
     }
-    saveAcc += dt;
-    if (saveAcc >= AUTOSAVE_MS) {
+    if ((saveAcc += dt) >= AUTOSAVE_MS) {
       saveAcc = 0;
       persist();
     }

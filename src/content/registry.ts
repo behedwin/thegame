@@ -30,18 +30,9 @@ export const UPGRADES = collect(import.meta.glob<{ default: UpgradeDef }>('./upg
 export const MERITS = collect(import.meta.glob<{ default: MeritDef }>('./merits/*.ts', { eager: true }), byOrder);
 export const EVENTS = collect(import.meta.glob<{ default: EventDef }>('./events/*.ts', { eager: true }), none);
 export const SYSTEMS = collect(import.meta.glob<{ default: SystemDef }>('./systems/*.ts', { eager: true }), none);
-export const CUSTOMERS = collect(
-  import.meta.glob<{ default: CustomerDef }>('./customers/*.ts', { eager: true }),
-  (a, b) => a.atRunKp - b.atRunKp,
-);
-
-export const ACHIEVEMENTS = collect(
-  import.meta.glob<{ default: AchievementDef }>('./achievements/*.ts', { eager: true }),
-  byOrder,
-);
-
+export const CUSTOMERS = collect(import.meta.glob<{ default: CustomerDef }>('./customers/*.ts', { eager: true }), (a, b) => a.atRunKp - b.atRunKp);
+export const ACHIEVEMENTS = collect(import.meta.glob<{ default: AchievementDef }>('./achievements/*.ts', { eager: true }), byOrder);
 export const SEASONS = collect(import.meta.glob<{ default: SeasonDef }>('./seasons/*.ts', { eager: true }), byOrder);
-
 export const HELP = collect(import.meta.glob<{ default: HelpSectionDef }>('./help/*.ts', { eager: true }), byOrder);
 export const TICKETS = collect(import.meta.glob<{ default: TicketDef }>('./tickets/*.ts', { eager: true }), none);
 
@@ -54,13 +45,8 @@ export function byId<T extends { id: string }>(list: readonly T[]): (id: string)
 const getSystem = byId(SYSTEMS);
 const getCustomer = byId(CUSTOMERS);
 
-export function systemName(id: string): string {
-  return getSystem(id)?.name ?? id;
-}
-
+export const systemName = (id: string): string => getSystem(id)?.name ?? id;
 /** Display name of a ticket sender: a system or a customer. */
-export function senderName(id: string): string {
-  return getCustomer(id)?.name ?? systemName(id);
-}
+export const senderName = (id: string): string => getCustomer(id)?.name ?? systemName(id);
 
 export type * from './types';

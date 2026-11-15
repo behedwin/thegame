@@ -1,12 +1,13 @@
 // Shapes of all content definitions. One definition per file; see registry.ts.
 // Rule: the file name (without .ts) must equal the definition's id.
 
-export interface AutomationDef {
-  id: string;
-  /** Sort key (tier). Lower first. */
-  order: number;
-  name: string;
-  desc: string;
+/** Shared fields of the sorted, named definitions. `order` is the sort key: lower first. */
+interface Listed { id: string; order: number; name: string; desc: string }
+
+/** A shop item bought in levels; maxLevel 1 = one-time purchase. */
+interface Leveled<E> extends Listed { baseCost: number; costGrowth: number; maxLevel: number; effect: E }
+
+export interface AutomationDef extends Listed {
   baseCost: number;
   /** Base KP per second per owned unit. */
   kps: number;
@@ -23,17 +24,7 @@ export type UpgradeEffect =
   | { kind: 'clickKpsShare'; share: number }
   | { kind: 'autoMult'; targets: readonly string[] | 'all'; mult: number };
 
-export interface UpgradeDef {
-  id: string;
-  order: number;
-  name: string;
-  desc: string;
-  baseCost: number;
-  costGrowth: number;
-  /** 1 = one-time purchase. */
-  maxLevel: number;
-  effect: UpgradeEffect;
-}
+export type UpgradeDef = Leveled<UpgradeEffect>;
 
 export type MeritEffect =
   | { kind: 'prodPct'; pct: number }
@@ -47,16 +38,7 @@ export type MeritEffect =
   /** Offline earnings +pct % per level (additive). */
   | { kind: 'offlineEffPct'; pct: number };
 
-export interface MeritDef {
-  id: string;
-  order: number;
-  name: string;
-  desc: string;
-  baseCost: number;
-  costGrowth: number;
-  maxLevel: number;
-  effect: MeritEffect;
-}
+export type MeritDef = Leveled<MeritEffect>;
 
 export type EventEffect =
   | { kind: 'prodMult'; mult: number; durationMs: number }
@@ -115,20 +97,11 @@ export type AchievementCondition =
   | { kind: 'prestiges'; n: number };
 
 /** A permanent achievement, kept across school years. Each unlocked one gives +1 % production. */
-export interface AchievementDef {
-  id: string;
-  order: number;
-  name: string;
-  /** How to unlock it (shown in the list, also while locked). */
-  desc: string;
-  condition: AchievementCondition;
-}
+/** `desc` says how to unlock it (shown in the list, also while locked). */
+export interface AchievementDef extends Listed { condition: AchievementCondition }
 
 /** A day in the calendar year, 1-based (month 1-12, day 1-31). */
-export interface MonthDay {
-  month: number;
-  day: number;
-}
+export interface MonthDay { month: number; day: number }
 
 /** Temporary multiplier while a season is active. */
 export type SeasonEffect = { kind: 'prodMult'; mult: number } | { kind: 'clickMult'; mult: number };
@@ -137,13 +110,8 @@ export type SeasonEffect = { kind: 'prodMult'; mult: number } | { kind: 'clickMu
  * A recurring school-year season (Höstlov, Nationella prov …). Active every year between start and end
  * (inclusive). A window may wrap over New Year (start after end). Never FOMO: it comes back every year.
  */
-export interface SeasonDef {
-  id: string;
-  /** Tie-break when windows overlap. Lower wins. */
-  order: number;
-  name: string;
-  /** Flavour line shown in the season banner. */
-  desc: string;
+export interface SeasonDef extends Listed {
+  /** `order` breaks ties when windows overlap (lower wins); `desc` is the banner's flavour line. */
   start: MonthDay;
   end: MonthDay;
   effect: SeasonEffect;
