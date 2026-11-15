@@ -1,7 +1,7 @@
 ---
 id: 036
 size: S
-status: ready
+status: done
 priority: normal
 touches: [src/]
 depends: [035]

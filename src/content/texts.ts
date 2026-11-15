@@ -17,16 +17,8 @@ export const T = {
   hubTierUp: (name: string) => `Navet har uppgraderats till ${name}`,
   sourceSystems: 'Källsystem',
   targetSystems: 'Målsystem',
-  tabs: {
-    automations: 'Integrationer',
-    upgrades: 'Uppgraderingar',
-    prestige: 'Läsår',
-    achievements: 'Troféer',
-  },
-  a11y: {
-    tabsAria: 'Vyer',
-    buyAria: (name: string, label: string) => `Köp ${name}: ${label.replace(/\n/g, ' ')}`,
-  },
+  tabs: { automations: 'Integrationer', upgrades: 'Uppgraderingar', prestige: 'Läsår', achievements: 'Troféer' },
+  a11y: { tabsAria: 'Vyer', buyAria: (name: string, label: string) => `Köp ${name}: ${label.replace(/\n/g, ' ')}` },
   owned: (n: number) => `${n} st`,
   level: (n: number, max: number) => (max === 1 ? (n > 0 ? 'Klar' : '') : `Nivå ${n}/${max}`),
   maxed: 'Max',
@@ -62,10 +54,7 @@ export const T = {
   },
   toastMilestone: (name: string, count: number, named?: string | null) =>
     `Milstolpe! ${count} st ${name}: produktionen ×2${named ? `. ${named}!` : ''}`,
-  season: {
-    banner: (s: SeasonDef) => `${s.name}: ${s.desc}`,
-    aria: 'Säsong just nu',
-  },
+  season: { banner: (s: SeasonDef) => `${s.name}: ${s.desc}`, aria: 'Säsong just nu' },
   eventTap: 'Tryck för att lösa!',
   tips: {
     aria: 'Tips',
@@ -100,8 +89,7 @@ export const T = {
   celebrate: { double: '×2', signed: 'Påskrivet!' },
   prestige: {
     title: 'Nytt läsår',
-    intro:
-      'Börja om från noll med nya kunder, men behåll dina Meriter. Meriter köper permanenta bonusar som gör varje läsår snabbare.',
+    intro: 'Börja om från noll med nya kunder, men behåll dina Meriter. Meriter köper permanenta bonusar som gör varje läsår snabbare.',
     pending: (n: string) => `Nytt läsår ger nu: ${n} Meriter`,
     next: (kp: string) => `Nästa merit vid ${kp} KP intjänat i år`,
     preview: (pct: string) => `Nästa läsår går ~${pct} % snabbare`,
@@ -136,9 +124,8 @@ export const T = {
     close: 'Stäng',
   },
   notify: {
-    offlineTitle: 'Systemen har jobbat klart',
+    offlineTitle: 'Systemen har jobbat klart', seasonTitle: (name: string) => `${name} har börjat`,
     offlineBody: (cap: string) => `Integrationerna har synkat i ${cap} och tar en paus tills du tittar in.`,
-    seasonTitle: (name: string) => `${name} har börjat`,
   },
   stats: {
     title: 'Statistik',

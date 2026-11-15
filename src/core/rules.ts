@@ -17,14 +17,10 @@ export const getAutomation = byId(AUTOMATIONS);
 export const getMerit = byId(MERITS);
 
 /** Number of milestone doublings reached for an owned count. */
-export function milestonesReached(count: number): number {
-  return BALANCE.milestones.filter((m) => count >= m).length;
-}
+export const milestonesReached = (count: number): number => BALANCE.milestones.filter((m) => count >= m).length;
 
 /** Next milestone threshold above count, or null if all reached. */
-export function nextMilestone(count: number): number | null {
-  return BALANCE.milestones.find((m) => count < m) ?? null;
-}
+export const nextMilestone = (count: number): number | null => BALANCE.milestones.find((m) => count < m) ?? null;
 
 /** Progress from the last reached milestone towards the next, 0–100 (100 when all are reached). */
 export function milestoneProgressPct(count: number): number {
@@ -67,9 +63,7 @@ export function automationCostFactor(state: GameState): number {
 }
 
 /** Base price of an automation's first unit after merit discounts. */
-export function automationBaseCost(state: GameState, def: AutomationDef): number {
-  return def.baseCost * automationCostFactor(state);
-}
+export const automationBaseCost = (state: GameState, def: AutomationDef): number => def.baseCost * automationCostFactor(state);
 
 /** Time between a claimed/expired event and the next possible one. */
 export function eventCooldownMs(state: GameState): number {
@@ -248,15 +242,9 @@ export function nextYearSpeedupPct(state: GameState): number {
   return Math.max(0, Math.round((meritProdMult(sim) / meritProdMult(state) - 1) * 100));
 }
 
-export function offlineCapMs(state: GameState): number {
-  return (BALANCE.offline.baseCapHours + meritSum(state, 'offlineHours')) * 3_600_000;
-}
+export const offlineCapMs = (state: GameState): number => (BALANCE.offline.baseCapHours + meritSum(state, 'offlineHours')) * 3_600_000;
 
 /** Number of customers signed this school year (driven by KP earned this year). */
-export function customersSigned(state: GameState): number {
-  return signedCustomers(state).length;
-}
+export const customersSigned = (state: GameState): number => signedCustomers(state).length;
 
-export function activeBuffs(state: GameState): GameState['buffs'] {
-  return state.buffs.filter((b) => b.untilMs > state.timeMs);
-}
+export const activeBuffs = (state: GameState): GameState['buffs'] => state.buffs.filter((b) => b.untilMs > state.timeMs);
