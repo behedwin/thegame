@@ -61,6 +61,17 @@ export function eventEffect(state: GameState, event: EventDef): EventEffect {
   return { ...e, mult: Math.round((1 + (e.mult - 1) * (1 + b)) * 1000) / 1000 };
 }
 
+/** The event as it would be given now (streak bonus included); the same object when there is no bonus. */
+export function boostedEvent(state: GameState, event: EventDef): EventDef {
+  const effect = eventEffect(state, event);
+  return effect === event.effect ? event : { ...event, effect };
+}
+
+/** The streak to show on the event card, or 0 while it is below BALANCE.events.streak.min (069). */
+export function shownEventStreak(state: GameState): number {
+  return state.eventStreak >= BALANCE.events.streak.min ? state.eventStreak : 0;
+}
+
 export interface ClaimResult {
   state: GameState;
   event: EventDef | null;
@@ -75,7 +86,7 @@ export function claimEvent(state: GameState): ClaimResult {
   if (!active || !event || active.expiresAtMs <= state.timeMs) {
     return { state, event: null, granted: new Decimal(0) };
   }
-  const effect = eventEffect(state, event);
+  const given = boostedEvent(state, event);
   const next: GameState = {
     ...state,
     activeEvent: null,
@@ -84,9 +95,9 @@ export function claimEvent(state: GameState): ClaimResult {
     eventStreak: state.eventStreak + 1,
     eventOpen: false,
   };
-  const r = applyEffect(next, event.id, effect);
+  const r = applyEffect(next, event.id, given.effect);
   // The returned event carries the boosted effect, so the receipt shows what was actually given.
-  return { state: r.state, event: effect === event.effect ? event : { ...event, effect }, granted: r.granted };
+  return { state: r.state, event: given, granted: r.granted };
 }
 
 export type EffectPreview =
