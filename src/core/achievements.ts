@@ -41,6 +41,9 @@ function count(state: GameState, c: CountCondition): number {
       return state.ticketsAnswered;
     case 'focusesPlayed':
       return state.focusesPlayed.length;
+    case 'eventStreak':
+      // The record, not the running streak: a broken streak never takes a trophy away (074).
+      return state.bestEventStreak;
   }
 }
 

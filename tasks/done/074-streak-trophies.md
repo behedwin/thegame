@@ -1,7 +1,7 @@
 ---
 id: 074
 size: S
-status: ready
+status: done
 priority: normal
 changelog: "Nya troféer för långa eventsviter."
 touches: [src/content/types.ts, src/core/achievements.ts, src/content/achievements/]
