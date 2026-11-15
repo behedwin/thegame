@@ -1,7 +1,7 @@
 // Prestige tab: merits owned and pending, next-year preview, the prestige button and the merit shop.
 import { T } from '../content/texts';
 import { BALANCE } from '../content/balance';
-import { canPrestige, chaptersRead, DEFAULT_FOCUS, connectedMunicipalities, nextYearMunicipalities, nextUnlock, nextYearSpeedupPct, pendingMerits, runKpForMerits, schoolYear, yearStart, yearSummary, type GameState } from '../core';
+import { canPrestige, chaptersRead, connectedMunicipalities, isUntriedFocus, nextYearMunicipalities, nextUnlock, nextYearSpeedupPct, pendingMerits, runKpForMerits, schoolYear, yearStart, yearSummary, type GameState } from '../core';
 import type { FocusDef } from '../content/types';
 import { toast } from './feedback';
 import { h, showDialog } from './dialogs';
@@ -9,9 +9,6 @@ import { addChapter } from './celebrate';
 import { focusLines } from './effects';
 import { fmt } from './format';
 import { ShopList } from './shop';
-
-/** A focus the player has not played a whole school year yet; never the default (072). */
-export const isUntriedFocus = (id: string, played: readonly string[]): boolean => id !== DEFAULT_FOCUS && !played.includes(id);
 
 export class PrestigeView {
   readonly merits: ShopList;

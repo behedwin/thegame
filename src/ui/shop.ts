@@ -17,6 +17,7 @@ import {
   milestoneName,
   milestoneProgressPct,
   nextMilestone,
+  splitMaxed,
   type GameState,
 } from '../core';
 import { costOfMany, resolveBulk, type BulkMode } from '../core/bulk';
@@ -34,14 +35,6 @@ const QUOTE_AFTER_BUY_MS = 2500;
 export function showMilestoneQuote(count: number, justBought: boolean): boolean {
   if (nextMilestone(count) === null) return false;
   return justBought || milestoneProgressPct(count) >= QUOTE_NEAR_PCT;
-}
-
-/** Split ids into buyable ones and maxed ones, keeping the original order in each (073). */
-export function splitMaxed(ids: string[], maxed: (id: string) => boolean): { open: string[]; done: string[] } {
-  const open: string[] = [];
-  const done: string[] = [];
-  for (const id of ids) (maxed(id) ? done : open).push(id);
-  return { open, done };
 }
 
 interface Card {
@@ -79,7 +72,7 @@ export class ShopList {
     const revealed = all.filter((id) => isRevealed(s, id));
     const teaser = revealed.length < all.length;
     if (this.kind === 'automations') return { ids: revealed, done: [], teaser };
-    const { open, done } = splitMaxed(revealed, (id) => isMaxed(s, id));
+    const { open, done } = splitMaxed(s, revealed);
     return { ids: open, done, teaser };
   }
 

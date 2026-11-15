@@ -87,13 +87,14 @@ export function claimEvent(state: GameState): ClaimResult {
     return { state, event: null, granted: new Decimal(0) };
   }
   const given = boostedEvent(state, event);
+  const streak = state.eventStreak + 1;
   const next: GameState = {
     ...state,
     activeEvent: null,
     nextEventAtMs: state.timeMs + eventCooldownMs(state),
     eventsClaimed: state.eventsClaimed + 1,
-    eventStreak: state.eventStreak + 1,
-    bestEventStreak: Math.max(state.bestEventStreak, state.eventStreak + 1),
+    eventStreak: streak,
+    bestEventStreak: Math.max(state.bestEventStreak, streak),
     eventOpen: false,
   };
   const r = applyEffect(next, event.id, given.effect);
