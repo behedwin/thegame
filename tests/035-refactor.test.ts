@@ -3,7 +3,7 @@ import { BALANCE } from '../src/content/balance';
 import { AUTOMATIONS, TICKETS } from '../src/content/registry';
 import { createInitialState, type GameState } from '../src/core';
 import { deserialize, SAVE_VERSION, serialize } from '../src/save/format';
-import { buffLine } from '../src/ui/hud';
+import { buffLines } from '../src/ui/hud';
 import { welcomeSystemId } from '../src/ui/welcome';
 
 const fresh = (): GameState => createInitialState(0);
@@ -28,18 +28,18 @@ describe('welcomeSystemId (task 035, moved from ui/app.ts)', () => {
   });
 });
 
-describe('buffLine (task 035, moved from ui/app.ts)', () => {
+describe('buffLines (task 035, moved from ui/app.ts)', () => {
   it('is null without a running buff', () => {
-    expect(buffLine(fresh())).toBeNull();
+    expect(buffLines(fresh())).toEqual([]);
     const expired = { ...fresh(), timeMs: 5_000, buffs: [{ source: 'x', kind: 'prodMult' as const, mult: 2, untilMs: 4_000 }] };
-    expect(buffLine(expired)).toBeNull();
+    expect(buffLines(expired)).toEqual([]);
   });
 
   it('shows the multiplier, whole seconds left and the buff kind', () => {
     const s = { ...fresh(), timeMs: 1_000, buffs: [{ source: 'morning', kind: 'clickMult' as const, mult: 2, untilMs: 2_500 }] };
-    expect(buffLine(s)).toBe('×2 klick · 2 s');
+    expect(buffLines(s)).toEqual(['KP/klick ×2 · 2 s']);
     const p = { ...s, buffs: [{ ...s.buffs[0]!, kind: 'prodMult' as const }] };
-    expect(buffLine(p)).toBe('×2 produktion · 2 s');
+    expect(buffLines(p)).toEqual(['Produktion ×2 · 2 s']);
   });
 });
 

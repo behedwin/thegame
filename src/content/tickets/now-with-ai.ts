@@ -8,12 +8,12 @@ export default {
   choices: [
     {
       label: 'Använd exporten, den är faktiskt bra',
-      outcome: 'Glittret var onödigt men filen är korrekt. Synken rullar på. Produktion ×1,25 i 60 s.',
+      outcome: 'Glittret var onödigt men filen är korrekt. Synken rullar på.',
       effect: { kind: 'prodMult', mult: 1.25, durationMs: 60_000 },
     },
     {
       label: 'Skriv "AI-driven" på din egen integration också',
-      outcome: 'Ingen frågar vad det betyder. Kunden är imponerad. Du får en klump KP.',
+      outcome: 'Ingen frågar vad det betyder. Kunden är imponerad.',
       effect: { kind: 'lump', seconds: 18, minKp: 15 },
     },
   ],

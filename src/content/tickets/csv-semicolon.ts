@@ -8,17 +8,17 @@ export default {
   choices: [
     {
       label: 'Byt avgränsare i hela flödet',
-      outcome: 'Semikolon överallt. Kalkylprogrammet är nöjt, och flödet går lite smidigare. Produktion ×1,5 i 30 s.',
+      outcome: 'Semikolon överallt. Kalkylprogrammet är nöjt, och flödet går lite smidigare.',
       effect: { kind: 'prodMult', mult: 1.5, durationMs: 30_000 },
     },
     {
       label: 'Skicka ett vänligt mejl med instruktioner',
-      outcome: '"Data → Text till kolumner." Kunden tackar och skickar en kaka. Du får en klump KP.',
+      outcome: '"Data → Text till kolumner." Kunden tackar och skickar en kaka.',
       effect: { kind: 'lump', seconds: 15, minKp: 10 },
     },
     {
       label: 'Boka ett möte om avgränsare',
-      outcome: 'Mötet slutar i en arbetsgrupp. Du får mycket gjort under tiden. KP/klick ×2 i 30 s.',
+      outcome: 'Mötet slutar i en arbetsgrupp. Du får mycket gjort under tiden.',
       effect: { kind: 'clickMult', mult: 2, durationMs: 30_000 },
     },
   ],

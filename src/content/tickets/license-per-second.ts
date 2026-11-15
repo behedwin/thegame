@@ -8,17 +8,17 @@ export default {
   choices: [
     {
       label: 'Förhandla',
-      outcome: 'Ni enas om "per elev, men bara på vardagar". Det känns som en seger. Produktion ×1,5 i 30 s.',
+      outcome: 'Ni enas om "per elev, men bara på vardagar". Det känns som en seger.',
       effect: { kind: 'prodMult', mult: 1.5, durationMs: 30_000 },
     },
     {
       label: 'Betala och gå vidare',
-      outcome: 'Fakturan går till ekonomi. Du går till nästa ärende. Du får en klump KP.',
+      outcome: 'Fakturan går till ekonomi. Du går till nästa ärende.',
       effect: { kind: 'lump', seconds: 15, minKp: 10 },
     },
     {
       label: 'Boka ett möte',
-      outcome: 'Mötet faktureras per minut. Du klickar snabbt för att hinna före. KP/klick ×2 i 25 s.',
+      outcome: 'Mötet faktureras per minut. Du klickar snabbt för att hinna före.',
       effect: { kind: 'clickMult', mult: 2, durationMs: 25_000 },
     },
   ],

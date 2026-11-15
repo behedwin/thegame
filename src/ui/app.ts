@@ -26,7 +26,7 @@ import { cancelNotifications, scheduleNotifications } from './notifications';
 import { PrestigeView } from './prestige';
 import { openSettings } from './settings';
 import { ShopList } from './shop';
-import { renderInboxButton, showTicket } from './inbox';
+import { receiptText, renderInboxButton, showTicket } from './inbox';
 import { helpHooks } from './help';
 import { markTipSeen, nextTip, settleTips, TipBar, tourNext, TOUR, type TourStep } from './onboarding';
 import { showWelcome } from './welcome';
@@ -199,7 +199,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
       const r = answerTicket(state, id, choice);
       if (!r.choice) return;
       state = r.state;
-      toast(r.choice.outcome, 'event');
+      toast(receiptText(r), 'event');
       reward();
       commit();
     });

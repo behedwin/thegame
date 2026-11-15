@@ -8,17 +8,17 @@ export default {
   choices: [
     {
       label: 'Läs alla 400 sidorna',
-      outcome: 'Du hittar ett krav om fax på sidan 77 och räddar hela upphandlingen. Produktion ×1,25 i 60 s.',
+      outcome: 'Du hittar ett krav om fax på sidan 77 och räddar hela upphandlingen.',
       effect: { kind: 'prodMult', mult: 1.25, durationMs: 60_000 },
     },
     {
       label: 'Läs de tre sidorna om integration',
-      outcome: 'Snabbt, precist och klart före lunch. Du får en klump KP.',
+      outcome: 'Snabbt, precist och klart före lunch.',
       effect: { kind: 'lump', seconds: 15, minKp: 10 },
     },
     {
       label: 'Boka ett möte om underlaget',
-      outcome: 'Mötet tar fram ett underlag om underlaget. Du hinner klicka mycket. KP/klick ×2 i 30 s.',
+      outcome: 'Mötet tar fram ett underlag om underlaget. Du hinner klicka mycket.',
       effect: { kind: 'clickMult', mult: 2, durationMs: 30_000 },
     },
   ],

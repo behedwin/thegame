@@ -8,17 +8,17 @@ export default {
   choices: [
     {
       label: 'Bygg ett riktigt API',
-      outcome: 'Bussarna kommer i tid och schemat flyter. Produktion ×1,5 i 30 s.',
+      outcome: 'Bussarna kommer i tid och schemat flyter.',
       effect: { kind: 'prodMult', mult: 1.5, durationMs: 30_000 },
     },
     {
       label: 'Faxa schemat varje morgon',
-      outcome: 'Faxen tjuter som 1997. Det funkar, på något sätt. Du får en klump KP.',
+      outcome: 'Faxen tjuter som 1997. Det funkar, på något sätt.',
       effect: { kind: 'lump', seconds: 18, minKp: 15 },
     },
     {
       label: 'Boka ett möte om vad "realtid" betyder',
-      outcome: 'Ni enas om "ungefär samma dag". Du hinner synka mycket under tiden. KP/klick ×2 i 25 s.',
+      outcome: 'Ni enas om "ungefär samma dag". Du hinner synka mycket under tiden.',
       effect: { kind: 'clickMult', mult: 2, durationMs: 25_000 },
     },
   ],

@@ -72,7 +72,15 @@ export const T = {
       help: 'Hjälpen hittar du under kugghjulet, under Hjälp.',
     },
   },
-  buffActive: (mult: number, sec: number, click = false) => `×${mult} ${click ? 'klick' : 'produktion'} · ${sec} s`,
+  buffActive: (mult: number, sec: number, click = false) => `${click ? 'KP/klick' : 'Produktion'} ×${num(mult)} · ${sec} s`,
+  effect: {
+    buff: (mult: number, sec: number, click: boolean) => `${click ? 'KP/klick' : 'Produktion'} ×${num(mult)} i ${sec} s`,
+    lump: (kp: string) => `+${kp} KP`,
+    now: (lump: string) => `${lump} direkt`,
+    worth: (buff: string, kp: string, clicksPerSec?: number) => `${buff} · ≈ +${kp} KP${clicksPerSec ? ` vid ${clicksPerSec} klick/s` : ''}`,
+    /** Assumed tap rate when estimating what a click buff is worth (a steady, not frantic, pace). */
+    clicksPerSec: 3,
+  },
   welcomeTitle: 'Välkommen tillbaka!',
   welcomeBody: (system: string, amount: string) => `Medan du var borta synkade ${system} ${amount} KP.`,
   welcomeAway: (away: string, capped: boolean, cap: string) =>
@@ -85,6 +93,7 @@ export const T = {
     from: (name: string) => `Från: ${name}`,
     later: 'Senare',
     empty: 'Inga ärenden just nu. Alla är nöjda, för stunden.',
+    receipt: (outcome: string, result: string) => `${outcome} ${result}.`,
   },
   celebrate: { double: '×2', signed: 'Påskrivet!' },
   prestige: {
