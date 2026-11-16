@@ -22,7 +22,7 @@ import { CustomerRow } from './customers';
 import { EventCard } from './event-card';
 import { bindHold } from './hold';
 import { Hud } from './hud';
-import { NetworkView, nextHubTierKps } from './network';
+import { NetworkView, hubTierProgress, nextHubTierKps } from './network';
 import { cancelNotifications, scheduleNotifications } from './notifications';
 import { PrestigeView } from './prestige';
 import { openSettings } from './settings';
@@ -259,9 +259,11 @@ export async function startApp(root: HTMLElement): Promise<void> {
     renderInboxButton(inboxBtn, state);
     customers.render(state);
 
-    const tierUp = net.update(networkFlow(state));
+    const flow = networkFlow(state);
+    const tierUp = net.update(flow);
     if (tierUp !== null) toast(T.hubTierUp(T.hubTiers[tierUp]!), 'good');
     hubTierTag.textContent = T.hubTiers[net.currentTier] ?? '';
+    hubTierTag.style.setProperty('--tier-progress', hubTierProgress(flow.total).toFixed(3));
     const info = hubTierInfo();
     if (hubInfoShown !== info) {
       hubInfoShown = info;

@@ -68,6 +68,18 @@ export function nextHubTierKps(tier: number): number | null {
   return tier >= HUB_TIERS - 1 ? null : 10 * 100 ** Math.max(0, tier);
 }
 
+/** How far KP/s has come from the current hub tier toward the next, 0..1 on a log scale (092). Tier 0 counts
+ * from 1 KP/s; the top tier is always full. Never NaN. */
+export function hubTierProgress(kps: number): number {
+  if (!(kps > 0)) return 0;
+  const tier = hubTier(kps);
+  const next = nextHubTierKps(tier);
+  if (next === null) return 1;
+  const from = tier === 0 ? 1 : nextHubTierKps(tier - 1)!;
+  const p = Math.log10(kps / from) / Math.log10(next / from);
+  return Math.min(1, Math.max(0, p));
+}
+
 /** Packets per second on a line from its share of KP/s: +1.1 per decade from 0.6, capped at 5; 0 if idle. */
 export function flowRate(share: number): number {
   return share > 0 ? 0.6 + 1.1 * Math.max(0, 4 + Math.log10(Math.min(1, share))) : 0;

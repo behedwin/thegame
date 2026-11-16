@@ -1,7 +1,7 @@
 ---
 id: 092
 size: S
-status: ready
+status: done
 priority: normal
 changelog: "En mätare visar hur nära navet är sin nästa nivå."
 touches: [src/ui/network.ts, src/ui/app.ts, src/ui/style.css]
