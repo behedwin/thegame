@@ -46,7 +46,7 @@ test('094: the prestige tab shows the running year against the record', async ({
   const errors = await open(page, save(1, 25 * 60_000));
   const clock = page.getByTestId('year-clock');
   await expect(clock).toBeVisible();
-  await expect(clock).toHaveText(/^Läsåret: 18 min \(rekord 25 min\)$/);
+  await expect(clock).toHaveText(/^Läsåret: 18 min \(rekord 25 min\)( · rekordtakt)?$/);
   await page.screenshot({ path: 'e2e-output/094-year-clock.png' });
   expect(errors).toEqual([]);
 });

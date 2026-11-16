@@ -112,8 +112,11 @@ export class PrestigeView {
     this.clock.hidden = state.prestiges < 1;
     if (this.clock.hidden) return;
     const record = fastestYearRecord(state);
-    const text = T.prestige.yearClock(fmtDuration(yearDurationMs(state)), record === null ? null : fmtDuration(record));
+    const elapsed = yearDurationMs(state);
+    const onPace = record !== null && elapsed < record; // green while ahead of the fastest year (102)
+    const text = T.prestige.yearClock(fmtDuration(elapsed), record === null ? null : fmtDuration(record), onPace);
     if (this.clock.textContent !== text) this.clock.textContent = text;
+    this.clock.classList.toggle('on-pace', onPace);
   }
 
   /** National goal with a thin progress bar, the next year's gain and the story so far (052). */

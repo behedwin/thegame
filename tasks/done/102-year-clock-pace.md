@@ -1,7 +1,7 @@
 ---
 id: 102
 size: S
-status: ready
+status: done
 priority: normal
 changelog: "Läsårsklockan lyser grönt när du ligger på rekordtakt."
 touches: [src/ui/prestige.ts, src/content/texts.ts, src/ui/style.css]
