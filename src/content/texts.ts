@@ -237,6 +237,8 @@ export const T = {
     open: 'Statistik',
     totalEarned: 'Totalt intjänat',
     thisYear: 'Intjänat i år',
+    /** Last school year's KP, from the second year (106). */
+    lastYear: 'Förra läsåret',
     bestYear: 'Bästa läsår',
     purchases: 'Köp totalt',
     clicks: 'Manuella synkningar',

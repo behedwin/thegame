@@ -1,7 +1,7 @@
 ---
 id: 106
 size: S
-status: ready
+status: done
 priority: normal
 changelog: "Statistiken visar hur mycket KP du tjänade förra läsåret."
 touches: [src/ui/stats.ts, src/content/texts.ts]
