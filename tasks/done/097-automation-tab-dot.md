@@ -1,7 +1,7 @@
 ---
 id: 097
 size: S
-status: ready
+status: done
 priority: normal
 changelog: "En prick på fliken Integrationer visar när en ny integration går att köpa."
 touches: [src/ui/app.ts, src/ui/style.css, src/content/texts.ts, src/core/rules.ts]
