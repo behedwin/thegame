@@ -164,6 +164,8 @@ export const T = {
     summaryMerits: (n: string) => `${n} Meriter att hämta ut`,
     summaryBest: 'Ditt bästa läsår hittills!',
     summaryTime: (t: string) => `Läsåret tog ${t}`,
+    /** Longest event streak this school year (096). */
+    summaryStreak: (n: number) => `Längsta svit i år: ${n} 🔥`,
     summaryRecord: 'Nytt rekord: ditt snabbaste läsår!',
     /** Running school year time on the prestige tab, with the record once there is one (094). */
     yearClock: (t: string, record: string | null) => (record ? `Läsåret: ${t} (rekord ${record})` : `Läsåret: ${t}`),
