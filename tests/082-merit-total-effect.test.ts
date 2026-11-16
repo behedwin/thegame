@@ -6,6 +6,7 @@ import { meritEffectText } from '../src/ui/shop';
 
 const merit = (effect: MeritEffect, maxLevel = 10): MeritDef => ({
   id: 'x',
+  order: 0,
   name: 'X',
   desc: '',
   baseCost: 1,
