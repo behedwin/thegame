@@ -43,7 +43,7 @@ describe('040 refactor: prestige keeps exactly the lifetime fields', () => {
     const after = prestige(before);
     const changed = (Object.keys(before) as (keyof GameState)[]).filter((k) => json(before[k]) !== json(after[k])).sort();
     expect(changed).toEqual(
-      ['activeEvent', 'automations', 'bestRunEarned', 'buffs', 'kp', 'merits', 'meritsEarned', 'prestiges', 'runEarned', 'tipsSeen', 'upgrades'].sort(),
+      ['activeEvent', 'automations', 'bestRunEarned', 'buffs', 'kp', 'lastYearEarned', 'merits', 'meritsEarned', 'prestiges', 'runEarned', 'tipsSeen', 'upgrades'].sort(),
     );
     expect(Object.keys(after).sort()).toEqual(Object.keys(before).sort());
   });

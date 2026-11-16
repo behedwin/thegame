@@ -4,7 +4,7 @@ import { getFocus } from '../core/focus';
 import { getTicket } from '../core/tickets';
 import { type Buff, createInitialState, Decimal, DEFAULT_FOCUS, DEFAULT_VOLUME, type GameState } from '../core/state';
 
-export const SAVE_VERSION = 15;
+export const SAVE_VERSION = 16;
 
 /** Raw JSON shape. Unknown on purpose: anything may come out of storage. */
 export type RawSave = { version: number; [key: string]: unknown };
@@ -52,6 +52,8 @@ export const MIGRATIONS: Record<number, Migration> = {
   13: (s) => ({ ...s, version: 14, yearEvents: 0, yearTickets: 0 }),
   // v15 (task 078): last school year's counters, unknown for older saves, so 0.
   14: (s) => ({ ...s, version: 15, lastYearEvents: 0, lastYearTickets: 0 }),
+  // v16 (task 083): last school year's KP, unknown for older saves, so 0.
+  15: (s) => ({ ...s, version: 16, lastYearEarned: '0' }),
 };
 
 export class SaveError extends Error {}
@@ -104,11 +106,13 @@ const obj = (v: unknown): Record<string, unknown> => (v && typeof v === 'object'
 
 /** The Decimal fields, saved as strings. */
 const BIG = ['kp', 'runEarned', 'totalEarned', 'merits', 'meritsEarned', 'bestRunEarned'] as const;
+/** Decimal fields saved as strings in their GameState position (key order is kept, see test 036). */
+const SAVED_DECIMALS = [...BIG, 'lastYearEarned'] as const;
 
 export function serialize(state: GameState): string {
   // Every GameState field is saved except the calendar, which the UI re-injects on start.
   const { calendar: _calendar, ...rest } = state;
-  return JSON.stringify({ version: SAVE_VERSION, ...rest, ...Object.fromEntries(BIG.map((k) => [k, state[k].toString()])) });
+  return JSON.stringify({ version: SAVE_VERSION, ...rest, ...Object.fromEntries(SAVED_DECIMALS.map((k) => [k, state[k].toString()])) });
 }
 
 const EXPORT_PREFIX = 'SKI1:';
@@ -177,6 +181,7 @@ export function deserialize(text: string, nowMs: number): GameState {
     yearTickets: count(s.yearTickets),
     lastYearEvents: count(s.lastYearEvents),
     lastYearTickets: count(s.lastYearTickets),
+    lastYearEarned: dec(s.lastYearEarned, d.lastYearEarned),
     tipsSeen: uniqueStrings(s.tipsSeen),
     focus: typeof s.focus === 'string' && getFocus(s.focus) ? s.focus : DEFAULT_FOCUS,
     focusesPlayed: uniqueStrings(s.focusesPlayed).filter((id) => id !== DEFAULT_FOCUS && getFocus(id)),
