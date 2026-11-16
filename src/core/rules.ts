@@ -245,13 +245,15 @@ export function canBuyMerit(state: GameState, id: string): boolean {
 /** True when at least one merit upgrade can be bought now (089: dot on the Läsår tab). */
 export const anyMeritAffordable = (state: GameState): boolean => MERITS.some((m) => canBuyMerit(state, m.id));
 
-/** True when an upgrade not yet bought (level 0) can be bought now (093: dot on the Uppgraderingar tab). */
-export const anyUpgradeAffordable = (state: GameState): boolean =>
-  UPGRADES.some((u) => level(state.upgrades, u.id) === 0 && canBuy(state, u.id));
+/** True when one of `defs` the player does not own yet (level 0 in `owned`) can be bought now. */
+const anyNewAffordable = (state: GameState, defs: readonly { id: string }[], owned: Record<string, number>): boolean =>
+  defs.some((d) => level(owned, d.id) === 0 && canBuy(state, d.id));
+
+/** True when an upgrade not yet bought can be bought now (093: dot on the Uppgraderingar tab). */
+export const anyUpgradeAffordable = (state: GameState): boolean => anyNewAffordable(state, UPGRADES, state.upgrades);
 
 /** True when an unlocked automation the player does not own yet can be bought now (097: dot on the Integrationer tab). */
-export const anyNewAutomationAffordable = (state: GameState): boolean =>
-  AUTOMATIONS.some((a) => level(state.automations, a.id) === 0 && canBuy(state, a.id));
+export const anyNewAutomationAffordable = (state: GameState): boolean => anyNewAffordable(state, AUTOMATIONS, state.automations);
 
 /** Meriter the player would receive by starting a new school year now (with the focus bonus, 053). */
 export function pendingMerits(state: GameState): Decimal {

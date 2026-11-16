@@ -67,10 +67,11 @@ export function boostedEvent(state: GameState, event: EventDef): EventDef {
   return effect === event.effect ? event : { ...event, effect };
 }
 
-/** The streak to show on the event card, or 0 while it is below BALANCE.events.streak.min (069). */
-export function shownEventStreak(state: GameState): number {
-  return state.eventStreak >= BALANCE.events.streak.min ? state.eventStreak : 0;
-}
+/** A streak as shown to the player: 0 while it is below BALANCE.events.streak.min, so it stays hidden (069). */
+export const visibleStreak = (streak: number): number => (streak >= BALANCE.events.streak.min ? streak : 0);
+
+/** The streak to show on the event card (069). */
+export const shownEventStreak = (state: GameState): number => visibleStreak(state.eventStreak);
 
 /** The visible streak lost when the active event ran out between `before` and `after`, else 0 (079). */
 export function brokenStreak(before: GameState, after: GameState): number {
