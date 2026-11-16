@@ -3,7 +3,7 @@ import { MERITS, type AutomationDef, type ChapterDef, type FocusDef } from '../c
 import { focusesForYear, withFocusPlayed } from './focus';
 import { chapterFor } from './goal';
 import { bestYearEarned, customersSigned, meritLevelEffect, pendingMerits, runKpForMerits } from './rules';
-import { Decimal, DEFAULT_FOCUS, level, totalLevels, type GameState } from './state';
+import { Decimal, DEFAULT_FOCUS, fastestYearRecord, level, totalLevels, type GameState } from './state';
 import { unlocksInYear } from './unlocks';
 
 export function canPrestige(state: GameState): boolean {
@@ -31,10 +31,10 @@ export function startingAutomations(meritUpgrades: GameState['meritUpgrades']): 
 export const yearDurationMs = (state: GameState): number => Math.max(0, state.timeMs - state.yearStartMs);
 
 /** The fastest-year record after finishing the running year (088). */
-const fastestAfter = (state: GameState): number => {
-  const d = yearDurationMs(state);
-  return state.fastestYearMs > 0 ? Math.min(state.fastestYearMs, d) : d;
-};
+const fastestAfter = (state: GameState): number => Math.min(fastestYearRecord(state) ?? Infinity, yearDurationMs(state));
+
+/** True when the running year beats an earlier record (088); never in the first year, which has none. */
+const beatsFastestYear = (state: GameState): boolean => yearDurationMs(state) < (fastestYearRecord(state) ?? -Infinity);
 
 /** "Nytt läsår": reset the run; keep merits, lifetime totals, events, tickets and settings. */
 export function prestige(state: GameState): GameState {
@@ -111,7 +111,7 @@ export const yearSummary = (state: GameState): YearSummary => ({
   kpDiffPct: kpDiffPct(state),
   bestYear: state.runEarned.gt(state.bestRunEarned),
   durationMs: yearDurationMs(state),
-  fastestYear: state.fastestYearMs > 0 && yearDurationMs(state) < state.fastestYearMs,
+  fastestYear: beatsFastestYear(state),
 });
 
 /** What a school year brings when it starts (051-053): its chapter, new integration types and focus options. */

@@ -2,7 +2,7 @@
 // ACHIEVEMENT_PROD_PCT % production (applied in rules.ts).
 import { ACHIEVEMENTS, type AchievementCondition, type AchievementDef } from '../content/registry';
 import { baseKps, customersSigned } from './rules';
-import { level, totalLevels, type GameState } from './state';
+import { fastestYearRecord, level, totalLevels, type GameState } from './state';
 
 /** Conditions that count something up to `n` (the rest are KP and KP/s thresholds). */
 type CountCondition = Extract<AchievementCondition, { n: number }>;
@@ -14,7 +14,7 @@ export function isMet(state: GameState, c: AchievementCondition): boolean {
   if (isCountable(c)) return count(state, c) >= c.n;
   switch (c.kind) {
     case 'fastestYear':
-      return state.fastestYearMs > 0 && state.fastestYearMs <= c.maxMs; // 0 = no finished year yet (091)
+      return (fastestYearRecord(state) ?? Infinity) <= c.maxMs; // no finished year yet: not met (091)
     case 'totalEarned':
       return state.totalEarned.gte(c.kp);
     case 'kps':

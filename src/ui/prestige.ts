@@ -1,7 +1,7 @@
 // Prestige tab: merits owned and pending, next-year preview, the prestige button and the merit shop.
 import { T } from '../content/texts';
 import { BALANCE } from '../content/balance';
-import { canPrestige, chaptersRead, connectedMunicipalities, isUntriedFocus, nextYearMunicipalities, nextUnlock, nextYearSpeedupPct, pendingMerits, runKpForMerits, schoolYear, yearDurationMs, yearStart, yearSummary, type GameState } from '../core';
+import { canPrestige, chaptersRead, fastestYearRecord, connectedMunicipalities, isUntriedFocus, nextYearMunicipalities, nextUnlock, nextYearSpeedupPct, pendingMerits, runKpForMerits, schoolYear, yearDurationMs, yearStart, yearSummary, type GameState } from '../core';
 import type { FocusDef } from '../content/types';
 import { toast } from './feedback';
 import { h, showDialog } from './dialogs';
@@ -110,7 +110,8 @@ export class PrestigeView {
   private renderClock(state: GameState): void {
     this.clock.hidden = state.prestiges < 1;
     if (this.clock.hidden) return;
-    const text = T.prestige.yearClock(fmtDuration(yearDurationMs(state)), state.fastestYearMs > 0 ? fmtDuration(state.fastestYearMs) : null);
+    const record = fastestYearRecord(state);
+    const text = T.prestige.yearClock(fmtDuration(yearDurationMs(state)), record === null ? null : fmtDuration(record));
     if (this.clock.textContent !== text) this.clock.textContent = text;
   }
 
