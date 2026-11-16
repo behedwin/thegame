@@ -246,6 +246,7 @@ export const T = {
     schoolYears: 'Läsår',
     meritsEarned: 'Meriter totalt',
     achievements: 'Troféer',
+    focusesPlayed: 'Provade inriktningar',
     of: (n: number, total: number) => `${n} av ${total}`,
     timePlayed: 'Tid spelat',
     note: 'Tid spelat räknar bara tid med spelet öppet.',

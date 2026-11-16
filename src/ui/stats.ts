@@ -1,8 +1,8 @@
 // Stats page: lifetime numbers, opened from the settings dialog. Rows are derived from the
 // game state on open; every value shown is already part of the save.
-import { ACHIEVEMENTS } from '../content/registry';
+import { ACHIEVEMENTS, FOCUSES } from '../content/registry';
 import { T } from '../content/texts';
-import { bestYearEarned, fastestYearRecord, type GameState } from '../core';
+import { bestYearEarned, DEFAULT_FOCUS, fastestYearRecord, type GameState } from '../core';
 import { h, showDialog } from './dialogs';
 import { fmt, fmtDuration } from './format';
 
@@ -24,6 +24,7 @@ export function statRows(state: GameState): StatRow[] {
     { label: T.stats.schoolYears, value: fmt(state.prestiges + 1) },
     { label: T.stats.meritsEarned, value: fmt(state.meritsEarned) },
     { label: T.stats.achievements, value: T.stats.of(state.achievements.length, ACHIEVEMENTS.length) },
+    { label: T.stats.focusesPlayed, value: T.stats.of(state.focusesPlayed.length, FOCUSES.filter((f) => f.id !== DEFAULT_FOCUS).length) },
     { label: T.stats.timePlayed, value: fmtDuration(state.timeMs) },
   ];
 }

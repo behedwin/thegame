@@ -1,7 +1,7 @@
 ---
 id: 099
 size: S
-status: ready
+status: done
 priority: normal
 changelog: "Statistiken visar hur många inriktningar du har provat."
 touches: [src/ui/stats.ts, src/content/texts.ts]
