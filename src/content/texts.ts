@@ -171,6 +171,8 @@ export const T = {
     /** Longest event streak this school year (096). */
     summaryStreak: (n: number) => `Längsta svit i år: ${n} 🔥`,
     summaryRecord: 'Nytt rekord: ditt snabbaste läsår!',
+    /** The running event streak carries over into the next school year (107, 114). */
+    streakCarry: (n: number) => `Din svit på ${n} 🔥 följer med till nästa läsår.`,
     /** Running school year time on the prestige tab, with the record once there is one (094). */
     yearClock: (t: string, record: string | null, onPace = false) =>
       (record ? `Läsåret: ${t} (rekord ${record})${onPace ? ' · rekordtakt' : ''}` : `Läsåret: ${t}`),

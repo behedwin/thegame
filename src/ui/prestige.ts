@@ -1,7 +1,7 @@
 // Prestige tab: merits owned and pending, next-year preview, the prestige button and the merit shop.
 import { T } from '../content/texts';
 import { BALANCE } from '../content/balance';
-import { canPrestige, chaptersRead, fastestYearRecord, connectedMunicipalities, isUntriedFocus, nextYearMunicipalities, nextUnlock, nextYearSpeedupPct, pendingMerits, runKpForMerits, schoolYear, yearDurationMs, yearStart, yearSummary, type GameState } from '../core';
+import { canPrestige, chaptersRead, fastestYearRecord, connectedMunicipalities, isUntriedFocus, nextYearMunicipalities, nextUnlock, nextYearSpeedupPct, pendingMerits, runKpForMerits, schoolYear, visibleStreak, yearDurationMs, yearStart, yearSummary, type GameState } from '../core';
 import type { FocusDef } from '../content/types';
 import { toast } from './feedback';
 import { h, showDialog } from './dialogs';
@@ -19,6 +19,12 @@ export function yearClock(state: GameState): { text: string; onPace: boolean } {
   const elapsed = yearDurationMs(state);
   const onPace = record !== null && elapsed < record;
   return { text: T.prestige.yearClock(fmtDuration(elapsed), record === null ? null : fmtDuration(record), onPace), onPace };
+}
+
+/** The note that the running event streak follows into the next school year, or null without one (114). Pure. */
+export function streakCarryLine(state: GameState): string | null {
+  const n = visibleStreak(state.eventStreak);
+  return n > 0 ? T.prestige.streakCarry(n) : null;
 }
 
 export class PrestigeView {
@@ -52,6 +58,7 @@ export class PrestigeView {
   /** The year in review shown in the confirm dialog (063). */
   private summary(state: GameState): HTMLElement {
     const s = yearSummary(state);
+    const carry = streakCarryLine(state);
     const p = T.prestige;
     const lines = [
       p.summaryKp(fmt(s.kpEarned)) + diff(s.kpDiffPct, p.summaryPct),
@@ -66,7 +73,8 @@ export class PrestigeView {
     return h('div', { class: 'year-summary', testId: 'year-summary' }, h('strong', { text: T.prestige.summaryTitle }),
       h('ul', {}, ...lines.map((text) => h('li', { text }))),
       ...(s.bestYear ? [h('p', { class: 'prestige-preview', testId: 'year-summary-best', text: T.prestige.summaryBest })] : []),
-      ...(s.fastestYear ? [h('p', { class: 'prestige-preview', testId: 'year-summary-fastest', text: T.prestige.summaryRecord })] : []));
+      ...(s.fastestYear ? [h('p', { class: 'prestige-preview', testId: 'year-summary-fastest', text: T.prestige.summaryRecord })] : []),
+      ...(carry ? [h('p', { class: 'prestige-preview', testId: 'year-summary-streak-carry', text: carry })] : []));
   }
 
   /** Run the prestige, then show what the new school year brings (yearStart: chapter 052, unlocks 051, focus 053). */
