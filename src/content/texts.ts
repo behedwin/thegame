@@ -22,6 +22,12 @@ export const T = {
   hubAria: 'Synka data manuellt',
   heroExpand: 'Tryck för att visa hela kartan',
   hubTiers: ['Skolnav', 'Kommunnav', 'Regionnav', 'Nationellt nav', 'Datahjärta'],
+  /** The hub tier and what the next one needs, e.g. "Kommunnav – nästa: Regionnav vid 1 000 KP/s" (087). */
+  hubTierInfo(tier: number, nextKps: string | null): string {
+    const name = this.hubTiers[tier] ?? '';
+    const next = this.hubTiers[tier + 1];
+    return nextKps === null || !next ? name : `${name} – nästa: ${next} vid ${nextKps} KP/s`;
+  },
   hubTierUp: (name: string) => `Navet har uppgraderats till ${name}`,
   sourceSystems: 'Källsystem',
   targetSystems: 'Målsystem',
