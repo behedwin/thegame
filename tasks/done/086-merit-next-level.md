@@ -1,7 +1,7 @@
 ---
 id: 086
 size: S
-status: ready
+status: done
 priority: normal
 changelog: "Utfällda meritkort visar vad nästa nivå ger."
 touches: [src/ui/shop.ts, src/content/texts.ts]

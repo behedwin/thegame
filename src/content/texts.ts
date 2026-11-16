@@ -32,16 +32,18 @@ export const T = {
   owned: (n: number) => `${n} st`,
   level: (n: number, max: number) => (max === 1 ? (n > 0 ? 'Klar' : '') : `Nivå ${n}/${max}`),
   maxed: 'Max',
-  /** Current total effect of one merit on its card (082). */
-  meritNow: {
-    prodPct: (n: number) => `Nu: +${pctText(n)} produktion`,
-    clickPct: (n: number) => `Nu: +${pctText(n)} KP per klick`,
-    offlineHours: (n: number) => `Nu: +${num(n)}\u00a0h offlinetak`,
-    startAutomation: (n: number, name: string) => `Nu: börjar med ${n} ${name}`,
-    autoDiscountPct: (n: number) => `Nu: −${pctText(n)} på integrationer`,
-    eventCooldownPct: (n: number) => `Nu: event ${pctText(n)} tätare`,
-    offlineEffPct: (n: number) => `Nu: +${pctText(n)} KP när du är borta`,
+  /** Total effect of one merit at a given level, shown as "Nu" (082) and "Nästa" (086) on its card. */
+  meritEffect: {
+    prodPct: (n: number) => `+${pctText(n)} produktion`,
+    clickPct: (n: number) => `+${pctText(n)} KP per klick`,
+    offlineHours: (n: number) => `+${num(n)}\u00a0h offlinetak`,
+    startAutomation: (n: number, name: string) => `börjar med ${n} ${name}`,
+    autoDiscountPct: (n: number) => `−${pctText(n)} på integrationer`,
+    eventCooldownPct: (n: number) => `event ${pctText(n)} tätare`,
+    offlineEffPct: (n: number) => `+${pctText(n)} KP när du är borta`,
   },
+  meritNow: (effect: string) => `Nu: ${effect}`,
+  meritNext: (effect: string) => `Nästa: ${effect}`,
   /** Folded row with maxed upgrades at the bottom of the list (073). */
   maxedFold: (n: number) => `Klara (${n})`,
   bulk: { aria: 'Antal att köpa', one: '×1', ten: '×10', max: 'MAX' },
