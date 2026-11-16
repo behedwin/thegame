@@ -1,12 +1,16 @@
 ---
-id: p-trophy-tab-dot
+id: 101
 size: S
-status: proposed
+status: ready
+priority: normal
+changelog: "Fliken Troféer får en prick när du har låst upp en ny trofé."
 touches: [src/ui/app.ts, src/content/texts.ts]
 depends: [097]
 ---
 
 # Prick på fliken Troféer när en ny trofé har låsts upp
+
+Från förslaget `p-trophy-tab-dot`.
 
 *Varför (VISION, "tydligt" och retention):* 089, 093 och 097 har gett prickar på Läsår, Uppgraderingar och
 Integrationer. Troféer låses upp i bakgrunden och visas bara som en kort toast, som är lätt att missa. En prick
