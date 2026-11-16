@@ -38,24 +38,40 @@ export function milestoneName(def: AutomationDef, count: number): string | null 
   return reached > 0 ? (def.milestoneNames?.[reached - 1] ?? null) : null;
 }
 
-type SummedMerit = Exclude<MeritDef['effect']['kind'], 'startAutomation'>;
-
-function meritSum(state: GameState, kind: SummedMerit): number {
-  let sum = 0;
-  for (const m of MERITS) {
-    const e = m.effect;
-    if (e.kind !== kind) continue;
-    const amount = e.kind === 'offlineHours' ? e.hours : 'pct' in e ? e.pct : 0;
-    sum += amount * level(state.meritUpgrades, m.id);
-  }
-  return sum;
-}
-
 /** Max total event cooldown reduction from merits, in percent. */
 export const MAX_EVENT_COOLDOWN_CUT_PCT = 75;
 
 /** Price factor from one discount merit at a level: multiplicative per level, in (0, 1]. */
 export const discountFactor = (pct: number, lvl: number): number => Math.pow(1 - pct / 100, lvl);
+
+/**
+ * The effect of one merit at a level, as one number: percent for the pct kinds (a discount as percent off,
+ * the event cut capped), hours for offlineHours and automations for startAutomation. The single source for
+ * both the core formulas and the merit card (090), so the card never shows another number than the game uses.
+ */
+export function meritLevelEffect(def: MeritDef, lvl: number): number {
+  const e = def.effect;
+  switch (e.kind) {
+    case 'offlineHours':
+      return e.hours * lvl;
+    case 'startAutomation':
+      return e.count * lvl;
+    case 'autoDiscountPct':
+      return (1 - discountFactor(e.pct, lvl)) * 100;
+    case 'eventCooldownPct':
+      return Math.min(MAX_EVENT_COOLDOWN_CUT_PCT, e.pct * lvl);
+    default:
+      return e.pct * lvl;
+  }
+}
+
+type SummedMerit = 'prodPct' | 'clickPct' | 'offlineHours' | 'eventCooldownPct' | 'offlineEffPct';
+
+function meritSum(state: GameState, kind: SummedMerit): number {
+  let sum = 0;
+  for (const m of MERITS) if (m.effect.kind === kind) sum += meritLevelEffect(m, level(state.meritUpgrades, m.id));
+  return sum;
+}
 
 /** Price factor on automations from all discount merits together. */
 export function automationCostFactor(state: GameState): number {
@@ -225,6 +241,9 @@ export function canBuyMerit(state: GameState, id: string): boolean {
   if (!m || isMaxed(state, id)) return false;
   return state.merits.gte(meritCost(state, id));
 }
+
+/** True when at least one merit upgrade can be bought now (089: dot on the Läsår tab). */
+export const anyMeritAffordable = (state: GameState): boolean => MERITS.some((m) => canBuyMerit(state, m.id));
 
 /** Meriter the player would receive by starting a new school year now (with the focus bonus, 053). */
 export function pendingMerits(state: GameState): Decimal {

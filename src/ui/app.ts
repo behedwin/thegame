@@ -3,12 +3,11 @@
 import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { BALANCE } from '../content/balance';
-import { MERITS } from '../content/registry';
 import { T } from '../content/texts';
 import {
   answerTicket, applyMorningChoice, applyOffline, buy, type CalendarDay, buyMerit, chooseFocus, claimEvent, click, createInitialState,
   getAutomation, kpPerClick, level, milestoneName, milestonesReached, newAchievements, networkFlow, prestige, prestigeUnlocked,
-  brokenStreak, canBuyMerit, receiveTicket, refillInboxOffline, rollEvent, setCalendar, setSettings, type Settings, spawnEvent, tick, touch, type GameState,
+  anyMeritAffordable, brokenStreak, receiveTicket, refillInboxOffline, rollEvent, setCalendar, setSettings, type Settings, spawnEvent, tick, touch, type GameState,
 } from '../core';
 import { buyMany, BULK_MODES, resolveBulk, type BulkMode } from '../core/bulk';
 import { loadGame, saveGame, wipeGame } from '../save/storage';
@@ -41,11 +40,6 @@ const SYNC = '<svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true"
 
 /** Today's local calendar day, injected into the pure core for seasons. */
 const today = (d = new Date()): CalendarDay => ({ month: d.getMonth() + 1, day: d.getDate() });
-
-/** True when at least one merit upgrade can be bought now (task 089: dot on the Läsår tab). */
-export function anyMeritAffordable(state: GameState): boolean {
-  return MERITS.some((m) => canBuyMerit(state, m.id));
-}
 
 const TABS = ['automations', 'upgrades', 'prestige', 'achievements'] as const;
 type Tab = (typeof TABS)[number];

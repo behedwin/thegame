@@ -7,15 +7,14 @@ import {
   canBuy,
   canBuyMerit,
   costOf,
-  discountFactor,
   getAutomation,
   getMerit,
   getUpgrade,
   isMaxed,
   isRevealed,
   level,
-  MAX_EVENT_COOLDOWN_CUT_PCT,
   meritCost,
+  meritLevelEffect,
   milestoneName,
   milestoneProgressPct,
   nextMilestone,
@@ -55,21 +54,14 @@ export function meritNextText(def: MeritDef, lvl: number): string {
 function meritTotal(def: MeritDef, lvl: number): string {
   const e = def.effect;
   const t = T.meritEffect;
+  const v = meritLevelEffect(def, lvl);
   switch (e.kind) {
-    case 'prodPct':
-      return t.prodPct(e.pct * lvl);
-    case 'clickPct':
-      return t.clickPct(e.pct * lvl);
-    case 'offlineHours':
-      return t.offlineHours(e.hours * lvl);
     case 'startAutomation':
-      return t.startAutomation(e.count * lvl, getAutomation(e.id)?.name ?? e.id);
+      return t.startAutomation(v, getAutomation(e.id)?.name ?? e.id);
     case 'autoDiscountPct':
-      return t.autoDiscountPct(round1((1 - discountFactor(e.pct, lvl)) * 100));
-    case 'eventCooldownPct':
-      return t.eventCooldownPct(Math.min(MAX_EVENT_COOLDOWN_CUT_PCT, e.pct * lvl));
-    case 'offlineEffPct':
-      return t.offlineEffPct(e.pct * lvl);
+      return t.autoDiscountPct(round1(v));
+    default:
+      return t[e.kind](v);
   }
 }
 

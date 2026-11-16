@@ -2,8 +2,7 @@ import Decimal from 'break_infinity.js';
 import { describe, expect, it } from 'vitest';
 import { MERITS } from '../src/content/registry';
 import { T } from '../src/content/texts';
-import { createInitialState } from '../src/core';
-import { anyMeritAffordable } from '../src/ui/app';
+import { anyMeritAffordable, createInitialState } from '../src/core';
 
 describe('anyMeritAffordable (task 089)', () => {
   it('is false without merits', () => {
