@@ -66,3 +66,22 @@ export function newAchievements(before: GameState, after: GameState): readonly A
   if (before.achievements.length === after.achievements.length) return [];
   return ACHIEVEMENTS.filter((a) => hasAchievement(after, a.id) && !hasAchievement(before, a.id));
 }
+
+/** A locked countable trophy and how far the player has come towards it (077). */
+export interface NearestAchievement {
+  def: AchievementDef;
+  have: number;
+  need: number;
+}
+
+/** The locked countable trophy with the highest have / need (started, i.e. have > 0); ties keep content order (077). */
+export function nearestAchievement(state: GameState, list: readonly AchievementDef[] = ACHIEVEMENTS): NearestAchievement | null {
+  let best: NearestAchievement | null = null;
+  for (const def of list) {
+    if (hasAchievement(state, def.id)) continue;
+    const p = progress(state, def.condition);
+    if (!p || p.have <= 0 || p.have >= p.need) continue;
+    if (!best || p.have / p.need > best.have / best.need) best = { def, ...p };
+  }
+  return best;
+}

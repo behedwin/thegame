@@ -3,22 +3,24 @@
 // Rebuilt only when the unlocked set or a shown counter changes.
 import { ACHIEVEMENTS, type AchievementDef } from '../content/registry';
 import { T } from '../content/texts';
-import { ACHIEVEMENT_PROD_PCT, hasAchievement, progress, type GameState } from '../core';
+import { ACHIEVEMENT_PROD_PCT, hasAchievement, nearestAchievement, progress, type GameState } from '../core';
 import { h } from './dialogs';
 
-/** The locked countable trophy with the highest have / need (started, i.e. have > 0); ties keep content order. */
-export function nearestAchievement(
-  state: GameState,
-  list: readonly AchievementDef[] = ACHIEVEMENTS,
-): { def: AchievementDef; have: number; need: number } | null {
-  let best: { def: AchievementDef; have: number; need: number } | null = null;
-  for (const def of list) {
-    if (hasAchievement(state, def.id)) continue;
-    const p = progress(state, def.condition);
-    if (!p || p.have <= 0 || p.have >= p.need) continue;
-    if (!best || p.have / p.need > best.have / best.need) best = { def, ...p };
-  }
-  return best;
+type CardOpts = { class: string; testId: string; attrs: Record<string, string>; levelTestId?: string; tag?: string };
+
+/** One trophy card: optional tag line, name with its level label, and the description. */
+function card(a: AchievementDef, label: string, o: CardOpts): HTMLElement {
+  return h(
+    'div',
+    { class: o.class, testId: o.testId, attrs: o.attrs },
+    h(
+      'div',
+      { class: 'card-info' },
+      ...(o.tag ? [h('div', { class: 'nearest-tag', text: o.tag })] : []),
+      h('div', { class: 'card-title' }, h('span', { text: a.name }), h('span', { class: 'card-level', testId: o.levelTestId, text: label })),
+      h('div', { class: 'card-desc', text: a.desc }),
+    ),
+  );
 }
 
 export class AchievementList {
@@ -37,32 +39,16 @@ export class AchievementList {
     const unlocked = ACHIEVEMENTS.filter((a) => hasAchievement(state, a.id)).length;
     const cards = ACHIEVEMENTS.map((a, i) => {
       const done = hasAchievement(state, a.id);
-      return h(
-        'div',
-        { class: 'card', testId: `achievement-${a.id}`, attrs: { 'data-unlocked': String(done) } },
-        h(
-          'div',
-          { class: 'card-info' },
-          h('div', { class: 'card-title' }, h('span', { text: a.name }), h('span', { class: 'card-level', testId: done ? undefined : `achievement-progress-${a.id}`, text: labels[i] })),
-          h('div', { class: 'card-desc', text: a.desc }),
-        ),
-      );
+      return card(a, labels[i] ?? '', {
+        class: 'card',
+        testId: `achievement-${a.id}`,
+        attrs: { 'data-unlocked': String(done) },
+        levelTestId: done ? undefined : `achievement-progress-${a.id}`,
+      });
     });
     const near = nearestAchievement(state);
     const top = near
-      ? [
-          h(
-            'div',
-            { class: 'card nearest', testId: 'achievement-nearest', attrs: { 'data-id': near.def.id } },
-            h(
-              'div',
-              { class: 'card-info' },
-              h('div', { class: 'nearest-tag', text: T.achievements.nearest }),
-              h('div', { class: 'card-title' }, h('span', { text: near.def.name }), h('span', { class: 'card-level', text: T.achievements.progress(near.have, near.need) })),
-              h('div', { class: 'card-desc', text: near.def.desc }),
-            ),
-          ),
-        ]
+      ? [card(near.def, T.achievements.progress(near.have, near.need), { class: 'card nearest', testId: 'achievement-nearest', attrs: { 'data-id': near.def.id }, tag: T.achievements.nearest })]
       : [];
     this.host.replaceChildren(
       h('p', { class: 'muted', testId: 'achievement-summary', text: T.achievements.summary(unlocked, ACHIEVEMENTS.length, unlocked * ACHIEVEMENT_PROD_PCT) }),
