@@ -1,6 +1,7 @@
 ---
 id: p-automation-tab-dot
 size: S
+status: proposed
 touches: [src/ui/app.ts, src/content/texts.ts, src/core/rules.ts]
 depends: [093]
 ---
