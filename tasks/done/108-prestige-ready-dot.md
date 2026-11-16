@@ -1,7 +1,7 @@
 ---
 id: 108
 size: S
-status: ready
+status: done
 touches: [src/ui/tab-dots.ts, src/content/texts.ts]
 depends: [105]
 priority: normal
