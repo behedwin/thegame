@@ -52,6 +52,8 @@ export async function startApp(root: HTMLElement): Promise<void> {
   let state: GameState = setCalendar(loaded.state ?? createInitialState(Date.now()), today());
   let wiping = false;
   let tab: Tab = 'automations';
+  /** Trophies the player has seen (101): in memory only, so everything already unlocked at load counts as seen. */
+  let trophiesSeen = state.achievements.length;
   let bulk: BulkMode = 1;
 
   // ---------- DOM ----------
@@ -253,7 +255,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
   }
   let hubInfoShown = '';
 
-  /** Dot on a tab while something there can be bought (089, 093, 097); the label tells screen readers why. */
+  /** Dot on a tab while something there can be bought (089, 093, 097) or a new trophy is unseen (101); the label tells screen readers why. */
   function setTabDot(t: Tab, dot: boolean, why: string): void {
     const b = tabButtons[t];
     if (b.classList.contains('dot') === dot) return;
@@ -290,6 +292,9 @@ export async function startApp(root: HTMLElement): Promise<void> {
     setTabDot('prestige', tab !== 'prestige' && anyMeritAffordable(state), T.a11y.meritDot);
     setTabDot('upgrades', tab !== 'upgrades' && anyUpgradeAffordable(state), T.a11y.upgradeDot);
     setTabDot('automations', tab !== 'automations' && anyNewAutomationAffordable(state), T.a11y.automationDot);
+    const trophies = state.achievements.length;
+    if (tab === 'achievements' || trophies < trophiesSeen) trophiesSeen = trophies;
+    setTabDot('achievements', trophies > trophiesSeen, T.a11y.trophyDot);
 
     // Shop tabs get the bulk bar above their list; the others show only their view.
     const view = tabViews[tab];

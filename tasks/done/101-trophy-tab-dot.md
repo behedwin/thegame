@@ -1,7 +1,7 @@
 ---
 id: 101
 size: S
-status: ready
+status: done
 priority: normal
 changelog: "Fliken Troféer får en prick när du har låst upp en ny trofé."
 touches: [src/ui/app.ts, src/content/texts.ts]
