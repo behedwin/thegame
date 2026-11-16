@@ -248,6 +248,9 @@ export const T = {
     /** This school year's longest streak, with last year's from the second year (103). */
     yearBestStreak: 'Längsta svit i år',
     yearStreakValue: (n: number, last: number | null) => (last === null ? `${n} 🔥` : `${n} 🔥 (förra läsåret ${last})`),
+    /** The visible running streak and the next streak trophy, if any is left (111). */
+    currentStreak: 'Nuvarande svit',
+    currentStreakValue: (n: number, next: number | null) => (next === null ? `${n} 🔥` : `${n} 🔥 (nästa trofé vid ${next})`),
     fastestYear: 'Snabbaste läsår',
     tickets: 'Besvarade ärenden',
     schoolYears: 'Läsår',

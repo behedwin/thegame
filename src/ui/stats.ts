@@ -2,7 +2,7 @@
 // game state on open; every value shown is already part of the save.
 import { ACHIEVEMENTS, FOCUSES } from '../content/registry';
 import { T } from '../content/texts';
-import { bestYearEarned, DEFAULT_FOCUS, fastestYearRecord, type GameState } from '../core';
+import { bestYearEarned, DEFAULT_FOCUS, fastestYearRecord, type GameState, visibleStreak } from '../core';
 import { h, showDialog } from './dialogs';
 import { fmt, fmtDuration } from './format';
 
@@ -22,6 +22,7 @@ export function statRows(state: GameState): StatRow[] {
     ...(fastestYearRecord(state) === null ? [] : [row(S.fastestYear, fmtDuration(state.fastestYearMs))]),
     count(S.bestEventStreak, state.bestEventStreak),
     row(S.yearBestStreak, S.yearStreakValue(state.yearBestStreak, state.prestiges >= 1 ? state.lastYearBestStreak : null)),
+    row(S.currentStreak, S.currentStreakValue(visibleStreak(state.eventStreak), nextStreakTrophy(state))),
     count(S.purchases, state.purchases),
     count(S.clicks, state.clicks),
     count(S.events, state.eventsClaimed),
@@ -32,6 +33,14 @@ export function statRows(state: GameState): StatRow[] {
     row(S.focusesPlayed, S.of(state.focusesPlayed.length, FOCUSES.filter((f) => f.id !== DEFAULT_FOCUS).length)),
     row(S.timePlayed, fmtDuration(state.timeMs)),
   ];
+}
+
+/** The lowest streak trophy threshold not yet unlocked, or null when all are (111). */
+function nextStreakTrophy(state: GameState): number | null {
+  const left = ACHIEVEMENTS.flatMap((a) =>
+    a.condition.kind === 'eventStreak' && !state.achievements.includes(a.id) ? [a.condition.n] : [],
+  );
+  return left.length > 0 ? Math.min(...left) : null;
 }
 
 export function showStats(state: GameState): void {
