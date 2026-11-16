@@ -79,6 +79,10 @@ export interface GameState {
   lastYearTickets: number;
   /** KP earned in the school year before (083). Set by prestige(); 0 before the first one. */
   lastYearEarned: Decimal;
+  /** Game time (timeMs) when the running school year started (088). Set by prestige(). */
+  yearStartMs: number;
+  /** Shortest finished school year in game-time ms (088); 0 = none yet. Never rises. */
+  fastestYearMs: number;
   /** Onboarding tip ids already shown and finished. A tip is never shown again once here. */
   tipsSeen: string[];
   settings: Settings;
@@ -126,6 +130,8 @@ export function createInitialState(nowMs: number): GameState {
     lastYearEvents: 0,
     lastYearTickets: 0,
     lastYearEarned: new Decimal(0),
+    yearStartMs: 0,
+    fastestYearMs: 0,
     tipsSeen: [],
     focus: DEFAULT_FOCUS,
     focusesPlayed: [],

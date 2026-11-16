@@ -4,7 +4,7 @@ import { getFocus } from '../core/focus';
 import { getTicket } from '../core/tickets';
 import { type Buff, createInitialState, Decimal, DEFAULT_FOCUS, DEFAULT_VOLUME, type GameState } from '../core/state';
 
-export const SAVE_VERSION = 16;
+export const SAVE_VERSION = 17;
 
 /** Raw JSON shape. Unknown on purpose: anything may come out of storage. */
 export type RawSave = { version: number; [key: string]: unknown };
@@ -54,6 +54,8 @@ export const MIGRATIONS: Record<number, Migration> = {
   14: (s) => ({ ...s, version: 15, lastYearEvents: 0, lastYearTickets: 0 }),
   // v16 (task 083): last school year's KP, unknown for older saves, so 0.
   15: (s) => ({ ...s, version: 16, lastYearEarned: '0' }),
+  // v17 (task 088): fastest school year. No record yet; the running year starts counting now.
+  16: (s) => ({ ...s, version: 17, yearStartMs: ms(s.timeMs), fastestYearMs: 0 }),
 };
 
 export class SaveError extends Error {}
@@ -89,6 +91,9 @@ function dec(v: unknown, fallback: Decimal): Decimal {
 
 /** A non-negative integer count, or 0. */
 const count = (v: unknown): number => (Number.isInteger(v) && (v as number) > 0 ? (v as number) : 0);
+
+/** A non-negative finite game time in ms, or 0. */
+const ms = (v: unknown): number => (typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : 0);
 
 const num = (v: unknown, fallback: number): number => (typeof v === 'number' && Number.isFinite(v) ? v : fallback);
 
@@ -182,6 +187,8 @@ export function deserialize(text: string, nowMs: number): GameState {
     lastYearEvents: count(s.lastYearEvents),
     lastYearTickets: count(s.lastYearTickets),
     lastYearEarned: dec(s.lastYearEarned, d.lastYearEarned),
+    yearStartMs: ms(s.yearStartMs),
+    fastestYearMs: ms(s.fastestYearMs),
     tipsSeen: uniqueStrings(s.tipsSeen),
     focus: typeof s.focus === 'string' && getFocus(s.focus) ? s.focus : DEFAULT_FOCUS,
     focusesPlayed: uniqueStrings(s.focusesPlayed).filter((id) => id !== DEFAULT_FOCUS && getFocus(id)),

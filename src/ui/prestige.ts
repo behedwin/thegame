@@ -7,7 +7,7 @@ import { toast } from './feedback';
 import { h, showDialog } from './dialogs';
 import { addChapter } from './celebrate';
 import { focusLines } from './effects';
-import { fmt } from './format';
+import { fmt, fmtDuration } from './format';
 import { ShopList } from './shop';
 
 /** A change against last school year, or nothing in the first one (078, 083). */
@@ -50,11 +50,13 @@ export class PrestigeView {
       p.summaryIntegrations(s.integrations),
       p.summaryEvents(s.events) + diff(s.eventsDiff),
       p.summaryTickets(s.tickets) + diff(s.ticketsDiff),
+      p.summaryTime(fmtDuration(s.durationMs)),
       p.summaryMerits(fmt(s.merits)),
     ];
     return h('div', { class: 'year-summary', testId: 'year-summary' }, h('strong', { text: T.prestige.summaryTitle }),
       h('ul', {}, ...lines.map((text) => h('li', { text }))),
-      ...(s.bestYear ? [h('p', { class: 'prestige-preview', testId: 'year-summary-best', text: T.prestige.summaryBest })] : []));
+      ...(s.bestYear ? [h('p', { class: 'prestige-preview', testId: 'year-summary-best', text: T.prestige.summaryBest })] : []),
+      ...(s.fastestYear ? [h('p', { class: 'prestige-preview', testId: 'year-summary-fastest', text: T.prestige.summaryRecord })] : []));
   }
 
   /** Run the prestige, then show what the new school year brings (yearStart: chapter 052, unlocks 051, focus 053). */
