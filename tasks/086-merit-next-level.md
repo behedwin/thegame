@@ -1,0 +1,30 @@
+---
+id: 086
+size: S
+status: ready
+priority: normal
+changelog: "Utfällda meritkort visar vad nästa nivå ger."
+touches: [src/ui/shop.ts, src/content/texts.ts]
+depends: [085]
+---
+
+# Meritkortet visar vad nästa nivå ger
+
+Från förslaget `p-merit-next-level`.
+
+*Varför (VISION, "tydligt" och lång loop):* sedan 082 visar meritkortet "Nu: +100 % produktion". När
+spelaren har stjärnor att lägga är frågan i stället "vad får jag för nästa köp?". Särskilt Ramavtal
+(avtagande rabatt) och Nätverkskontakter (tak på 75 %) ger mindre än beskrivningen antyder på höga nivåer.
+En rad "Nästa: +150 %" i det utfällda kortet (tryck på texten, som 058) gör valet ärligt. Ingen
+balansändring.
+
+## Vad som ska göras
+- Återanvänd `meritEffectText(def, lvl + 1)` från `src/ui/shop.ts` och visa "Nästa: …" i `card-desc` när
+  kortet är utfällt och meriten inte är maxad. Även på nivå 0 (då finns ingen "Nu"-rad men väl en
+  "Nästa"-rad).
+- Texterna i `texts.ts`.
+
+## Tester
+- Enhet (`tests/086-*.test.ts`): nästa-texten för Ramavtal på nivå 9 och Nätverkskontakter nära taket.
+- e2e (`e2e/086-*.spec.ts`, 390×844): utfällt meritkort visar "Nästa: …"; maxat kort visar ingen sådan rad.
+  Inga konsolfel.
