@@ -203,6 +203,9 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 /* System chips (062): the strip has its own layout in network.ts (sources left, hub mid, targets right). */
 .hero.compact .net-chip { opacity: 1; visibility: visible; }
 .hero:not(.compact) .net-more { display: none; }
+/* Hub tier name (084) in the 12 px gap under SYNKA, left of the event card; hidden on the big map. */
+.hero:not(.compact) .hub-tier { display: none; }
+.hero.compact .hub-tier { display: block; position: absolute; left: 2px; width: 80px; bottom: 0; height: 12px; line-height: 12px; font-size: 0.5625rem; font-weight: 700; text-align: center; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
 /* Effects in the strip (059): drawn above the HUD and tabs instead of clipped to the 96 px strip. The
    "+KP" numbers start beside SYNKA (left edge, no centring), drift up and right, and fade sooner. */
 .hero.compact .float-layer { overflow: visible; z-index: 6; }

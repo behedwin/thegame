@@ -63,11 +63,13 @@ export async function startApp(root: HTMLElement): Promise<void> {
   const net = new NetworkView();
   const hub = h('button', { class: 'hub', testId: 'hub', attrs: { 'aria-label': T.hubAria } });
   hub.innerHTML = `${SYNC}<span>${T.hubLabel}</span>`;
+  // Hub tier name under SYNKA, shown only in the compact strip (084); the big map shows it as rings.
+  const hubTierTag = h('span', { class: 'hub-tier', testId: 'hub-tier', attrs: { 'aria-hidden': 'true' } });
   const floatLayer = h('div', { class: 'float-layer', attrs: { 'aria-hidden': 'true' } });
   const eventCard = new EventCard(claimActiveEvent);
   const eventSlot = eventCard.slot;
   const sideLabels = h('div', { class: 'side-labels' }, h('span', { text: T.sourceSystems }), h('span', { text: T.targetSystems }));
-  const hero = h('section', { class: 'hero' }, net.svg, sideLabels, net.tip, hub, floatLayer, eventSlot);
+  const hero = h('section', { class: 'hero' }, net.svg, sideLabels, net.tip, hub, hubTierTag, floatLayer, eventSlot);
   // The intro tour (031) is in memory only, so a reload ends it.
   let tour: TourStep | null = null;
   const tips = new TipBar(
@@ -251,6 +253,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
 
     const tierUp = net.update(networkFlow(state));
     if (tierUp !== null) toast(T.hubTierUp(T.hubTiers[tierUp]!), 'good');
+    hubTierTag.textContent = T.hubTiers[net.currentTier] ?? '';
     eventCard.render(state);
     renderTips();
 

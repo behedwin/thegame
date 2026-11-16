@@ -1,7 +1,7 @@
 ---
 id: 084
 size: S
-status: ready
+status: done
 priority: normal
 changelog: "Navets nivå syns i den krympta kartan medan du handlar."
 touches: [src/ui/app.ts, src/ui/hero.ts, src/ui/network.ts, src/ui/style.css, src/content/texts.ts]

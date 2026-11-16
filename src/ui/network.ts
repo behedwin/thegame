@@ -347,6 +347,11 @@ export class NetworkView {
     return gained;
   }
 
+  /** The hub tier from the latest update (0 before the first). */
+  get currentTier(): number {
+    return Math.max(0, this.tier);
+  }
+
   /** A manual sync: a bright packet travels along a random active line from its source into the hub. */
   pulse(): void {
     const visible = this.rows.filter((r) => r.visible);
