@@ -2,7 +2,7 @@
 import { MERITS, type AutomationDef, type ChapterDef, type FocusDef } from '../content/registry';
 import { focusesForYear, withFocusPlayed } from './focus';
 import { chapterFor } from './goal';
-import { bestYearEarned, customersSigned, pendingMerits, runKpForMerits } from './rules';
+import { bestYearEarned, customersSigned, meritLevelEffect, pendingMerits, runKpForMerits } from './rules';
 import { Decimal, DEFAULT_FOCUS, level, totalLevels, type GameState } from './state';
 import { unlocksInYear } from './unlocks';
 
@@ -21,7 +21,7 @@ export function startingAutomations(meritUpgrades: GameState['meritUpgrades']): 
   for (const m of MERITS) {
     const lvl = level(meritUpgrades, m.id);
     if (lvl > 0 && m.effect.kind === 'startAutomation') {
-      automations[m.effect.id] = (automations[m.effect.id] ?? 0) + m.effect.count * lvl;
+      automations[m.effect.id] = (automations[m.effect.id] ?? 0) + meritLevelEffect(m, lvl);
     }
   }
   return automations;
