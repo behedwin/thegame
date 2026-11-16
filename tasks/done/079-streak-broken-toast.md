@@ -1,7 +1,7 @@
 ---
 id: 079
 size: S
-status: ready
+status: done
 priority: normal
 changelog: "En kort notis säger till när din eventsvit bryts."
 touches: [src/core/events.ts, src/ui/, src/content/texts.ts]

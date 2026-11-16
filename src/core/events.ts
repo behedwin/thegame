@@ -72,6 +72,12 @@ export function shownEventStreak(state: GameState): number {
   return state.eventStreak >= BALANCE.events.streak.min ? state.eventStreak : 0;
 }
 
+/** The visible streak lost when the active event ran out between `before` and `after`, else 0 (079). */
+export function brokenStreak(before: GameState, after: GameState): number {
+  const expired = before.activeEvent !== null && after.activeEvent === null && after.eventOpen;
+  return expired ? shownEventStreak(after) : 0;
+}
+
 export interface ClaimResult {
   state: GameState;
   event: EventDef | null;
