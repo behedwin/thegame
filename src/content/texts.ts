@@ -29,6 +29,7 @@ export const T = {
     return nextKps === null || !next ? name : `${name} – nästa: ${next} vid ${nextKps} KP/s`;
   },
   hubTierUp: (name: string) => `Navet har uppgraderats till ${name}`,
+  toastBeatLastYear: 'Nytt rekord: du har passerat förra läsårets KP!',
   sourceSystems: 'Källsystem',
   targetSystems: 'Målsystem',
   /** Owned integrations that do not fit in the compact map strip (062). */
