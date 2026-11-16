@@ -20,9 +20,9 @@ import { deserialize, migrate, MIGRATIONS, SAVE_VERSION, serialize } from '../sr
 const fresh = () => createInitialState(1_000);
 
 describe('achievement content', () => {
-  it('has exactly 27 achievements with unique order and Swedish texts', () => {
-    expect(ACHIEVEMENTS).toHaveLength(27);
-    expect(new Set(ACHIEVEMENTS.map((a) => a.order)).size).toBe(27);
+  it('has exactly 28 achievements with unique order and Swedish texts', () => {
+    expect(ACHIEVEMENTS).toHaveLength(28);
+    expect(new Set(ACHIEVEMENTS.map((a) => a.order)).size).toBe(28);
     for (const a of ACHIEVEMENTS) {
       expect(a.name.trim(), a.id).not.toBe('');
       expect(a.desc.trim(), a.id).not.toBe('');
@@ -37,7 +37,7 @@ describe('achievement content', () => {
       if (c.kind === 'upgradesTotal') {
         expect(c.n, id).toBeLessThanOrEqual(UPGRADES.reduce((s, u) => s + u.maxLevel, 0));
       }
-      const v = 'n' in c ? c.n : c.kp;
+      const v = 'n' in c ? c.n : 'kp' in c ? c.kp : c.maxMs;
       expect(v > 0 && Number.isFinite(v), id).toBe(true);
     }
   });
@@ -63,6 +63,7 @@ describe('conditions', () => {
       upgrades: Object.fromEntries(UPGRADES.map((u) => [u.id, u.maxLevel])),
       eventsClaimed: 1000,
       bestEventStreak: 1000,
+      fastestYearMs: 60_000,
       ticketsAnswered: 1000,
       prestiges: 10,
       focusesPlayed: FOCUSES.filter((f) => f.effects.length > 0).map((f) => f.id),

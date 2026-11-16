@@ -12,10 +12,17 @@ const isCountable = (c: AchievementCondition): c is CountCondition => 'n' in c;
 /** Whether a condition holds in this state. */
 export function isMet(state: GameState, c: AchievementCondition): boolean {
   if (isCountable(c)) return count(state, c) >= c.n;
-  return c.kind === 'totalEarned' ? state.totalEarned.gte(c.kp) : baseKps(state).gte(c.kp);
+  switch (c.kind) {
+    case 'fastestYear':
+      return state.fastestYearMs > 0 && state.fastestYearMs <= c.maxMs; // 0 = no finished year yet (091)
+    case 'totalEarned':
+      return state.totalEarned.gte(c.kp);
+    case 'kps':
+      return baseKps(state).gte(c.kp);
+  }
 }
 
-/** Progress towards a countable condition, capped at `need`; null for value thresholds (KP, KP/s). */
+/** Progress towards a countable condition, capped at `need`; null for value thresholds (KP, KP/s, year time). */
 export function progress(state: GameState, c: AchievementCondition): { have: number; need: number } | null {
   return isCountable(c) ? { have: Math.min(count(state, c), c.n), need: c.n } : null;
 }

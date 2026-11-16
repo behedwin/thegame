@@ -1,7 +1,7 @@
 ---
 id: 091
 size: S
-status: ready
+status: done
 priority: normal
 changelog: "Ny trofé: Expresskörning, för ett riktigt snabbt läsår."
 touches: [src/core/achievements.ts, src/content/achievements/, src/content/types.ts]
