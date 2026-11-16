@@ -7,7 +7,7 @@ import { T } from '../content/texts';
 import {
   answerTicket, applyMorningChoice, applyOffline, buy, type CalendarDay, buyMerit, chooseFocus, claimEvent, click, createInitialState,
   getAutomation, kpPerClick, level, milestoneName, milestonesReached, newAchievements, networkFlow, prestige, prestigeUnlocked,
-  anyMeritAffordable, brokenStreak, receiveTicket, refillInboxOffline, rollEvent, setCalendar, setSettings, type Settings, spawnEvent, tick, touch, type GameState,
+  anyMeritAffordable, anyUpgradeAffordable, brokenStreak, receiveTicket, refillInboxOffline, rollEvent, setCalendar, setSettings, type Settings, spawnEvent, tick, touch, type GameState,
 } from '../core';
 import { buyMany, BULK_MODES, resolveBulk, type BulkMode } from '../core/bulk';
 import { loadGame, saveGame, wipeGame } from '../save/storage';
@@ -253,6 +253,14 @@ export async function startApp(root: HTMLElement): Promise<void> {
   }
   let hubInfoShown = '';
 
+  /** Dot on a tab while something there can be bought (089, 093); the label tells screen readers why. */
+  function setTabDot(t: Tab, dot: boolean, why: string): void {
+    const b = tabButtons[t];
+    if (b.classList.contains('dot') === dot) return;
+    b.classList.toggle('dot', dot);
+    b.setAttribute('aria-label', dot ? `${T.tabs[t]}. ${why}` : T.tabs[t]);
+  }
+
   function render(): void {
     state = setCalendar(state, today());
     hud.render(state);
@@ -279,11 +287,8 @@ export async function startApp(root: HTMLElement): Promise<void> {
       b.classList.toggle('active', k === tab);
       b.setAttribute('aria-selected', String(k === tab));
     }
-    const dot = tab !== 'prestige' && anyMeritAffordable(state);
-    if (tabButtons.prestige.classList.contains('dot') !== dot) {
-      tabButtons.prestige.classList.toggle('dot', dot);
-      tabButtons.prestige.setAttribute('aria-label', dot ? `${T.tabs.prestige}. ${T.a11y.meritDot}` : T.tabs.prestige);
-    }
+    setTabDot('prestige', tab !== 'prestige' && anyMeritAffordable(state), T.a11y.meritDot);
+    setTabDot('upgrades', tab !== 'upgrades' && anyUpgradeAffordable(state), T.a11y.upgradeDot);
 
     // Shop tabs get the bulk bar above their list; the others show only their view.
     const view = tabViews[tab];

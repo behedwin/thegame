@@ -34,7 +34,7 @@ export const T = {
   /** Owned integrations that do not fit in the compact map strip (062). */
   netMore: (n: number) => `+${n}`,
   tabs: { automations: 'Integrationer', upgrades: 'Uppgraderingar', prestige: 'Läsår', achievements: 'Troféer' },
-  a11y: { tabsAria: 'Vyer', meritDot: 'Meriter att köpa', buyAria: (name: string, label: string) => `Köp ${name}: ${label.replace(/\n/g, ' ')}` },
+  a11y: { tabsAria: 'Vyer', meritDot: 'Meriter att köpa', upgradeDot: 'Ny uppgradering att köpa', buyAria: (name: string, label: string) => `Köp ${name}: ${label.replace(/\n/g, ' ')}` },
   owned: (n: number) => `${n} st`,
   level: (n: number, max: number) => (max === 1 ? (n > 0 ? 'Klar' : '') : `Nivå ${n}/${max}`),
   maxed: 'Max',

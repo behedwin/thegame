@@ -245,6 +245,10 @@ export function canBuyMerit(state: GameState, id: string): boolean {
 /** True when at least one merit upgrade can be bought now (089: dot on the Läsår tab). */
 export const anyMeritAffordable = (state: GameState): boolean => MERITS.some((m) => canBuyMerit(state, m.id));
 
+/** True when an upgrade not yet bought (level 0) can be bought now (093: dot on the Uppgraderingar tab). */
+export const anyUpgradeAffordable = (state: GameState): boolean =>
+  UPGRADES.some((u) => level(state.upgrades, u.id) === 0 && canBuy(state, u.id));
+
 /** Meriter the player would receive by starting a new school year now (with the focus bonus, 053). */
 export function pendingMerits(state: GameState): Decimal {
   const { divisor, exponent } = BALANCE.prestige;
