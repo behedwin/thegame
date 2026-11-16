@@ -56,6 +56,7 @@ export function prestige(state: GameState): GameState {
     prestiges: state.prestiges + 1,
     lastYearEvents: state.yearEvents,
     lastYearTickets: state.yearTickets,
+    lastYearBestStreak: state.yearBestStreak,
     lastYearEarned: state.runEarned,
     yearEvents: 0,
     yearBestStreak: 0,
@@ -90,6 +91,8 @@ export interface YearSummary {
   fastestYear: boolean;
   /** Longest event streak this year (096); 0 below BALANCE.events.streak.min, so the line stays hidden. */
   bestStreak: number;
+  /** Longest streak against last school year (098); null in the first school year. */
+  bestStreakDiff: number | null;
 }
 
 /** `now - last` against last school year, or null in the first one, which has nothing to compare with (078). */
@@ -117,6 +120,7 @@ export const yearSummary = (state: GameState): YearSummary => ({
   durationMs: yearDurationMs(state),
   fastestYear: beatsFastestYear(state),
   bestStreak: state.yearBestStreak >= BALANCE.events.streak.min ? state.yearBestStreak : 0,
+  bestStreakDiff: sinceLastYear(state, state.yearBestStreak, state.lastYearBestStreak),
 });
 
 /** What a school year brings when it starts (051-053): its chapter, new integration types and focus options. */

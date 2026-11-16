@@ -51,7 +51,7 @@ export class PrestigeView {
       p.summaryIntegrations(s.integrations),
       p.summaryEvents(s.events) + diff(s.eventsDiff),
       p.summaryTickets(s.tickets) + diff(s.ticketsDiff),
-      ...(s.bestStreak > 0 ? [p.summaryStreak(s.bestStreak)] : []),
+      ...(s.bestStreak > 0 ? [p.summaryStreak(s.bestStreak) + diff(s.bestStreakDiff)] : []),
       p.summaryTime(fmtDuration(s.durationMs)),
       p.summaryMerits(fmt(s.merits)),
     ];

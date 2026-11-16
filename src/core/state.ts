@@ -79,6 +79,8 @@ export interface GameState {
   /** The same counters for the school year before (078). Set by prestige(); 0 before the first one. */
   lastYearEvents: number;
   lastYearTickets: number;
+  /** Longest event streak in the school year before (098). Set by prestige(); 0 before the first one. */
+  lastYearBestStreak: number;
   /** KP earned in the school year before (083). Set by prestige(); 0 before the first one. */
   lastYearEarned: Decimal;
   /** Game time (timeMs) when the running school year started (088). Set by prestige(). */
@@ -132,6 +134,7 @@ export function createInitialState(nowMs: number): GameState {
     yearTickets: 0,
     lastYearEvents: 0,
     lastYearTickets: 0,
+    lastYearBestStreak: 0,
     lastYearEarned: new Decimal(0),
     yearStartMs: 0,
     fastestYearMs: 0,
