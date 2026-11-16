@@ -44,9 +44,17 @@ const round1 = (n: number): number => Math.round(n * 10) / 10;
 
 /** "Nu: +200 % produktion": what one merit gives at this level, empty at level 0 (082). */
 export function meritEffectText(def: MeritDef, lvl: number): string {
-  if (lvl <= 0) return '';
+  return lvl > 0 ? T.meritNow(meritTotal(def, lvl)) : '';
+}
+
+/** "Nästa: +250 % produktion": what the merit gives after one more purchase, empty when maxed (086). */
+export function meritNextText(def: MeritDef, lvl: number): string {
+  return lvl < def.maxLevel ? T.meritNext(meritTotal(def, lvl + 1)) : '';
+}
+
+function meritTotal(def: MeritDef, lvl: number): string {
   const e = def.effect;
-  const t = T.meritNow;
+  const t = T.meritEffect;
   switch (e.kind) {
     case 'prodPct':
       return t.prodPct(e.pct * lvl);
@@ -76,6 +84,8 @@ interface Card {
   bar: HTMLElement | null;
   /** Latest named milestone (automations only). */
   named: HTMLElement | null;
+  /** "Nästa: …" line, shown only on expanded merit cards (086). */
+  next: HTMLElement | null;
 }
 
 export class ShopList {
@@ -143,19 +153,23 @@ export class ShopList {
     const named = this.kind === 'automations' ? h('span', { class: 'card-milestone', testId: `milestone-${id}` }) : null;
     const subRow = h('div', { class: 'card-sub-row' }, sub);
     if (named) subRow.append(named);
+    const next = this.kind === 'merits' ? h('div', { class: 'card-desc card-next', testId: `next-${id}` }) : null;
+    if (next) next.hidden = true;
     // Tapping the text toggles the full description; the buy button is separate (058).
     const info = h(
       'div',
       { class: 'card-info', testId: `info-${id}`, attrs: { role: 'button', tabindex: '0', 'aria-expanded': 'false' } },
       h('div', { class: 'card-title' }, h('span', { text: def.name }), lvl),
       h('div', { class: 'card-desc', text: def.desc }),
-      subRow,
     );
+    info.append(subRow);
+    if (next) info.append(next);
     if (bar) info.append(h('div', { class: 'bar' }, bar));
     const root = h('div', { class: 'card shop-card', testId: `card-${id}` }, info, btn);
     const toggle = (): void => {
       const open = root.classList.toggle('expanded');
       info.setAttribute('aria-expanded', String(open));
+      if (next) next.hidden = !open || !next.textContent;
     };
     info.addEventListener('click', toggle);
     info.addEventListener('keydown', (e) => {
@@ -167,7 +181,7 @@ export class ShopList {
       this.boughtAt.set(id, performance.now());
       this.onBuy(id, btn);
     });
-    this.cards.push({ id, name: def.name, root, level: lvl, sub, btn, bar, named });
+    this.cards.push({ id, name: def.name, root, level: lvl, sub, btn, bar, named, next });
     return root;
   }
 
@@ -211,6 +225,11 @@ export class ShopList {
         c.level.textContent = T.level(lvl, def.maxLevel);
         const now = meritEffectText(def, lvl);
         if (c.sub.textContent !== now) c.sub.textContent = now;
+        if (c.next) {
+          const next = meritNextText(def, lvl);
+          if (c.next.textContent !== next) c.next.textContent = next;
+          c.next.hidden = !next || !c.root.classList.contains('expanded');
+        }
         if (isMaxed(s, c.id)) this.setButton(c, T.maxed, false, true);
         else this.setButton(c, `${fmt(meritCost(s, c.id))} ★`, canBuyMerit(s, c.id));
       }
