@@ -13,6 +13,14 @@ import { ShopList } from './shop';
 /** A change against last school year, or nothing in the first one (078, 083). */
 const diff = (n: number | null, text: (n: number) => string = T.prestige.summaryDiff): string => (n === null ? '' : text(n));
 
+/** The year clock's text, and whether this year runs ahead of the fastest one (094, 102). Pure. */
+export function yearClock(state: GameState): { text: string; onPace: boolean } {
+  const record = fastestYearRecord(state);
+  const elapsed = yearDurationMs(state);
+  const onPace = record !== null && elapsed < record;
+  return { text: T.prestige.yearClock(fmtDuration(elapsed), record === null ? null : fmtDuration(record), onPace), onPace };
+}
+
 export class PrestigeView {
   readonly merits: ShopList;
   readonly host: HTMLElement;
@@ -111,10 +119,7 @@ export class PrestigeView {
   private renderClock(state: GameState): void {
     this.clock.hidden = state.prestiges < 1;
     if (this.clock.hidden) return;
-    const record = fastestYearRecord(state);
-    const elapsed = yearDurationMs(state);
-    const onPace = record !== null && elapsed < record; // green while ahead of the fastest year (102)
-    const text = T.prestige.yearClock(fmtDuration(elapsed), record === null ? null : fmtDuration(record), onPace);
+    const { text, onPace } = yearClock(state);
     if (this.clock.textContent !== text) this.clock.textContent = text;
     this.clock.classList.toggle('on-pace', onPace);
   }

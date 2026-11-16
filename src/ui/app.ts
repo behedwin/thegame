@@ -7,7 +7,7 @@ import { T } from '../content/texts';
 import {
   answerTicket, applyMorningChoice, applyOffline, buy, type CalendarDay, buyMerit, chooseFocus, claimEvent, click, createInitialState,
   getAutomation, kpPerClick, level, milestoneName, milestonesReached, newAchievements, networkFlow, prestige, prestigeUnlocked,
-  anyMeritAffordable, anyNewAutomationAffordable, anyUpgradeAffordable, brokenStreak, receiveTicket, refillInboxOffline, rollEvent, setCalendar, setSettings, type Settings, spawnEvent, tick, touch, type GameState,
+  brokenStreak, receiveTicket, refillInboxOffline, rollEvent, setCalendar, setSettings, type Settings, spawnEvent, tick, touch, type GameState,
 } from '../core';
 import { buyMany, BULK_MODES, resolveBulk, type BulkMode } from '../core/bulk';
 import { loadGame, saveGame, wipeGame } from '../save/storage';
@@ -27,6 +27,7 @@ import { cancelNotifications, scheduleNotifications } from './notifications';
 import { PrestigeView } from './prestige';
 import { openSettings } from './settings';
 import { ShopList } from './shop';
+import { seenTrophies, TABS, tabDots, type Tab } from './tab-dots';
 import { receiptText } from './effects';
 import { renderInboxButton, showTicket } from './inbox';
 import { helpHooks } from './help';
@@ -41,8 +42,6 @@ const SYNC = '<svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true"
 /** Today's local calendar day, injected into the pure core for seasons. */
 const today = (d = new Date()): CalendarDay => ({ month: d.getMonth() + 1, day: d.getDate() });
 
-const TABS = ['automations', 'upgrades', 'prestige', 'achievements'] as const;
-type Tab = (typeof TABS)[number];
 const AUTOSAVE_MS = 10_000;
 /** Hold-to-sync repeat interval: about 8 clicks per second (see hold.ts). */
 const HOLD_REPEAT_MS = 125;
@@ -289,12 +288,8 @@ export async function startApp(root: HTMLElement): Promise<void> {
       b.classList.toggle('active', k === tab);
       b.setAttribute('aria-selected', String(k === tab));
     }
-    setTabDot('prestige', tab !== 'prestige' && anyMeritAffordable(state), T.a11y.meritDot);
-    setTabDot('upgrades', tab !== 'upgrades' && anyUpgradeAffordable(state), T.a11y.upgradeDot);
-    setTabDot('automations', tab !== 'automations' && anyNewAutomationAffordable(state), T.a11y.automationDot);
-    const trophies = state.achievements.length;
-    if (tab === 'achievements' || trophies < trophiesSeen) trophiesSeen = trophies;
-    setTabDot('achievements', trophies > trophiesSeen, T.a11y.trophyDot);
+    trophiesSeen = seenTrophies(state, tab, trophiesSeen);
+    for (const d of tabDots(state, tab, trophiesSeen)) setTabDot(d.tab, d.dot, d.why);
 
     // Shop tabs get the bulk bar above their list; the others show only their view.
     const view = tabViews[tab];
