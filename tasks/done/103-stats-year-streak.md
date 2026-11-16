@@ -1,7 +1,7 @@
 ---
 id: 103
 size: S
-status: ready
+status: done
 priority: normal
 changelog: "Statistiken visar läsårets längsta svit och förra läsårets."
 touches: [src/ui/stats.ts, src/content/texts.ts]

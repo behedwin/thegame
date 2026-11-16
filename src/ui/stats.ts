@@ -20,6 +20,7 @@ export function statRows(state: GameState): StatRow[] {
     kp(S.bestYear, bestYearEarned(state)),
     ...(fastestYearRecord(state) === null ? [] : [row(S.fastestYear, fmtDuration(state.fastestYearMs))]),
     count(S.bestEventStreak, state.bestEventStreak),
+    row(S.yearBestStreak, S.yearStreakValue(state.yearBestStreak, state.prestiges >= 1 ? state.lastYearBestStreak : null)),
     count(S.purchases, state.purchases),
     count(S.clicks, state.clicks),
     count(S.events, state.eventsClaimed),
