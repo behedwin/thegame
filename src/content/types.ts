@@ -99,7 +99,9 @@ export type AchievementCondition =
   | { kind: 'prestiges'; n: number }
   | { kind: 'ticketsAnswered'; n: number }
   | { kind: 'focusesPlayed'; n: number }
-  | { kind: 'eventStreak'; n: number };
+  | { kind: 'eventStreak'; n: number }
+  /** The fastest finished school year (`fastestYearMs`) is at most `maxMs` of game time (091). */
+  | { kind: 'fastestYear'; maxMs: number };
 
 /** A permanent achievement, kept across school years. Each unlocked one gives +1 % production. */
 /** `desc` says how to unlock it (shown in the list, also while locked). */
