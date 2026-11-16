@@ -60,10 +60,10 @@ describe('event streak bookkeeping (task 100)', () => {
     expect(s.yearBestStreak).toBe(0);
     expect(s.lastYearBestStreak).toBe(5);
     expect(s.bestEventStreak).toBe(5);
-    // The running streak itself carries over into the new year (current behaviour, see journal 100).
+    // The running streak carries over into the new year, but the year record counts only this year (107).
     expect(s.eventStreak).toBe(5);
     s = solve(s);
-    expect(s.yearBestStreak).toBe(6);
+    expect(s.yearBestStreak).toBe(1);
     expect(s.bestEventStreak).toBe(6);
   });
 });

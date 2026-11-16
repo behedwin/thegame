@@ -60,6 +60,7 @@ export function prestige(state: GameState): GameState {
     lastYearEarned: state.runEarned,
     yearEvents: 0,
     yearBestStreak: 0,
+    yearStreakBase: state.eventStreak, // the streak carries on, but only this year's part counts (107)
     yearTickets: 0,
     yearStartMs: state.timeMs,
     fastestYearMs: fastestAfter(state),

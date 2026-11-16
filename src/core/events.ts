@@ -42,6 +42,7 @@ export function spawnEvent(state: GameState, event: EventDef): GameState {
     ...state,
     activeEvent: { id: event.id, expiresAtMs: state.timeMs + BALANCE.events.visibleMs },
     eventStreak: state.eventOpen ? 0 : state.eventStreak,
+    yearStreakBase: state.eventOpen ? 0 : state.yearStreakBase,
     eventOpen: true,
   };
 }
@@ -103,7 +104,7 @@ export function claimEvent(state: GameState): ClaimResult {
     yearEvents: state.yearEvents + 1,
     eventStreak: streak,
     bestEventStreak: Math.max(state.bestEventStreak, streak),
-    yearBestStreak: Math.max(state.yearBestStreak, streak),
+    yearBestStreak: Math.max(state.yearBestStreak, streak - state.yearStreakBase),
     eventOpen: false,
   };
   const r = applyEffect(next, event.id, given.effect);

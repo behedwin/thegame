@@ -1,7 +1,7 @@
 ---
 id: 107
 size: M
-status: ready
+status: done
 priority: normal
 changelog: "Årets längsta svit räknar nu bara event från det här läsåret."
 touches: [src/core/prestige.ts, src/core/events.ts, src/core/state.ts, src/save/]
