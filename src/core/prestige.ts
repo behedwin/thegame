@@ -27,6 +27,15 @@ export function startingAutomations(meritUpgrades: GameState['meritUpgrades']): 
   return automations;
 }
 
+/** Game time spent in the running school year (088). */
+export const yearDurationMs = (state: GameState): number => Math.max(0, state.timeMs - state.yearStartMs);
+
+/** The fastest-year record after finishing the running year (088). */
+const fastestAfter = (state: GameState): number => {
+  const d = yearDurationMs(state);
+  return state.fastestYearMs > 0 ? Math.min(state.fastestYearMs, d) : d;
+};
+
 /** "Nytt läsår": reset the run; keep merits, lifetime totals, events, tickets and settings. */
 export function prestige(state: GameState): GameState {
   if (!canPrestige(state)) return state;
@@ -49,6 +58,8 @@ export function prestige(state: GameState): GameState {
     lastYearEarned: state.runEarned,
     yearEvents: 0,
     yearTickets: 0,
+    yearStartMs: state.timeMs,
+    fastestYearMs: fastestAfter(state),
     focusesPlayed: withFocusPlayed(state),
     focus: DEFAULT_FOCUS, // the player picks the new year's focus right after (053)
     calendar: state.calendar ?? null,
@@ -71,6 +82,10 @@ export interface YearSummary {
   kpDiffPct: number | null;
   /** True when this year beat every earlier one. */
   bestYear: boolean;
+  /** Game time this school year took (088). */
+  durationMs: number;
+  /** True when this year beat an earlier fastest-year record (088); never in the first year. */
+  fastestYear: boolean;
 }
 
 /** `now - last` against last school year, or null in the first one, which has nothing to compare with (078). */
@@ -95,6 +110,8 @@ export const yearSummary = (state: GameState): YearSummary => ({
   ticketsDiff: sinceLastYear(state, state.yearTickets, state.lastYearTickets),
   kpDiffPct: kpDiffPct(state),
   bestYear: state.runEarned.gt(state.bestRunEarned),
+  durationMs: yearDurationMs(state),
+  fastestYear: state.fastestYearMs > 0 && yearDurationMs(state) < state.fastestYearMs,
 });
 
 /** What a school year brings when it starts (051-053): its chapter, new integration types and focus options. */

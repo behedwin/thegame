@@ -1,7 +1,7 @@
 ---
 id: 088
 size: M
-status: ready
+status: done
 priority: normal
 changelog: "Nytt rekord att slå: ditt snabbaste läsår."
 touches: [src/core/, src/save/, src/ui/stats.ts, src/ui/prestige.ts, src/content/texts.ts]

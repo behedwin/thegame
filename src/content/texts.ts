@@ -163,6 +163,8 @@ export const T = {
     summaryPct: (n: number) => signedDiff(n, pctText),
     summaryMerits: (n: string) => `${n} Meriter att hämta ut`,
     summaryBest: 'Ditt bästa läsår hittills!',
+    summaryTime: (t: string) => `Läsåret tog ${t}`,
+    summaryRecord: 'Nytt rekord: ditt snabbaste läsår!',
   },
   goal: {
     title: 'Hela Sverige på en standard',
@@ -235,6 +237,7 @@ export const T = {
     clicks: 'Manuella synkningar',
     events: 'Lösta händelser',
     bestEventStreak: 'Längsta eventsvit',
+    fastestYear: 'Snabbaste läsår',
     tickets: 'Besvarade ärenden',
     schoolYears: 'Läsår',
     meritsEarned: 'Meriter totalt',
