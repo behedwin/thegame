@@ -4,7 +4,7 @@ import { getFocus } from '../core/focus';
 import { getTicket } from '../core/tickets';
 import { type Buff, createInitialState, Decimal, DEFAULT_FOCUS, DEFAULT_VOLUME, type GameState } from '../core/state';
 
-export const SAVE_VERSION = 18;
+export const SAVE_VERSION = 19;
 
 /** Raw JSON shape. Unknown on purpose: anything may come out of storage. */
 export type RawSave = { version: number; [key: string]: unknown };
@@ -58,6 +58,8 @@ export const MIGRATIONS: Record<number, Migration> = {
   16: (s) => ({ ...s, version: 17, yearStartMs: ms(s.timeMs), fastestYearMs: 0 }),
   // v18 (task 096): longest event streak this school year, unknown for older saves, so 0.
   17: (s) => ({ ...s, version: 18, yearBestStreak: 0 }),
+  // v19 (task 098): last school year's longest event streak, unknown for older saves, so 0.
+  18: (s) => ({ ...s, version: 19, lastYearBestStreak: 0 }),
 };
 
 export class SaveError extends Error {}
@@ -189,6 +191,7 @@ export function deserialize(text: string, nowMs: number): GameState {
     yearTickets: count(s.yearTickets),
     lastYearEvents: count(s.lastYearEvents),
     lastYearTickets: count(s.lastYearTickets),
+    lastYearBestStreak: count(s.lastYearBestStreak),
     lastYearEarned: dec(s.lastYearEarned, d.lastYearEarned),
     yearStartMs: ms(s.yearStartMs),
     fastestYearMs: ms(s.fastestYearMs),
