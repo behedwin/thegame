@@ -102,6 +102,7 @@ export function claimEvent(state: GameState): ClaimResult {
     yearEvents: state.yearEvents + 1,
     eventStreak: streak,
     bestEventStreak: Math.max(state.bestEventStreak, streak),
+    yearBestStreak: Math.max(state.yearBestStreak, streak),
     eventOpen: false,
   };
   const r = applyEffect(next, event.id, given.effect);

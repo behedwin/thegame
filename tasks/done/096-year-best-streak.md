@@ -1,7 +1,7 @@
 ---
 id: 096
 size: S
-status: ready
+status: done
 priority: normal
 changelog: "Återblicken visar läsårets längsta eventsvit."
 touches: [src/core/state.ts, src/core/events.ts, src/core/prestige.ts, src/save/format.ts, src/ui/prestige.ts, src/content/texts.ts]

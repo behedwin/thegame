@@ -1,4 +1,5 @@
 // "Nytt läsår" (prestige): when it unlocks, what it resets and what it keeps. Pure, like actions.ts.
+import { BALANCE } from '../content/balance';
 import { MERITS, type AutomationDef, type ChapterDef, type FocusDef } from '../content/registry';
 import { focusesForYear, withFocusPlayed } from './focus';
 import { chapterFor } from './goal';
@@ -57,6 +58,7 @@ export function prestige(state: GameState): GameState {
     lastYearTickets: state.yearTickets,
     lastYearEarned: state.runEarned,
     yearEvents: 0,
+    yearBestStreak: 0,
     yearTickets: 0,
     yearStartMs: state.timeMs,
     fastestYearMs: fastestAfter(state),
@@ -86,6 +88,8 @@ export interface YearSummary {
   durationMs: number;
   /** True when this year beat an earlier fastest-year record (088); never in the first year. */
   fastestYear: boolean;
+  /** Longest event streak this year (096); 0 below BALANCE.events.streak.min, so the line stays hidden. */
+  bestStreak: number;
 }
 
 /** `now - last` against last school year, or null in the first one, which has nothing to compare with (078). */
@@ -112,6 +116,7 @@ export const yearSummary = (state: GameState): YearSummary => ({
   bestYear: state.runEarned.gt(state.bestRunEarned),
   durationMs: yearDurationMs(state),
   fastestYear: beatsFastestYear(state),
+  bestStreak: state.yearBestStreak >= BALANCE.events.streak.min ? state.yearBestStreak : 0,
 });
 
 /** What a school year brings when it starts (051-053): its chapter, new integration types and focus options. */

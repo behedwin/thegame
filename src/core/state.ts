@@ -73,6 +73,8 @@ export interface GameState {
   ticketsAnswered: number;
   /** Events solved and tickets answered in the running school year (076). Reset by prestige(). */
   yearEvents: number;
+  /** Longest event streak reached in the running school year (096). Reset by prestige(). */
+  yearBestStreak: number;
   yearTickets: number;
   /** The same counters for the school year before (078). Set by prestige(); 0 before the first one. */
   lastYearEvents: number;
@@ -126,6 +128,7 @@ export function createInitialState(nowMs: number): GameState {
     nextTicketAtMs: BALANCE.tickets.firstAtMs,
     ticketsAnswered: 0,
     yearEvents: 0,
+    yearBestStreak: 0,
     yearTickets: 0,
     lastYearEvents: 0,
     lastYearTickets: 0,
