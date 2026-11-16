@@ -7,6 +7,7 @@ import {
   canBuy,
   canBuyMerit,
   costOf,
+  discountFactor,
   getAutomation,
   getMerit,
   getUpgrade,
@@ -56,8 +57,7 @@ export function meritEffectText(def: MeritDef, lvl: number): string {
     case 'startAutomation':
       return t.startAutomation(e.count * lvl, getAutomation(e.id)?.name ?? e.id);
     case 'autoDiscountPct':
-      // Multiplicative per level, same as automationCostFactor() in core.
-      return t.autoDiscountPct(round1((1 - Math.pow(1 - e.pct / 100, lvl)) * 100));
+      return t.autoDiscountPct(round1((1 - discountFactor(e.pct, lvl)) * 100));
     case 'eventCooldownPct':
       return t.eventCooldownPct(Math.min(MAX_EVENT_COOLDOWN_CUT_PCT, e.pct * lvl));
     case 'offlineEffPct':
