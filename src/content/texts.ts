@@ -69,6 +69,7 @@ export const T = {
   season: { banner: (s: SeasonDef) => `${s.name}: ${s.desc}`, aria: 'Säsong just nu' },
   eventTap: 'Tryck för att lösa!',
   eventStreak: (n: number) => `Svit ${n} 🔥`,
+  eventStreakBroken: (n: number) => `Sviten bröts vid ${n}. Ny chans snart!`,
   tips: {
     aria: 'Tips',
     sync: 'Tips: Tryck på SYNKA för att flytta data och tjäna KP.',

@@ -7,7 +7,7 @@ import { T } from '../content/texts';
 import {
   answerTicket, applyMorningChoice, applyOffline, buy, type CalendarDay, buyMerit, chooseFocus, claimEvent, click, createInitialState,
   getAutomation, kpPerClick, level, milestoneName, milestonesReached, newAchievements, networkFlow, prestige, prestigeUnlocked,
-  receiveTicket, refillInboxOffline, rollEvent, setCalendar, setSettings, type Settings, spawnEvent, tick, touch, type GameState,
+  brokenStreak, receiveTicket, refillInboxOffline, rollEvent, setCalendar, setSettings, type Settings, spawnEvent, tick, touch, type GameState,
 } from '../core';
 import { buyMany, BULK_MODES, resolveBulk, type BulkMode } from '../core/bulk';
 import { loadGame, saveGame, wipeGame } from '../save/storage';
@@ -330,6 +330,8 @@ export async function startApp(root: HTMLElement): Promise<void> {
     const before = state;
     state = tick(state, dt);
     announceAchievements(before);
+    const broken = brokenStreak(before, state);
+    if (broken > 0) toast(T.eventStreakBroken(broken));
     rollAcc += dt;
     while (rollAcc >= BALANCE.events.rollIntervalMs) {
       rollAcc -= BALANCE.events.rollIntervalMs;
