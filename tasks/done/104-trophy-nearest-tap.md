@@ -1,7 +1,7 @@
 ---
 id: 104
 size: S
-status: ready
+status: done
 priority: normal
 changelog: "Tryck på trofén under \"Nästan där\" så hittar du den i listan."
 touches: [src/ui/achievements.ts, src/ui/style.css]
