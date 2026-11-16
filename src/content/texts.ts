@@ -242,6 +242,9 @@ export const T = {
     clicks: 'Manuella synkningar',
     events: 'Lösta händelser',
     bestEventStreak: 'Längsta eventsvit',
+    /** This school year's longest streak, with last year's from the second year (103). */
+    yearBestStreak: 'Längsta svit i år',
+    yearStreakValue: (n: number, last: number | null) => (last === null ? `${n} 🔥` : `${n} 🔥 (förra läsåret ${last})`),
     fastestYear: 'Snabbaste läsår',
     tickets: 'Besvarade ärenden',
     schoolYears: 'Läsår',
