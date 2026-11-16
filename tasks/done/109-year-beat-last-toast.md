@@ -1,7 +1,7 @@
 ---
 id: 109
 size: S
-status: ready
+status: done
 touches: [src/ui/app.ts, src/core/prestige.ts, src/content/texts.ts]
 depends: [106]
 priority: normal

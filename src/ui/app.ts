@@ -7,7 +7,7 @@ import { T } from '../content/texts';
 import {
   answerTicket, applyMorningChoice, applyOffline, buy, type CalendarDay, buyMerit, chooseFocus, claimEvent, click, createInitialState,
   getAutomation, kpPerClick, level, milestoneName, milestonesReached, newAchievements, networkFlow, prestige, prestigeUnlocked,
-  brokenStreak, receiveTicket, refillInboxOffline, rollEvent, setCalendar, setSettings, type Settings, spawnEvent, tick, touch, type GameState,
+  brokenStreak, passedLastYear, receiveTicket, refillInboxOffline, rollEvent, setCalendar, setSettings, type Settings, spawnEvent, tick, touch, type GameState,
 } from '../core';
 import { buyMany, BULK_MODES, resolveBulk, type BulkMode } from '../core/bulk';
 import { loadGame, saveGame, wipeGame } from '../save/storage';
@@ -262,8 +262,12 @@ export async function startApp(root: HTMLElement): Promise<void> {
     b.setAttribute('aria-label', dot ? `${T.tabs[t]}. ${why}` : T.tabs[t]);
   }
 
+  // State at the previous render; null until the first one, so a loaded save never toasts (109).
+  let rendered: GameState | null = null;
   function render(): void {
     state = setCalendar(state, today());
+    if (rendered && passedLastYear(rendered, state)) toast(T.toastBeatLastYear, 'good');
+    rendered = state;
     hud.render(state);
     renderInboxButton(inboxBtn, state);
     customers.render(state);
