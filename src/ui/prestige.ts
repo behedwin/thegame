@@ -10,8 +10,8 @@ import { focusLines } from './effects';
 import { fmt } from './format';
 import { ShopList } from './shop';
 
-/** " (+2)" after a summary line, or nothing in the first school year (078). */
-const diff = (n: number | null): string => (n === null ? '' : T.prestige.summaryDiff(n));
+/** A change against last school year, or nothing in the first one (078, 083). */
+const diff = (n: number | null, text: (n: number) => string = T.prestige.summaryDiff): string => (n === null ? '' : text(n));
 
 export class PrestigeView {
   readonly merits: ShopList;
@@ -45,7 +45,7 @@ export class PrestigeView {
     const s = yearSummary(state);
     const p = T.prestige;
     const lines = [
-      p.summaryKp(fmt(s.kpEarned)) + (s.kpDiffPct === null ? '' : p.summaryPct(s.kpDiffPct)),
+      p.summaryKp(fmt(s.kpEarned)) + diff(s.kpDiffPct, p.summaryPct),
       p.summaryCustomers(s.customers),
       p.summaryIntegrations(s.integrations),
       p.summaryEvents(s.events) + diff(s.eventsDiff),

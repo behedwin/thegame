@@ -54,13 +54,13 @@ function meritSum(state: GameState, kind: SummedMerit): number {
 /** Max total event cooldown reduction from merits, in percent. */
 export const MAX_EVENT_COOLDOWN_CUT_PCT = 75;
 
-/** Price factor on automations from merits (multiplicative per level, in (0, 1]). */
+/** Price factor from one discount merit at a level: multiplicative per level, in (0, 1]. */
+export const discountFactor = (pct: number, lvl: number): number => Math.pow(1 - pct / 100, lvl);
+
+/** Price factor on automations from all discount merits together. */
 export function automationCostFactor(state: GameState): number {
   let f = 1;
-  for (const m of MERITS) {
-    if (m.effect.kind !== 'autoDiscountPct') continue;
-    f *= Math.pow(1 - m.effect.pct / 100, level(state.meritUpgrades, m.id));
-  }
+  for (const m of MERITS) if (m.effect.kind === 'autoDiscountPct') f *= discountFactor(m.effect.pct, level(state.meritUpgrades, m.id));
   return f;
 }
 

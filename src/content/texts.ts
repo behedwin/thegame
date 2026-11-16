@@ -8,6 +8,8 @@ const groupDigits = (n: number): string => String(Math.floor(n)).replace(/\B(?=(
 const num = (n: number) => String(Math.round(n * 100) / 100).replace('.', ',');
 const buffName = (mult: number, click: boolean) => `${click ? 'KP/klick' : 'Produktion'} ×${num(mult)}`;
 const pctText = (n: number) => `${num(n)}\u00a0%`;
+/** " (+2)", " (−5)" or " (±0)": a change against last school year, appended to a summary line (078, 083). */
+const signedDiff = (n: number, text: (abs: number) => string) => ` (${n > 0 ? '+' : n < 0 ? '−' : '±'}${text(Math.abs(n))})`;
 
 export const T = {
   title: 'Skolintegratören',
@@ -148,9 +150,9 @@ export const T = {
     summaryEvents: (n: number) => (n === 1 ? '1 event löst' : `${n} event lösta`),
     summaryTickets: (n: number) => (n === 1 ? '1 ärende stängt' : `${n} ärenden stängda`),
     /** Change against last school year, appended to a summary line (078). */
-    summaryDiff: (n: number) => ` (${n > 0 ? '+' : n < 0 ? '−' : '±'}${Math.abs(n)})`,
+    summaryDiff: (n: number) => signedDiff(n, String),
     /** KP change against last school year in percent, appended to the KP line (083). */
-    summaryPct: (n: number) => ` (${n > 0 ? '+' : n < 0 ? '−' : '±'}${pctText(Math.abs(n))})`,
+    summaryPct: (n: number) => signedDiff(n, pctText),
     summaryMerits: (n: string) => `${n} Meriter att hämta ut`,
     summaryBest: 'Ditt bästa läsår hittills!',
   },
