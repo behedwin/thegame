@@ -1,7 +1,7 @@
 ---
 id: 089
 size: S
-status: ready
+status: done
 priority: normal
 changelog: "En prick på fliken Läsår visar när du har stjärnor att lägga på en merit."
 touches: [src/ui/app.ts, src/ui/style.css, src/content/texts.ts]
