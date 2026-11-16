@@ -1,7 +1,7 @@
 ---
 id: 087
 size: S
-status: ready
+status: done
 priority: normal
 changelog: "Navet visar hur mycket KP/s som behövs till nästa nivå."
 touches: [src/ui/network.ts, src/ui/app.ts, src/ui/hero.ts, src/content/texts.ts]

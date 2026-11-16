@@ -63,6 +63,11 @@ export function hubTier(kps: number): number {
   return kps >= 10 ? Math.min(HUB_TIERS - 1, 1 + Math.floor(Math.log10(kps) / 2 - 0.5)) : 0;
 }
 
+/** KP/s where the next hub tier starts (inverse of hubTier), or null on the top tier (087). */
+export function nextHubTierKps(tier: number): number | null {
+  return tier >= HUB_TIERS - 1 ? null : 10 * 100 ** Math.max(0, tier);
+}
+
 /** Packets per second on a line from its share of KP/s: +1.1 per decade from 0.6, capped at 5; 0 if idle. */
 export function flowRate(share: number): number {
   return share > 0 ? 0.6 + 1.1 * Math.max(0, 4 + Math.log10(Math.min(1, share))) : 0;

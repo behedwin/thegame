@@ -43,18 +43,38 @@ export function compactFloatSpot(hub: HubAnchor, width: number, active: number, 
   return { x, y, dx };
 }
 
+export interface Box { left: number; top: number; right: number; bottom: number }
+
+/** Whether a point lies in a box (edges included); an empty box (hidden element) never hits (087). */
+export function pointInRect(r: Box, x: number, y: number): boolean {
+  return r.right > r.left && r.bottom > r.top && x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+}
+
+/** An element that does not take pointer events itself but shows something when its spot in the strip is tapped. */
+export interface HeroTapSpot { el: HTMLElement; tap: () => void }
+
 /** Owns the hero's size: follows the shop panel's scroll and expands on a tap on the strip. */
 export class HeroSize {
   mode: HeroMode = 'big';
 
   /** `keep` are the elements whose taps do their own thing (SYNKA, the event card) and never expand. */
-  constructor(private readonly hero: HTMLElement, private readonly panel: HTMLElement, private readonly keep: readonly Node[]) {
+  /** `spot` is checked by position (it has no pointer events), so a tap on it in the strip shows its tip (087). */
+  constructor(
+    private readonly hero: HTMLElement,
+    private readonly panel: HTMLElement,
+    private readonly keep: readonly Node[],
+    spot?: HeroTapSpot,
+  ) {
     panel.addEventListener('scroll', () => this.sync(), { passive: true });
     hero.addEventListener('click', (e) => {
       // The path is fixed at dispatch, so a tap on the event card still counts as "kept" after the claim
       // has already removed the card from the slot (061).
       const path = e.composedPath();
       if (this.mode !== 'compact' || keep.some((k) => path.includes(k))) return;
+      if (spot && pointInRect(spot.el.getBoundingClientRect(), e.clientX, e.clientY)) {
+        spot.tap();
+        return;
+      }
       panel.scrollTop = 0;
       this.set('big');
     });

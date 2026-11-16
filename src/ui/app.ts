@@ -22,7 +22,7 @@ import { CustomerRow } from './customers';
 import { EventCard } from './event-card';
 import { bindHold } from './hold';
 import { Hud } from './hud';
-import { NetworkView } from './network';
+import { NetworkView, nextHubTierKps } from './network';
 import { cancelNotifications, scheduleNotifications } from './notifications';
 import { PrestigeView } from './prestige';
 import { openSettings } from './settings';
@@ -117,7 +117,8 @@ export async function startApp(root: HTMLElement): Promise<void> {
   root.replaceChildren(h('div', { class: 'app' }, top, newsBar.host, hud.host, hero, tips.host, customers.host, tabsNav, panel));
   tips.marks = { sync: hub, buy: panel, event: eventSlot, help: settingsBtn };
   // Compact map (057): scrolling the shop shrinks the map to a strip so more cards fit.
-  const heroSize = new HeroSize(hero, panel, [hub, eventSlot]);
+  // A tap on the tier name in the strip shows what the next tier needs instead of expanding the map (087).
+  const heroSize = new HeroSize(hero, panel, [hub, eventSlot], { el: hubTierTag, tap: () => toast(hubTierInfo()) });
 
   // ---------- Actions ----------
   /** Stop saving (wipe or import replaces the save), then reload once `done` has written storage. */
@@ -245,6 +246,13 @@ export async function startApp(root: HTMLElement): Promise<void> {
     persist();
   }
 
+  /** The hub tier and the KP/s the next one needs (087). */
+  function hubTierInfo(): string {
+    const next = nextHubTierKps(net.currentTier);
+    return T.hubTierInfo(net.currentTier, next === null ? null : fmt(next));
+  }
+  let hubInfoShown = '';
+
   function render(): void {
     state = setCalendar(state, today());
     hud.render(state);
@@ -254,6 +262,11 @@ export async function startApp(root: HTMLElement): Promise<void> {
     const tierUp = net.update(networkFlow(state));
     if (tierUp !== null) toast(T.hubTierUp(T.hubTiers[tierUp]!), 'good');
     hubTierTag.textContent = T.hubTiers[net.currentTier] ?? '';
+    const info = hubTierInfo();
+    if (hubInfoShown !== info) {
+      hubInfoShown = info;
+      hub.setAttribute('aria-label', `${T.hubAria}. ${info}`);
+    }
     eventCard.render(state);
     renderTips();
 
