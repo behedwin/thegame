@@ -1,7 +1,7 @@
 ---
 id: 083
 size: S
-status: ready
+status: done
 priority: normal
 changelog: "Återblicken vid Nytt läsår visar hur mycket mer KP du tjänade än förra läsåret."
 touches: [src/core/state.ts, src/core/prestige.ts, src/save/, src/ui/prestige.ts, src/content/texts.ts]

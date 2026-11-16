@@ -45,7 +45,7 @@ export class PrestigeView {
     const s = yearSummary(state);
     const p = T.prestige;
     const lines = [
-      p.summaryKp(fmt(s.kpEarned)),
+      p.summaryKp(fmt(s.kpEarned)) + (s.kpDiffPct === null ? '' : p.summaryPct(s.kpDiffPct)),
       p.summaryCustomers(s.customers),
       p.summaryIntegrations(s.integrations),
       p.summaryEvents(s.events) + diff(s.eventsDiff),

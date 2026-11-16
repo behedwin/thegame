@@ -46,6 +46,7 @@ export function prestige(state: GameState): GameState {
     prestiges: state.prestiges + 1,
     lastYearEvents: state.yearEvents,
     lastYearTickets: state.yearTickets,
+    lastYearEarned: state.runEarned,
     yearEvents: 0,
     yearTickets: 0,
     focusesPlayed: withFocusPlayed(state),
@@ -66,14 +67,23 @@ export interface YearSummary {
   /** Change against last school year (078); null in the first school year, which has nothing to compare with. */
   eventsDiff: number | null;
   ticketsDiff: number | null;
+  /** KP earned against last school year in whole percent (083); null in the first year or when last year is 0. */
+  kpDiffPct: number | null;
   /** True when this year beat every earlier one. */
   bestYear: boolean;
 }
 
-/** Summarise the running school year, from the state before prestige. */
 /** `now - last` against last school year, or null in the first one, which has nothing to compare with (078). */
 const sinceLastYear = (state: GameState, now: number, last: number): number | null => (state.prestiges > 0 ? now - last : null);
 
+/** Whole-percent change of this year's KP against last year's, or null when there is nothing to compare (083). */
+function kpDiffPct(state: GameState): number | null {
+  if (state.prestiges === 0 || state.lastYearEarned.lte(0)) return null;
+  const pct = Math.round(state.runEarned.sub(state.lastYearEarned).div(state.lastYearEarned).mul(100).toNumber());
+  return Number.isFinite(pct) ? pct : null;
+}
+
+/** Summarise the running school year, from the state before prestige. */
 export const yearSummary = (state: GameState): YearSummary => ({
   kpEarned: state.runEarned,
   customers: customersSigned(state),
@@ -83,6 +93,7 @@ export const yearSummary = (state: GameState): YearSummary => ({
   tickets: state.yearTickets,
   eventsDiff: sinceLastYear(state, state.yearEvents, state.lastYearEvents),
   ticketsDiff: sinceLastYear(state, state.yearTickets, state.lastYearTickets),
+  kpDiffPct: kpDiffPct(state),
   bestYear: state.runEarned.gt(state.bestRunEarned),
 });
 
