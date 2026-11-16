@@ -249,6 +249,10 @@ export const anyMeritAffordable = (state: GameState): boolean => MERITS.some((m)
 export const anyUpgradeAffordable = (state: GameState): boolean =>
   UPGRADES.some((u) => level(state.upgrades, u.id) === 0 && canBuy(state, u.id));
 
+/** True when an unlocked automation the player does not own yet can be bought now (097: dot on the Integrationer tab). */
+export const anyNewAutomationAffordable = (state: GameState): boolean =>
+  AUTOMATIONS.some((a) => level(state.automations, a.id) === 0 && canBuy(state, a.id));
+
 /** Meriter the player would receive by starting a new school year now (with the focus bonus, 053). */
 export function pendingMerits(state: GameState): Decimal {
   const { divisor, exponent } = BALANCE.prestige;

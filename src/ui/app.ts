@@ -7,7 +7,7 @@ import { T } from '../content/texts';
 import {
   answerTicket, applyMorningChoice, applyOffline, buy, type CalendarDay, buyMerit, chooseFocus, claimEvent, click, createInitialState,
   getAutomation, kpPerClick, level, milestoneName, milestonesReached, newAchievements, networkFlow, prestige, prestigeUnlocked,
-  anyMeritAffordable, anyUpgradeAffordable, brokenStreak, receiveTicket, refillInboxOffline, rollEvent, setCalendar, setSettings, type Settings, spawnEvent, tick, touch, type GameState,
+  anyMeritAffordable, anyNewAutomationAffordable, anyUpgradeAffordable, brokenStreak, receiveTicket, refillInboxOffline, rollEvent, setCalendar, setSettings, type Settings, spawnEvent, tick, touch, type GameState,
 } from '../core';
 import { buyMany, BULK_MODES, resolveBulk, type BulkMode } from '../core/bulk';
 import { loadGame, saveGame, wipeGame } from '../save/storage';
@@ -253,7 +253,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
   }
   let hubInfoShown = '';
 
-  /** Dot on a tab while something there can be bought (089, 093); the label tells screen readers why. */
+  /** Dot on a tab while something there can be bought (089, 093, 097); the label tells screen readers why. */
   function setTabDot(t: Tab, dot: boolean, why: string): void {
     const b = tabButtons[t];
     if (b.classList.contains('dot') === dot) return;
@@ -289,6 +289,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
     }
     setTabDot('prestige', tab !== 'prestige' && anyMeritAffordable(state), T.a11y.meritDot);
     setTabDot('upgrades', tab !== 'upgrades' && anyUpgradeAffordable(state), T.a11y.upgradeDot);
+    setTabDot('automations', tab !== 'automations' && anyNewAutomationAffordable(state), T.a11y.automationDot);
 
     // Shop tabs get the bulk bar above their list; the others show only their view.
     const view = tabViews[tab];
