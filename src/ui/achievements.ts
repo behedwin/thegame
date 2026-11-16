@@ -1,5 +1,6 @@
 // Achievements tab: all achievements, unlocked ones marked as done and locked countable ones
 // showing progress ("7 av 10"), and the nearest locked one highlighted on top (077).
+// Locked trophies come first under "Kvar att ta", unlocked ones after under "Tagna" (113).
 // Rebuilt only when the unlocked set or a shown counter changes.
 import { ACHIEVEMENTS, type AchievementDef } from '../content/registry';
 import { T } from '../content/texts';
@@ -58,15 +59,23 @@ export class AchievementList {
     if (sig === this.signature) return;
     this.signature = sig;
     const unlocked = ACHIEVEMENTS.filter((a) => hasAchievement(state, a.id)).length;
-    const cards = ACHIEVEMENTS.map((a, i) => {
+    const locked: HTMLElement[] = [];
+    const taken: HTMLElement[] = [];
+    ACHIEVEMENTS.forEach((a, i) => {
       const done = hasAchievement(state, a.id);
-      return card(a, labels[i] ?? '', {
-        class: 'card',
-        testId: `achievement-${a.id}`,
-        attrs: { 'data-unlocked': String(done), 'data-id': a.id },
-        levelTestId: done ? undefined : `achievement-progress-${a.id}`,
-      });
+      (done ? taken : locked).push(
+        card(a, labels[i] ?? '', {
+          class: 'card',
+          testId: `achievement-${a.id}`,
+          attrs: { 'data-unlocked': String(done), 'data-id': a.id },
+          levelTestId: done ? undefined : `achievement-progress-${a.id}`,
+        }),
+      );
     });
+    // A group without cards shows no heading.
+    const group = (cards: HTMLElement[], key: 'locked' | 'unlocked', title: string): HTMLElement[] =>
+      cards.length ? [h('h3', { class: 'group-title', testId: `achievement-group-${key}`, text: title }), ...cards] : [];
+    const cards = [...group(locked, 'locked', T.achievements.groupLocked), ...group(taken, 'unlocked', T.achievements.groupUnlocked)];
     const near = nearestAchievement(state);
     const top = near
       ? [card(near.def, T.achievements.progress(near.have, near.need), { class: 'card nearest', testId: 'achievement-nearest', attrs: { 'data-id': near.def.id, role: 'button', tabindex: '0' }, tag: T.achievements.nearest })]

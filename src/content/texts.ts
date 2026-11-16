@@ -82,6 +82,8 @@ export const T = {
     summary: (n: number, total: number, pct: number) => `${n} av ${total} troféer · +${pctText(pct)} produktion`,
     done: 'Klar',
     nearest: 'Nästan där',
+    groupLocked: 'Kvar att ta',
+    groupUnlocked: 'Tagna',
     progress: (have: number, need: number) => `${groupDigits(have)} av ${groupDigits(need)}`,
     toast: (name: string) => `Trofé: ${name}! +1\u00a0% produktion`,
     toastMany: (n: number) => `${n} nya troféer! +${n}\u00a0% produktion`,
