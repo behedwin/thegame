@@ -168,7 +168,8 @@ export const T = {
     summaryStreak: (n: number) => `Längsta svit i år: ${n} 🔥`,
     summaryRecord: 'Nytt rekord: ditt snabbaste läsår!',
     /** Running school year time on the prestige tab, with the record once there is one (094). */
-    yearClock: (t: string, record: string | null) => (record ? `Läsåret: ${t} (rekord ${record})` : `Läsåret: ${t}`),
+    yearClock: (t: string, record: string | null, onPace = false) =>
+      (record ? `Läsåret: ${t} (rekord ${record})${onPace ? ' · rekordtakt' : ''}` : `Läsåret: ${t}`),
   },
   goal: {
     title: 'Hela Sverige på en standard',
