@@ -13,6 +13,7 @@ import {
   isMaxed,
   isRevealed,
   level,
+  MAX_EVENT_COOLDOWN_CUT_PCT,
   meritCost,
   milestoneName,
   milestoneProgressPct,
@@ -20,6 +21,7 @@ import {
   splitMaxed,
   type GameState,
 } from '../core';
+import type { MeritDef } from '../content/types';
 import { costOfMany, resolveBulk, type BulkMode } from '../core/bulk';
 import { h } from './dialogs';
 import { fmt } from './format';
@@ -35,6 +37,32 @@ const QUOTE_AFTER_BUY_MS = 2500;
 export function showMilestoneQuote(count: number, justBought: boolean): boolean {
   if (nextMilestone(count) === null) return false;
   return justBought || milestoneProgressPct(count) >= QUOTE_NEAR_PCT;
+}
+
+const round1 = (n: number): number => Math.round(n * 10) / 10;
+
+/** "Nu: +200 % produktion": what one merit gives at this level, empty at level 0 (082). */
+export function meritEffectText(def: MeritDef, lvl: number): string {
+  if (lvl <= 0) return '';
+  const e = def.effect;
+  const t = T.meritNow;
+  switch (e.kind) {
+    case 'prodPct':
+      return t.prodPct(e.pct * lvl);
+    case 'clickPct':
+      return t.clickPct(e.pct * lvl);
+    case 'offlineHours':
+      return t.offlineHours(e.hours * lvl);
+    case 'startAutomation':
+      return t.startAutomation(e.count * lvl, getAutomation(e.id)?.name ?? e.id);
+    case 'autoDiscountPct':
+      // Multiplicative per level, same as automationCostFactor() in core.
+      return t.autoDiscountPct(round1((1 - Math.pow(1 - e.pct / 100, lvl)) * 100));
+    case 'eventCooldownPct':
+      return t.eventCooldownPct(Math.min(MAX_EVENT_COOLDOWN_CUT_PCT, e.pct * lvl));
+    case 'offlineEffPct':
+      return t.offlineEffPct(e.pct * lvl);
+  }
 }
 
 interface Card {
@@ -181,6 +209,8 @@ export class ShopList {
         const def = getMerit(c.id)!;
         const lvl = level(s.meritUpgrades, c.id);
         c.level.textContent = T.level(lvl, def.maxLevel);
+        const now = meritEffectText(def, lvl);
+        if (c.sub.textContent !== now) c.sub.textContent = now;
         if (isMaxed(s, c.id)) this.setButton(c, T.maxed, false, true);
         else this.setButton(c, `${fmt(meritCost(s, c.id))} ★`, canBuyMerit(s, c.id));
       }

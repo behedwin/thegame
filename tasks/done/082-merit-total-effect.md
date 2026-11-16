@@ -1,7 +1,7 @@
 ---
 id: 082
 size: S
-status: ready
+status: done
 priority: normal
 changelog: "Meritkorten visar vad meriten ger dig just nu."
 touches: [src/ui/shop.ts, src/content/texts.ts, src/ui/style.css]
