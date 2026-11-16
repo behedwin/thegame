@@ -1,7 +1,7 @@
 ---
 id: 081
 size: S
-status: ready
+status: done
 priority: normal
 changelog: "Maxade meriter samlas längst ned i Läsår-fliken."
 touches: [src/core/rules.ts, src/ui/shop.ts, src/ui/prestige.ts, src/ui/style.css, src/content/texts.ts]

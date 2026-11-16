@@ -181,9 +181,12 @@ export function costOf(state: GameState, id: string): Decimal {
   throw new Error(`Unknown item: ${id}`);
 }
 
+/** Whether an upgrade, or a merit in the merit shop (081), has reached its max level. */
 export function isMaxed(state: GameState, id: string): boolean {
   const up = getUpgrade(id);
-  return up !== undefined && level(state.upgrades, id) >= up.maxLevel;
+  if (up) return level(state.upgrades, id) >= up.maxLevel;
+  const m = getMerit(id);
+  return m !== undefined && level(state.meritUpgrades, id) >= m.maxLevel;
 }
 
 /** Split ids into buyable ones and maxed ones, keeping the original order in each (073). */
@@ -219,7 +222,7 @@ export function meritCost(state: GameState, id: string): Decimal {
 
 export function canBuyMerit(state: GameState, id: string): boolean {
   const m = getMerit(id);
-  if (!m || level(state.meritUpgrades, id) >= m.maxLevel) return false;
+  if (!m || isMaxed(state, id)) return false;
   return state.merits.gte(meritCost(state, id));
 }
 
