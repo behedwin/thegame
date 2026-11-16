@@ -71,6 +71,9 @@ export interface YearSummary {
 }
 
 /** Summarise the running school year, from the state before prestige. */
+/** `now - last` against last school year, or null in the first one, which has nothing to compare with (078). */
+const sinceLastYear = (state: GameState, now: number, last: number): number | null => (state.prestiges > 0 ? now - last : null);
+
 export const yearSummary = (state: GameState): YearSummary => ({
   kpEarned: state.runEarned,
   customers: customersSigned(state),
@@ -78,8 +81,8 @@ export const yearSummary = (state: GameState): YearSummary => ({
   merits: pendingMerits(state),
   events: state.yearEvents,
   tickets: state.yearTickets,
-  eventsDiff: state.prestiges > 0 ? state.yearEvents - state.lastYearEvents : null,
-  ticketsDiff: state.prestiges > 0 ? state.yearTickets - state.lastYearTickets : null,
+  eventsDiff: sinceLastYear(state, state.yearEvents, state.lastYearEvents),
+  ticketsDiff: sinceLastYear(state, state.yearTickets, state.lastYearTickets),
   bestYear: state.runEarned.gt(state.bestRunEarned),
 });
 

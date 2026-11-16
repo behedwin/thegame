@@ -43,7 +43,15 @@ export class PrestigeView {
   /** The year in review shown in the confirm dialog (063). */
   private summary(state: GameState): HTMLElement {
     const s = yearSummary(state);
-    const lines = [T.prestige.summaryKp(fmt(s.kpEarned)), T.prestige.summaryCustomers(s.customers), T.prestige.summaryIntegrations(s.integrations), T.prestige.summaryEvents(s.events) + diff(s.eventsDiff), T.prestige.summaryTickets(s.tickets) + diff(s.ticketsDiff), T.prestige.summaryMerits(fmt(s.merits))];
+    const p = T.prestige;
+    const lines = [
+      p.summaryKp(fmt(s.kpEarned)),
+      p.summaryCustomers(s.customers),
+      p.summaryIntegrations(s.integrations),
+      p.summaryEvents(s.events) + diff(s.eventsDiff),
+      p.summaryTickets(s.tickets) + diff(s.ticketsDiff),
+      p.summaryMerits(fmt(s.merits)),
+    ];
     return h('div', { class: 'year-summary', testId: 'year-summary' }, h('strong', { text: T.prestige.summaryTitle }),
       h('ul', {}, ...lines.map((text) => h('li', { text }))),
       ...(s.bestYear ? [h('p', { class: 'prestige-preview', testId: 'year-summary-best', text: T.prestige.summaryBest })] : []));

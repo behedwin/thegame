@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { AchievementDef } from '../src/content/types';
-import { createInitialState, type GameState } from '../src/core';
-import { nearestAchievement } from '../src/ui/achievements';
+import { createInitialState, nearestAchievement, type GameState } from '../src/core';
 
 const def = (id: string, condition: AchievementDef['condition']): AchievementDef =>
   ({ id, order: 0, name: id, desc: id, condition }) as AchievementDef;
