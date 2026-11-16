@@ -140,6 +140,9 @@ export function createInitialState(nowMs: number): GameState {
   };
 }
 
+/** The fastest finished school year in game ms, or null before the first "Nytt läsår" (stored as 0, 088). */
+export const fastestYearRecord = (state: GameState): number | null => (state.fastestYearMs > 0 ? state.fastestYearMs : null);
+
 export function level(map: Record<string, number>, id: string): number {
   return map[id] ?? 0;
 }
