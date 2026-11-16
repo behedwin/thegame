@@ -75,6 +75,11 @@ export interface GameState {
   yearEvents: number;
   /** Longest event streak reached in the running school year (096). Reset by prestige(). */
   yearBestStreak: number;
+  /**
+   * The event streak when the running school year started (107), so yearBestStreak counts only events
+   * solved this year. Set by prestige(); 0 when the streak breaks. Never above eventStreak.
+   */
+  yearStreakBase: number;
   yearTickets: number;
   /** The same counters for the school year before (078). Set by prestige(); 0 before the first one. */
   lastYearEvents: number;
@@ -131,6 +136,7 @@ export function createInitialState(nowMs: number): GameState {
     ticketsAnswered: 0,
     yearEvents: 0,
     yearBestStreak: 0,
+    yearStreakBase: 0,
     yearTickets: 0,
     lastYearEvents: 0,
     lastYearTickets: 0,
