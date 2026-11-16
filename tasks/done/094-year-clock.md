@@ -1,7 +1,7 @@
 ---
 id: 094
 size: S
-status: ready
+status: done
 priority: normal
 changelog: "Fliken Läsår visar hur länge läsåret har pågått och ditt rekord."
 touches: [src/ui/prestige.ts, src/content/texts.ts, src/ui/style.css]

@@ -1,7 +1,7 @@
 // Prestige tab: merits owned and pending, next-year preview, the prestige button and the merit shop.
 import { T } from '../content/texts';
 import { BALANCE } from '../content/balance';
-import { canPrestige, chaptersRead, connectedMunicipalities, isUntriedFocus, nextYearMunicipalities, nextUnlock, nextYearSpeedupPct, pendingMerits, runKpForMerits, schoolYear, yearStart, yearSummary, type GameState } from '../core';
+import { canPrestige, chaptersRead, connectedMunicipalities, isUntriedFocus, nextYearMunicipalities, nextUnlock, nextYearSpeedupPct, pendingMerits, runKpForMerits, schoolYear, yearDurationMs, yearStart, yearSummary, type GameState } from '../core';
 import type { FocusDef } from '../content/types';
 import { toast } from './feedback';
 import { h, showDialog } from './dialogs';
@@ -20,6 +20,7 @@ export class PrestigeView {
   private readonly btn = h('button', { class: 'btn primary wide', testId: 'prestige' });
   private readonly goal = h('div', { class: 'goal', testId: 'goal' });
   private readonly story = h('details', { class: 'story', testId: 'chapters' });
+  private readonly clock = h('p', { class: 'year-clock muted', testId: 'year-clock' });
   private shownYear = 0;
 
   /**
@@ -28,7 +29,7 @@ export class PrestigeView {
    */
   constructor(buyMerit: (id: string) => void, state: () => GameState, confirm: (gained: GameState['merits']) => void, private readonly chooseFocus: (id: string) => void) {
     this.merits = new ShopList(h('div', { class: 'list' }), 'merits', buyMerit);
-    const card = h('div', { class: 'prestige-card' }, h('h3', { text: T.prestige.title }), h('p', { text: T.prestige.intro }), this.info, this.btn);
+    const card = h('div', { class: 'prestige-card' }, h('h3', { text: T.prestige.title }), h('p', { text: T.prestige.intro }), this.clock, this.info, this.btn);
     this.host = h('div', {}, this.goal, card, this.story, h('h3', { class: 'list-title', text: T.prestige.shopTitle }), this.merits.host);
     this.btn.addEventListener('click', () => {
       if (!canPrestige(state())) return;
@@ -100,8 +101,17 @@ export class PrestigeView {
     );
     this.btn.textContent = T.prestige.button(fmt(pending));
     this.btn.disabled = !canPrestige(state);
+    this.renderClock(state);
     this.renderGoal(state);
     this.merits.render(state);
+  }
+
+  /** How long this school year has run, against the record, from the second year on (094). */
+  private renderClock(state: GameState): void {
+    this.clock.hidden = state.prestiges < 1;
+    if (this.clock.hidden) return;
+    const text = T.prestige.yearClock(fmtDuration(yearDurationMs(state)), state.fastestYearMs > 0 ? fmtDuration(state.fastestYearMs) : null);
+    if (this.clock.textContent !== text) this.clock.textContent = text;
   }
 
   /** National goal with a thin progress bar, the next year's gain and the story so far (052). */

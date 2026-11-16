@@ -165,6 +165,8 @@ export const T = {
     summaryBest: 'Ditt bästa läsår hittills!',
     summaryTime: (t: string) => `Läsåret tog ${t}`,
     summaryRecord: 'Nytt rekord: ditt snabbaste läsår!',
+    /** Running school year time on the prestige tab, with the record once there is one (094). */
+    yearClock: (t: string, record: string | null) => (record ? `Läsåret: ${t} (rekord ${record})` : `Läsåret: ${t}`),
   },
   goal: {
     title: 'Hela Sverige på en standard',
