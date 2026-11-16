@@ -10,22 +10,25 @@ export interface StatRow { label: string; value: string }
 
 /** The rows of the stats page. Pure, so it can be tested without a DOM. */
 export function statRows(state: GameState): StatRow[] {
-  const kp = (d: GameState['kp']) => `${fmt(d)} ${T.currency}`;
+  const S = T.stats;
+  const row = (label: string, value: string): StatRow => ({ label, value });
+  const count = (label: string, n: number | GameState['kp']): StatRow => row(label, fmt(n));
+  const kp = (label: string, d: GameState['kp']): StatRow => row(label, `${fmt(d)} ${T.currency}`);
   return [
-    { label: T.stats.totalEarned, value: kp(state.totalEarned) },
-    { label: T.stats.thisYear, value: kp(state.runEarned) },
-    { label: T.stats.bestYear, value: kp(bestYearEarned(state)) },
-    ...(fastestYearRecord(state) === null ? [] : [{ label: T.stats.fastestYear, value: fmtDuration(state.fastestYearMs) }]),
-    { label: T.stats.bestEventStreak, value: fmt(state.bestEventStreak) },
-    { label: T.stats.purchases, value: fmt(state.purchases) },
-    { label: T.stats.clicks, value: fmt(state.clicks) },
-    { label: T.stats.events, value: fmt(state.eventsClaimed) },
-    { label: T.stats.tickets, value: fmt(state.ticketsAnswered) },
-    { label: T.stats.schoolYears, value: fmt(state.prestiges + 1) },
-    { label: T.stats.meritsEarned, value: fmt(state.meritsEarned) },
-    { label: T.stats.achievements, value: T.stats.of(state.achievements.length, ACHIEVEMENTS.length) },
-    { label: T.stats.focusesPlayed, value: T.stats.of(state.focusesPlayed.length, FOCUSES.filter((f) => f.id !== DEFAULT_FOCUS).length) },
-    { label: T.stats.timePlayed, value: fmtDuration(state.timeMs) },
+    kp(S.totalEarned, state.totalEarned),
+    kp(S.thisYear, state.runEarned),
+    kp(S.bestYear, bestYearEarned(state)),
+    ...(fastestYearRecord(state) === null ? [] : [row(S.fastestYear, fmtDuration(state.fastestYearMs))]),
+    count(S.bestEventStreak, state.bestEventStreak),
+    count(S.purchases, state.purchases),
+    count(S.clicks, state.clicks),
+    count(S.events, state.eventsClaimed),
+    count(S.tickets, state.ticketsAnswered),
+    count(S.schoolYears, state.prestiges + 1),
+    count(S.meritsEarned, state.meritsEarned),
+    row(S.achievements, S.of(state.achievements.length, ACHIEVEMENTS.length)),
+    row(S.focusesPlayed, S.of(state.focusesPlayed.length, FOCUSES.filter((f) => f.id !== DEFAULT_FOCUS).length)),
+    row(S.timePlayed, fmtDuration(state.timeMs)),
   ];
 }
 

@@ -1,6 +1,6 @@
 // "Nytt läsår" (prestige): when it unlocks, what it resets and what it keeps. Pure, like actions.ts.
-import { BALANCE } from '../content/balance';
 import { MERITS, type AutomationDef, type ChapterDef, type FocusDef } from '../content/registry';
+import { visibleStreak } from './events';
 import { focusesForYear, withFocusPlayed } from './focus';
 import { chapterFor } from './goal';
 import { bestYearEarned, customersSigned, meritLevelEffect, pendingMerits, runKpForMerits } from './rules';
@@ -119,7 +119,7 @@ export const yearSummary = (state: GameState): YearSummary => ({
   bestYear: state.runEarned.gt(state.bestRunEarned),
   durationMs: yearDurationMs(state),
   fastestYear: beatsFastestYear(state),
-  bestStreak: state.yearBestStreak >= BALANCE.events.streak.min ? state.yearBestStreak : 0,
+  bestStreak: visibleStreak(state.yearBestStreak),
   bestStreakDiff: sinceLastYear(state, state.yearBestStreak, state.lastYearBestStreak),
 });
 
