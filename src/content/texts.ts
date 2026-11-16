@@ -30,6 +30,7 @@ export const T = {
   },
   hubTierUp: (name: string) => `Navet har uppgraderats till ${name}`,
   toastBeatLastYear: 'Nytt rekord: du har passerat förra läsårets KP!',
+  toastBestYear: 'Bästa läsåret hittills!',
   sourceSystems: 'Källsystem',
   targetSystems: 'Målsystem',
   /** Owned integrations that do not fit in the compact map strip (062). */

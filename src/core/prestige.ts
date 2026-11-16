@@ -107,6 +107,14 @@ export const passedLastYear = (prev: GameState, next: GameState): boolean =>
   prev.runEarned.lte(next.lastYearEarned) &&
   next.runEarned.gt(next.lastYearEarned);
 
+/** True on the update where this year's KP passes the best school year so far, from the second year on (112). */
+export const passedBestYear = (prev: GameState, next: GameState): boolean =>
+  next.prestiges > 0 &&
+  prev.prestiges === next.prestiges &&
+  next.bestRunEarned.gt(0) &&
+  prev.runEarned.lte(next.bestRunEarned) &&
+  next.runEarned.gt(next.bestRunEarned);
+
 /** Whole-percent change of this year's KP against last year's, or null when there is nothing to compare (083). */
 function kpDiffPct(state: GameState): number | null {
   if (state.prestiges === 0 || state.lastYearEarned.lte(0)) return null;
