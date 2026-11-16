@@ -7,7 +7,7 @@ import { T } from '../content/texts';
 import {
   answerTicket, applyMorningChoice, applyOffline, buy, type CalendarDay, buyMerit, chooseFocus, claimEvent, click, createInitialState,
   getAutomation, kpPerClick, level, milestoneName, milestonesReached, newAchievements, networkFlow, prestige, prestigeUnlocked,
-  brokenStreak, passedLastYear, receiveTicket, refillInboxOffline, rollEvent, setCalendar, setSettings, type Settings, spawnEvent, tick, touch, type GameState,
+  brokenStreak, receiveTicket, refillInboxOffline, rollEvent, setCalendar, setSettings, type Settings, spawnEvent, tick, touch, type GameState,
 } from '../core';
 import { buyMany, BULK_MODES, resolveBulk, type BulkMode } from '../core/bulk';
 import { loadGame, saveGame, wipeGame } from '../save/storage';
@@ -28,6 +28,7 @@ import { PrestigeView } from './prestige';
 import { openSettings } from './settings';
 import { ShopList } from './shop';
 import { seenTrophies, TABS, tabDots, type Tab } from './tab-dots';
+import { renderToasts } from './render-toasts';
 import { receiptText } from './effects';
 import { renderInboxButton, showTicket } from './inbox';
 import { helpHooks } from './help';
@@ -266,15 +267,12 @@ export async function startApp(root: HTMLElement): Promise<void> {
   let rendered: GameState | null = null;
   function render(): void {
     state = setCalendar(state, today());
-    if (rendered && passedLastYear(rendered, state)) toast(T.toastBeatLastYear, 'good');
+    const flow = networkFlow(state);
+    for (const t of renderToasts(rendered, state, net.update(flow))) toast(t, 'good');
     rendered = state;
     hud.render(state);
     renderInboxButton(inboxBtn, state);
     customers.render(state);
-
-    const flow = networkFlow(state);
-    const tierUp = net.update(flow);
-    if (tierUp !== null) toast(T.hubTierUp(T.hubTiers[tierUp]!), 'good');
     hubTierTag.textContent = T.hubTiers[net.currentTier] ?? '';
     hubTierTag.style.setProperty('--tier-progress', hubTierProgress(flow.total).toFixed(3));
     const info = hubTierInfo();
