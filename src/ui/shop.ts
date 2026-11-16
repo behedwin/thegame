@@ -57,7 +57,7 @@ export class ShopList {
   bulk: BulkMode = 1;
   /** Wall-clock time of the latest purchase per card, for the quote flash. */
   private boughtAt = new Map<string, number>();
-  /** Whether the folded "Klara (n)" row of maxed upgrades is open; survives rebuilds (073). */
+  /** Whether the folded "Klara (n)" row of maxed upgrades/merits is open; survives rebuilds (073). */
   private foldOpen = false;
 
   constructor(
@@ -67,7 +67,10 @@ export class ShopList {
   ) {}
 
   private visibleIds(s: GameState): { ids: string[]; done: string[]; teaser: boolean } {
-    if (this.kind === 'merits') return { ids: MERITS.map((m) => m.id), done: [], teaser: false };
+    if (this.kind === 'merits') {
+      const { open, done } = splitMaxed(s, MERITS.map((m) => m.id));
+      return { ids: open, done, teaser: false };
+    }
     const all = this.kind === 'automations' ? AUTOMATIONS.map((a) => a.id) : UPGRADES.map((u) => u.id);
     const revealed = all.filter((id) => isRevealed(s, id));
     const teaser = revealed.length < all.length;
@@ -82,7 +85,7 @@ export class ShopList {
     for (const id of ids) this.host.append(this.makeCard(id));
     if (teaser) this.host.append(h('div', { class: 'card teaser', text: T.lockedTeaser }));
     if (done.length) {
-      // Maxed upgrades fold into one row at the bottom so the buyable ones come first (073).
+      // Maxed upgrades and merits (081) fold into one row at the bottom so the buyable ones come first (073).
       const body = h('div', { class: 'fold-body', testId: 'fold-maxed-body' });
       for (const id of done) body.append(this.makeCard(id));
       body.hidden = !this.foldOpen;
@@ -178,7 +181,7 @@ export class ShopList {
         const def = getMerit(c.id)!;
         const lvl = level(s.meritUpgrades, c.id);
         c.level.textContent = T.level(lvl, def.maxLevel);
-        if (lvl >= def.maxLevel) this.setButton(c, T.maxed, false, true);
+        if (isMaxed(s, c.id)) this.setButton(c, T.maxed, false, true);
         else this.setButton(c, `${fmt(meritCost(s, c.id))} ★`, canBuyMerit(s, c.id));
       }
     }
