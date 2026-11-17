@@ -1,6 +1,7 @@
 // Achievements tab: all achievements, unlocked ones marked as done and locked countable ones
 // showing progress ("7 av 10"), and the nearest locked one highlighted on top (077).
-// Locked trophies come first under "Kvar att ta", unlocked ones after under "Tagna" (113).
+// Locked trophies come first under "Kvar att ta", unlocked ones after under "Tagna" (113),
+// which folds open and closed and starts collapsed (118).
 // Rebuilt only when the unlocked set or a shown counter changes.
 import { ACHIEVEMENTS, type AchievementDef } from '../content/registry';
 import { T } from '../content/texts';
@@ -42,6 +43,8 @@ export function trophyGroups(state: GameState): { locked: Trophy[]; taken: Troph
 export class AchievementList {
   readonly host = h('div', { testId: 'achievement-list' });
   private signature = '';
+  /** Whether the "Tagna" group is open; survives rebuilds but is not saved (118). */
+  private takenOpen = false;
 
   constructor() {
     // Tapping the highlighted "nearest" card finds the same trophy in the list (104).
@@ -63,6 +66,24 @@ export class AchievementList {
     return true;
   }
 
+  /** The "Tagna (n)" heading as a toggle button and the taken cards in a body it shows or hides (118). */
+  private takenFold(cards: HTMLElement[]): HTMLElement[] {
+    const body = h('div', { class: 'fold-body', testId: 'achievement-group-unlocked-body' }, ...cards);
+    body.hidden = !this.takenOpen;
+    const toggle = h('button', {
+      class: 'group-title group-toggle',
+      testId: 'achievement-group-unlocked',
+      text: T.achievements.groupUnlocked(cards.length),
+      attrs: { type: 'button', 'aria-expanded': String(this.takenOpen) },
+    });
+    toggle.addEventListener('click', () => {
+      this.takenOpen = !this.takenOpen;
+      body.hidden = !this.takenOpen;
+      toggle.setAttribute('aria-expanded', String(this.takenOpen));
+    });
+    return [toggle, body];
+  }
+
   render(state: GameState): void {
     const g = trophyGroups(state);
     const sig = [...g.locked, ...g.taken].map((t) => `${t.def.id}:${t.label}`).join('|');
@@ -71,9 +92,9 @@ export class AchievementList {
     const toCards = (list: Trophy[], done: boolean): HTMLElement[] =>
       list.map(({ def, label }) => card(def, label, { class: 'card', testId: `achievement-${def.id}`, attrs: { 'data-unlocked': String(done), 'data-id': def.id }, levelTestId: done ? undefined : `achievement-progress-${def.id}` }));
     // A group without cards shows no heading.
-    const group = (cards: HTMLElement[], key: 'locked' | 'unlocked', title: string): HTMLElement[] =>
-      cards.length ? [h('h3', { class: 'group-title', testId: `achievement-group-${key}`, text: title }), ...cards] : [];
-    const cards = [...group(toCards(g.locked, false), 'locked', T.achievements.groupLocked), ...group(toCards(g.taken, true), 'unlocked', T.achievements.groupUnlocked)];
+    const locked = toCards(g.locked, false);
+    const cards: HTMLElement[] = locked.length ? [h('h3', { class: 'group-title', testId: 'achievement-group-locked', text: T.achievements.groupLocked }), ...locked] : [];
+    if (g.taken.length) cards.push(...this.takenFold(toCards(g.taken, true)));
     const near = nearestAchievement(state);
     const top = near
       ? [card(near.def, T.achievements.progress(near.have, near.need), { class: 'card nearest', testId: 'achievement-nearest', attrs: { 'data-id': near.def.id, role: 'button', tabindex: '0' }, tag: T.achievements.nearest })]

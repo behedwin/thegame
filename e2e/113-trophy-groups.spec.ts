@@ -41,7 +41,7 @@ test('Trophy tab lists locked trophies under "Kvar att ta" before unlocked ones 
   await page.getByTestId('tab-achievements').click();
   const list = page.getByTestId('achievement-list');
   await expect(page.getByTestId('achievement-group-locked')).toHaveText('Kvar att ta');
-  await expect(page.getByTestId('achievement-group-unlocked')).toHaveText('Tagna');
+  await expect(page.getByTestId('achievement-group-unlocked')).toHaveText(/^Tagna \(\d+\)$/);
 
   // Nearest first, then all locked cards, then all unlocked cards.
   const order = await list.locator('.card:not(.nearest)').evaluateAll((els) => els.map((e) => e.getAttribute('data-unlocked')));
@@ -50,16 +50,19 @@ test('Trophy tab lists locked trophies under "Kvar att ta" before unlocked ones 
   expect(order.indexOf('true')).toBe(order.lastIndexOf('false') + 1);
   await expect(list.locator('.card').first()).toHaveAttribute('data-testid', 'achievement-nearest');
 
-  // Headings sit right before their group.
+  // Headings sit right before their group; the taken cards sit in the fold body after "Tagna" (118).
   const sequence = await list.locator('.list > *').evaluateAll((els) =>
-    els.map((e) => (e.classList.contains('card') ? (e.classList.contains('nearest') ? 'N' : e.getAttribute('data-unlocked') === 'true' ? 'U' : 'L') : e.getAttribute('data-testid'))),
+    els.map((e) => (e.classList.contains('fold-body') ? 'B' : e.classList.contains('card') ? (e.classList.contains('nearest') ? 'N' : e.getAttribute('data-unlocked') === 'true' ? 'U' : 'L') : e.getAttribute('data-testid'))),
   );
   expect(sequence[0]).toBe('N');
   expect(sequence[1]).toBe('achievement-group-locked');
   expect(sequence[2]).toBe('L');
   const u = sequence.indexOf('achievement-group-unlocked');
   expect(sequence[u - 1]).toBe('L');
-  expect(sequence[u + 1]).toBe('U');
+  expect(sequence[u + 1]).toBe('B');
+  const inBody = await page.getByTestId('achievement-group-unlocked-body').locator('.card').evaluateAll((els) => els.map((e) => e.getAttribute('data-unlocked')));
+  expect(inBody.length).toBeGreaterThan(0);
+  expect(inBody.every((v) => v === 'true')).toBe(true);
 
   // Tapping "Nästan där" still finds the right card.
   const target = page.getByTestId('achievement-brandkaren');
