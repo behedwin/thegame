@@ -25,6 +25,20 @@ function card(a: AchievementDef, label: string, o: CardOpts): HTMLElement {
   );
 }
 
+export interface Trophy { def: AchievementDef; label: string }
+
+/** Locked trophies ("Kvar att ta") and unlocked ones ("Tagna"), each in registry order with its level label (113). Pure. */
+export function trophyGroups(state: GameState): { locked: Trophy[]; taken: Trophy[] } {
+  const locked: Trophy[] = [];
+  const taken: Trophy[] = [];
+  for (const def of ACHIEVEMENTS) {
+    const p = progress(state, def.condition);
+    if (hasAchievement(state, def.id)) taken.push({ def, label: T.achievements.done });
+    else locked.push({ def, label: p ? T.achievements.progress(p.have, p.need) : '' });
+  }
+  return { locked, taken };
+}
+
 export class AchievementList {
   readonly host = h('div', { testId: 'achievement-list' });
   private signature = '';
@@ -50,38 +64,22 @@ export class AchievementList {
   }
 
   render(state: GameState): void {
-    const labels = ACHIEVEMENTS.map((a) => {
-      if (hasAchievement(state, a.id)) return T.achievements.done;
-      const p = progress(state, a.condition);
-      return p ? T.achievements.progress(p.have, p.need) : '';
-    });
-    const sig = labels.join('|');
+    const g = trophyGroups(state);
+    const sig = [...g.locked, ...g.taken].map((t) => `${t.def.id}:${t.label}`).join('|');
     if (sig === this.signature) return;
     this.signature = sig;
-    const unlocked = ACHIEVEMENTS.filter((a) => hasAchievement(state, a.id)).length;
-    const locked: HTMLElement[] = [];
-    const taken: HTMLElement[] = [];
-    ACHIEVEMENTS.forEach((a, i) => {
-      const done = hasAchievement(state, a.id);
-      (done ? taken : locked).push(
-        card(a, labels[i] ?? '', {
-          class: 'card',
-          testId: `achievement-${a.id}`,
-          attrs: { 'data-unlocked': String(done), 'data-id': a.id },
-          levelTestId: done ? undefined : `achievement-progress-${a.id}`,
-        }),
-      );
-    });
+    const toCards = (list: Trophy[], done: boolean): HTMLElement[] =>
+      list.map(({ def, label }) => card(def, label, { class: 'card', testId: `achievement-${def.id}`, attrs: { 'data-unlocked': String(done), 'data-id': def.id }, levelTestId: done ? undefined : `achievement-progress-${def.id}` }));
     // A group without cards shows no heading.
     const group = (cards: HTMLElement[], key: 'locked' | 'unlocked', title: string): HTMLElement[] =>
       cards.length ? [h('h3', { class: 'group-title', testId: `achievement-group-${key}`, text: title }), ...cards] : [];
-    const cards = [...group(locked, 'locked', T.achievements.groupLocked), ...group(taken, 'unlocked', T.achievements.groupUnlocked)];
+    const cards = [...group(toCards(g.locked, false), 'locked', T.achievements.groupLocked), ...group(toCards(g.taken, true), 'unlocked', T.achievements.groupUnlocked)];
     const near = nearestAchievement(state);
     const top = near
       ? [card(near.def, T.achievements.progress(near.have, near.need), { class: 'card nearest', testId: 'achievement-nearest', attrs: { 'data-id': near.def.id, role: 'button', tabindex: '0' }, tag: T.achievements.nearest })]
       : [];
     this.host.replaceChildren(
-      h('p', { class: 'muted', testId: 'achievement-summary', text: T.achievements.summary(unlocked, ACHIEVEMENTS.length, unlocked * ACHIEVEMENT_PROD_PCT) }),
+      h('p', { class: 'muted', testId: 'achievement-summary', text: T.achievements.summary(g.taken.length, ACHIEVEMENTS.length, g.taken.length * ACHIEVEMENT_PROD_PCT) }),
       h('div', { class: 'list' }, ...top, ...cards),
     );
   }

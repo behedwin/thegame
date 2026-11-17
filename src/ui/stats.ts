@@ -36,7 +36,7 @@ export function statRows(state: GameState): StatRow[] {
 }
 
 /** The lowest streak trophy threshold not yet unlocked, or null when all are (111). */
-function nextStreakTrophy(state: GameState): number | null {
+export function nextStreakTrophy(state: GameState): number | null {
   const left = ACHIEVEMENTS.flatMap((a) =>
     a.condition.kind === 'eventStreak' && !state.achievements.includes(a.id) ? [a.condition.n] : [],
   );
