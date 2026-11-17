@@ -1,7 +1,7 @@
 // Achievements tab: all achievements, unlocked ones marked as done and locked countable ones
 // showing progress ("7 av 10"), and the nearest locked one highlighted on top (077).
 // Locked trophies come first under "Kvar att ta", unlocked ones after under "Tagna" (113),
-// which folds open and closed and starts collapsed (118).
+// which folds open and closed and starts collapsed (118). Locked ones are sorted closest first (121).
 // Rebuilt only when the unlocked set or a shown counter changes.
 import { ACHIEVEMENTS, type AchievementDef } from '../content/registry';
 import { T } from '../content/texts';
@@ -28,16 +28,23 @@ function card(a: AchievementDef, label: string, o: CardOpts): HTMLElement {
 
 export interface Trophy { def: AchievementDef; label: string }
 
-/** Locked trophies ("Kvar att ta") and unlocked ones ("Tagna"), each in registry order with its level label (113). Pure. */
+/** Share done of a locked trophy, or -1 for one without a counter so it sorts last (121). */
+const share = (p: { have: number; need: number } | null): number => (p ? (p.need > 0 ? p.have / p.need : 1) : -1);
+
+/**
+ * Locked trophies ("Kvar att ta"), closest first with counterless ones last (121), and unlocked ones ("Tagna")
+ * in registry order, each with its level label (113). The sort is stable, so ties keep registry order. Pure.
+ */
 export function trophyGroups(state: GameState): { locked: Trophy[]; taken: Trophy[] } {
-  const locked: Trophy[] = [];
+  const locked: (Trophy & { share: number })[] = [];
   const taken: Trophy[] = [];
   for (const def of ACHIEVEMENTS) {
     const p = progress(state, def.condition);
     if (hasAchievement(state, def.id)) taken.push({ def, label: T.achievements.done });
-    else locked.push({ def, label: p ? T.achievements.progress(p.have, p.need) : '' });
+    else locked.push({ def, label: p ? T.achievements.progress(p.have, p.need) : '', share: share(p) });
   }
-  return { locked, taken };
+  locked.sort((a, b) => b.share - a.share);
+  return { locked: locked.map(({ def, label }) => ({ def, label })), taken };
 }
 
 export class AchievementList {
