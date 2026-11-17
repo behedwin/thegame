@@ -2,7 +2,7 @@
 // game state on open; every value shown is already part of the save.
 import { ACHIEVEMENTS, FOCUSES } from '../content/registry';
 import { T } from '../content/texts';
-import { bestYearEarned, DEFAULT_FOCUS, fastestYearRecord, type GameState, visibleStreak, yearDurationMs } from '../core';
+import { bestYearEarned, DEFAULT_FOCUS, fastestYearRecord, hasAchievement, type GameState, visibleStreak, yearDurationMs } from '../core';
 import { h, showDialog } from './dialogs';
 import { fmt, fmtDuration } from './format';
 
@@ -38,7 +38,7 @@ export function statRows(state: GameState): StatRow[] {
 
 /** This year's time toward the fastest-year trophy, while it is locked and after the first year (117). */
 function yearPaceRows(state: GameState): StatRow[] {
-  const trophy = ACHIEVEMENTS.find((a) => a.condition.kind === 'fastestYear' && !state.achievements.includes(a.id));
+  const trophy = ACHIEVEMENTS.find((a) => a.condition.kind === 'fastestYear' && !hasAchievement(state, a.id));
   if (state.prestiges === 0 || trophy?.condition.kind !== 'fastestYear') return [];
   const value = T.stats.yearPaceValue(fmtDuration(yearDurationMs(state)), trophy.name, fmtDuration(trophy.condition.maxMs));
   return [{ label: T.stats.yearPace, value }];
