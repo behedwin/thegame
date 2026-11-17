@@ -2,7 +2,7 @@
 // game state on open; every value shown is already part of the save.
 import { ACHIEVEMENTS, FOCUSES } from '../content/registry';
 import { T } from '../content/texts';
-import { bestYearEarned, DEFAULT_FOCUS, fastestYearRecord, type GameState, visibleStreak } from '../core';
+import { bestYearEarned, DEFAULT_FOCUS, fastestYearRecord, type GameState, visibleStreak, yearDurationMs } from '../core';
 import { h, showDialog } from './dialogs';
 import { fmt, fmtDuration } from './format';
 
@@ -20,6 +20,7 @@ export function statRows(state: GameState): StatRow[] {
     ...(state.prestiges > 0 ? [kp(S.lastYear, state.lastYearEarned)] : []),
     kp(S.bestYear, bestYearEarned(state)),
     ...(fastestYearRecord(state) === null ? [] : [row(S.fastestYear, fmtDuration(state.fastestYearMs))]),
+    ...yearPaceRows(state),
     count(S.bestEventStreak, state.bestEventStreak),
     row(S.yearBestStreak, S.yearStreakValue(state.yearBestStreak, state.prestiges >= 1 ? state.lastYearBestStreak : null)),
     row(S.currentStreak, S.currentStreakValue(visibleStreak(state.eventStreak), nextStreakTrophy(state))),
@@ -33,6 +34,14 @@ export function statRows(state: GameState): StatRow[] {
     row(S.focusesPlayed, S.of(state.focusesPlayed.length, FOCUSES.filter((f) => f.id !== DEFAULT_FOCUS).length)),
     row(S.timePlayed, fmtDuration(state.timeMs)),
   ];
+}
+
+/** This year's time toward the fastest-year trophy, while it is locked and after the first year (117). */
+function yearPaceRows(state: GameState): StatRow[] {
+  const trophy = ACHIEVEMENTS.find((a) => a.condition.kind === 'fastestYear' && !state.achievements.includes(a.id));
+  if (state.prestiges === 0 || trophy?.condition.kind !== 'fastestYear') return [];
+  const value = T.stats.yearPaceValue(fmtDuration(yearDurationMs(state)), trophy.name, fmtDuration(trophy.condition.maxMs));
+  return [{ label: T.stats.yearPace, value }];
 }
 
 /** The lowest streak trophy threshold not yet unlocked, or null when all are (111). */

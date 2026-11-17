@@ -259,6 +259,9 @@ export const T = {
     currentStreak: 'Nuvarande svit',
     currentStreakValue: (n: number, next: number | null) => (next === null ? `${n} 🔥` : `${n} 🔥 (nästa trofé vid ${next})`),
     fastestYear: 'Snabbaste läsår',
+    /** This year's game time toward the locked fastest-year trophy, from the second year (117). */
+    yearPace: 'Det här läsåret',
+    yearPaceValue: (elapsed: string, trophy: string, limit: string) => `${elapsed} (${trophy} vid ${limit})`,
     tickets: 'Besvarade ärenden',
     schoolYears: 'Läsår',
     meritsEarned: 'Meriter totalt',
