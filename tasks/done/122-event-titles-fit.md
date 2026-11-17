@@ -1,7 +1,7 @@
 ---
 id: 122
 size: S
-status: ready
+status: done
 touches: [src/content/events/]
 depends: [061]
 priority: normal
