@@ -33,6 +33,7 @@ export const T = {
   toastBestYear: 'Bästa läsåret hittills!',
   toastPrestigeReady: (n: string, count: number) =>
     `Nytt läsår kan startas! Du får ${n} ${count === 1 ? 'merit' : 'meriter'}.`,
+  toastMeritStep: (n: string, count: number) => `Nu får du ${n} ${count === 1 ? 'merit' : 'meriter'} för läsåret.`,
   sourceSystems: 'Källsystem',
   targetSystems: 'Målsystem',
   /** Owned integrations that do not fit in the compact map strip (062). */

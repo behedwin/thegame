@@ -28,7 +28,7 @@ import { PrestigeView } from './prestige';
 import { openSettings } from './settings';
 import { ShopList } from './shop';
 import { seenTrophies, TABS, tabDots, type Tab } from './tab-dots';
-import { prestigeReadyToast, renderToasts } from './render-toasts';
+import { meritStepToast, prestigeReadyToast, renderToasts, type MeritStepMemory } from './render-toasts';
 import { receiptText } from './effects';
 import { renderInboxButton, showTicket } from './inbox';
 import { helpHooks } from './help';
@@ -267,6 +267,8 @@ export async function startApp(root: HTMLElement): Promise<void> {
   let rendered: GameState | null = null;
   /** School year (`prestiges`) whose "new year can start" toast was shown (116); in memory only. */
   let readyToastYear: number | null = null;
+  /** Merits when the year opened and the last doubling toasted (119); in memory only. */
+  let meritStep: MeritStepMemory | null = null;
   function render(): void {
     state = setCalendar(state, today());
     const flow = networkFlow(state);
@@ -274,6 +276,9 @@ export async function startApp(root: HTMLElement): Promise<void> {
     const ready = prestigeReadyToast(rendered, state, readyToastYear, tab === 'prestige');
     readyToastYear = ready.shownYear;
     if (ready.text) toast(ready.text, 'good');
+    const step = meritStepToast(rendered, state, meritStep, tab === 'prestige');
+    meritStep = step.memory;
+    if (step.text) toast(step.text, 'good');
     rendered = state;
     hud.render(state);
     renderInboxButton(inboxBtn, state);

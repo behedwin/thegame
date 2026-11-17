@@ -1,6 +1,6 @@
-// Toasts that compare one render with the next (087, 109, 112, 116). Pure, so it can be tested without a DOM.
+// Toasts that compare one render with the next (087, 109, 112, 116, 119). Pure, so it can be tested without a DOM.
 import { T } from '../content/texts';
-import { canPrestige, passedBestYear, passedLastYear, pendingMerits, type GameState } from '../core';
+import { canPrestige, passedBestYear, passedLastYear, pendingMerits, type Decimal, type GameState } from '../core';
 import { fmt } from './format';
 
 /** Year records, biggest first: only the first one passed toasts (109, 112). Add new records here. */
@@ -34,5 +34,32 @@ export function prestigeReadyToast(
   return {
     text: onYearTab ? null : T.toastPrestigeReady(fmt(merits), merits.toNumber()),
     shownYear: next.prestiges,
+  };
+}
+
+/** Per school year: merits when it opened (or first seen) and the last doubling toasted (119). In memory only. */
+export interface MeritStepMemory { year: number; base: Decimal; step: number }
+export interface MeritStepToast { text: string | null; memory: MeritStepMemory | null }
+
+/**
+ * Calm toast each time the pending merits double since the year could first be started (119). Nothing on the
+ * first render (a loaded save counts from what it shows), and on the Läsår tab the step counts as seen.
+ */
+export function meritStepToast(
+  prev: GameState | null,
+  next: GameState,
+  memory: MeritStepMemory | null,
+  onYearTab: boolean,
+): MeritStepToast {
+  if (!canPrestige(next)) return { text: null, memory: null };
+  const merits = pendingMerits(next);
+  if (prev === null || memory === null || memory.year !== next.prestiges) {
+    return { text: null, memory: { year: next.prestiges, base: merits, step: 0 } };
+  }
+  const step = Math.floor(merits.div(memory.base).log2() + 1e-9);
+  if (step <= memory.step) return { text: null, memory };
+  return {
+    text: onYearTab ? null : T.toastMeritStep(fmt(merits), merits.toNumber()),
+    memory: { ...memory, step },
   };
 }
