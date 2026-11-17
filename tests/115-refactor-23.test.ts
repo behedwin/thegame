@@ -38,11 +38,11 @@ describe('nextStreakTrophy (115, from 111)', () => {
 });
 
 describe('trophyGroups (115, from 113)', () => {
-  it('puts every trophy in exactly one group, in registry order', () => {
+  it('puts every trophy in exactly one group, taken in registry order (locked order: 121)', () => {
     const half = ACHIEVEMENTS.filter((_, i) => i % 2 === 0).map((a) => a.id);
     const g = trophyGroups({ ...fresh(), achievements: half });
     expect(ids(g.taken)).toEqual(half);
-    expect(ids(g.locked)).toEqual(ACHIEVEMENTS.map((a) => a.id).filter((id) => !half.includes(id)));
+    expect(ids(g.locked).sort()).toEqual(ACHIEVEMENTS.map((a) => a.id).filter((id) => !half.includes(id)).sort());
   });
 
   it('has nothing taken in a new game and nothing locked when all are unlocked', () => {
