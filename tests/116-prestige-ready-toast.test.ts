@@ -14,7 +14,7 @@ const at = (earned: number, prestiges = 0): GameState => ({
 describe('toast when a new school year can first be started (116)', () => {
   it('toasts on the transition false -> true and remembers the year', () => {
     const r = prestigeReadyToast(at(5e8), at(1e9), null, false);
-    expect(r).toEqual({ text: T.toastPrestigeReady('1', 1), shownYear: 0 });
+    expect(r).toEqual({ text: T.toastPrestigeReady('1', 1), memory: 0 });
     expect(r.text).toContain('1 merit');
   });
 
@@ -24,7 +24,7 @@ describe('toast when a new school year can first be started (116)', () => {
   });
 
   it('never toasts on the first render', () => {
-    expect(prestigeReadyToast(null, at(1e9), null, false)).toEqual({ text: null, shownYear: null });
+    expect(prestigeReadyToast(null, at(1e9), null, false)).toEqual({ text: null, memory: null });
   });
 
   it('does not toast while it stays true or stays false', () => {
@@ -34,18 +34,18 @@ describe('toast when a new school year can first be started (116)', () => {
 
   it('does not toast a second time in the same school year', () => {
     const first = prestigeReadyToast(at(5e8), at(1e9), null, false);
-    expect(prestigeReadyToast(at(5e8), at(1e9), first.shownYear, false)).toEqual({ text: null, shownYear: 0 });
+    expect(prestigeReadyToast(at(5e8), at(1e9), first.memory, false)).toEqual({ text: null, memory: 0 });
   });
 
   it('toasts again in the next school year', () => {
     expect(prestigeReadyToast(at(5e8, 1), at(1e9, 1), 0, false)).toEqual({
       text: T.toastPrestigeReady('1', 1),
-      shownYear: 1,
+      memory: 1,
     });
   });
 
   it('stays quiet on the Läsår tab but counts the year as seen', () => {
-    expect(prestigeReadyToast(at(5e8), at(1e9), null, true)).toEqual({ text: null, shownYear: 0 });
+    expect(prestigeReadyToast(at(5e8), at(1e9), null, true)).toEqual({ text: null, memory: 0 });
   });
 
   it('says nothing about hurrying', () => {

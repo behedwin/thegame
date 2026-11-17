@@ -15,42 +15,47 @@ export const renderToasts = (prev: GameState | null, next: GameState, tierUp: nu
   ...(tierUp === null ? [] : [T.hubTierUp(T.hubTiers[tierUp] ?? '')]),
 ];
 
-export interface PrestigeReadyToast { text: string | null; shownYear: number | null }
-
 /**
- * First time in a school year that a new one can be started (116). `shownYear` is the year (`prestiges`) last
- * toasted, kept in memory by the UI so the toast does not repeat if the value flickers. On the Läsår tab the
- * player already sees it, so the year counts as seen without a toast.
+ * A toast that keeps its own memory per school year between renders (116, 119). On the Läsår tab the player
+ * already sees the year, so the memory moves on but no text is shown.
  */
-export function prestigeReadyToast(
-  prev: GameState | null,
-  next: GameState,
-  shownYear: number | null,
-  onYearTab: boolean,
-): PrestigeReadyToast {
-  const opened = prev !== null && !canPrestige(prev) && canPrestige(next) && shownYear !== next.prestiges;
-  if (!opened) return { text: null, shownYear };
-  const merits = pendingMerits(next);
-  return {
-    text: onYearTab ? null : T.toastPrestigeReady(fmt(merits), merits.toNumber()),
-    shownYear: next.prestiges,
+export interface YearToast<M> { text: string | null; memory: M }
+export type YearToastFn<M> = (prev: GameState | null, next: GameState, memory: M, onYearTab: boolean) => YearToast<M>;
+
+/** Wraps a year toast so the UI does not keep its memory itself: returns the text to show, if any. */
+export function withMemory<M>(fn: YearToastFn<M>, initial: M) {
+  let memory = initial;
+  return (prev: GameState | null, next: GameState, onYearTab: boolean): string | null => {
+    const r = fn(prev, next, memory, onYearTab);
+    memory = r.memory;
+    return r.text;
   };
 }
 
+/** The pending merits in a toast text, or nothing on the Läsår tab. */
+function meritText(next: GameState, onYearTab: boolean, text: (merits: string, n: number) => string): string | null {
+  const merits = pendingMerits(next);
+  return onYearTab ? null : text(fmt(merits), merits.toNumber());
+}
+
+/**
+ * First time in a school year that a new one can be started (116). The memory is the year (`prestiges`) last
+ * toasted, so the toast does not repeat if the value flickers.
+ */
+export const prestigeReadyToast: YearToastFn<number | null> = (prev, next, shownYear, onYearTab) => {
+  const opened = prev !== null && !canPrestige(prev) && canPrestige(next) && shownYear !== next.prestiges;
+  if (!opened) return { text: null, memory: shownYear };
+  return { text: meritText(next, onYearTab, T.toastPrestigeReady), memory: next.prestiges };
+};
+
 /** Per school year: merits when it opened (or first seen) and the last doubling toasted (119). In memory only. */
 export interface MeritStepMemory { year: number; base: Decimal; step: number }
-export interface MeritStepToast { text: string | null; memory: MeritStepMemory | null }
 
 /**
  * Calm toast each time the pending merits double since the year could first be started (119). Nothing on the
  * first render (a loaded save counts from what it shows), and on the Läsår tab the step counts as seen.
  */
-export function meritStepToast(
-  prev: GameState | null,
-  next: GameState,
-  memory: MeritStepMemory | null,
-  onYearTab: boolean,
-): MeritStepToast {
+export const meritStepToast: YearToastFn<MeritStepMemory | null> = (prev, next, memory, onYearTab) => {
   if (!canPrestige(next)) return { text: null, memory: null };
   const merits = pendingMerits(next);
   if (prev === null || memory === null || memory.year !== next.prestiges) {
@@ -58,8 +63,5 @@ export function meritStepToast(
   }
   const step = Math.floor(merits.div(memory.base).log2() + 1e-9);
   if (step <= memory.step) return { text: null, memory };
-  return {
-    text: onYearTab ? null : T.toastMeritStep(fmt(merits), merits.toNumber()),
-    memory: { ...memory, step },
-  };
-}
+  return { text: meritText(next, onYearTab, T.toastMeritStep), memory: { ...memory, step } };
+};
