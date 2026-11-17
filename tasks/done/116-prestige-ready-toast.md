@@ -1,7 +1,7 @@
 ---
 id: 116
 size: S
-status: ready
+status: done
 touches: [src/ui/app.ts, src/ui/render-toasts.ts, src/content/texts.ts]
 depends: [108]
 priority: normal

@@ -28,7 +28,7 @@ import { PrestigeView } from './prestige';
 import { openSettings } from './settings';
 import { ShopList } from './shop';
 import { seenTrophies, TABS, tabDots, type Tab } from './tab-dots';
-import { renderToasts } from './render-toasts';
+import { prestigeReadyToast, renderToasts } from './render-toasts';
 import { receiptText } from './effects';
 import { renderInboxButton, showTicket } from './inbox';
 import { helpHooks } from './help';
@@ -265,10 +265,15 @@ export async function startApp(root: HTMLElement): Promise<void> {
 
   // State at the previous render; null until the first one, so a loaded save never toasts (109).
   let rendered: GameState | null = null;
+  /** School year (`prestiges`) whose "new year can start" toast was shown (116); in memory only. */
+  let readyToastYear: number | null = null;
   function render(): void {
     state = setCalendar(state, today());
     const flow = networkFlow(state);
     for (const t of renderToasts(rendered, state, net.update(flow))) toast(t, 'good');
+    const ready = prestigeReadyToast(rendered, state, readyToastYear, tab === 'prestige');
+    readyToastYear = ready.shownYear;
+    if (ready.text) toast(ready.text, 'good');
     rendered = state;
     hud.render(state);
     renderInboxButton(inboxBtn, state);
